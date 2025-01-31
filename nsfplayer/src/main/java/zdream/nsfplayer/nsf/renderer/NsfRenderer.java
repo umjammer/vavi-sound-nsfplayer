@@ -20,598 +20,606 @@ import zdream.nsfplayer.nsf.executor.IN163ReattachListener;
 import zdream.nsfplayer.nsf.executor.NsfExecutor;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
+
 /**
- * <p>NSF 渲染器.
- * <p>该类在 v0.2.3 版本以前基本处于不可用的状态, 直到 v0.2.4 版本进行了大量的改造.
- * <p>该渲染器是线程不安全的, 请注意不要在渲染途中设置参数.
+ * <p>The array needs to be expanded
+ * <p>This class was basically unusable before v0.2.3, until v0.2.4,
+ * when it underwent a major overhaul.
+ * <p>This renderer is not thread-safe, please be careful not to set parameters during rendering.
  * </p>
- * 
+ *
  * @author Zdream
  * @since v0.1
  */
 public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
-	
-	private final NsfExecutor executor = new NsfExecutor();
-	
-	/**
-	 * 算每帧多少时钟, 计入 speed 影响
-	 */
-	public final NsfRateConverter rate;
-	
-	/**
-	 * 算每帧多少采样, 计入 speed 影响
-	 */
-	private final FloatCycleCounter apuCounter = new FloatCycleCounter();
-	
-	private final NsfCommonParameter param = new NsfCommonParameter();
-	
-	/**
-	 * 管理 executor 的 tick 次数
-	 * 不计播放速度影响, 计算每帧采样数
-	 */
-	private final CycleCounter exeCycle = new CycleCounter();
-	
-	/**
-	 * 音频混音器
-	 */
-	public ISoundMixer mixer;
-	
-	/**
-	 * <p>N163 轨道数.
-	 * <p>如果未确定, 该值为 -1.
-	 * </p>
-	 * @since v0.3.2
-	 */
-	private int n163ChannelCount = -1;
-	
-	/**
-	 * <p>是否正在轨道初始化中.
-	 * <p>该值仅用于在 N163 轨道初始化时使用. N163 轨道数量的确定在 reset() 或者运行时确定,
-	 * 如果在 reset() 时确定则会直接操作没有初始化过的轨道, 发生异常.
-	 * 因此需要该值来确定该渲染器的状态.
-	 * </p>
-	 * @since v0.3.2
-	 */
-	private boolean channelInit;
-	
-	public NsfRenderer() {
-		this(new NsfRendererConfig());
-	}
-	
-	public NsfRenderer(NsfRendererConfig config) {
-		param.sampleRate = config.sampleRate;
-		param.frameRate = frameRate;
-		param.levels.copyFrom(config.channelLevels);
-		
-		executor.setRegion(config.region);
-		executor.setRate(config.sampleRate);
-		executor.addN163ReattachListener(n163lsner);
-		
-		initMixer(config);
-		rate = new NsfRateConverter(param);
-		exeCycle.setParam(config.sampleRate, this.frameRate);
-	}
-	
-	public void initMixer(NsfRendererConfig config) {
-		IMixerConfig mixerConfig = config.mixerConfig;
-		if (mixerConfig == null) {
-			mixerConfig = new XgmMixerConfig();
-		}
-		
-		this.mixer = NsfPlayerApplication.app.mixerFactory.create(mixerConfig, param);
-	}
-	
-	/* **********
-	 * 准备部分 *
-	 ********** */
-	
-	/**
-	 * 这里其实选 50 和 60 是不影响的,
-	 * 因为 Nsf 播放器是以一个采样为计算步长的, 而非帧.
-	 */
-	private int frameRate = NsfStatic.FRAME_RATE_NTSC;
-	
-	/**
-	 * 读取 Nsf 音频, 并以默认曲目进行准备
-	 * @param audio
-	 * @throws NullPointerException
-	 *   当 audio 为 null 时
-	 */
-	public void ready(NsfAudio audio) {
-		ready0(audio, audio.start);
-	}
 
-	/**
-	 * 读取 Nsf 音频, 以指定曲目进行准备
-	 * @param audio
-	 *   Nsf 音频实例
-	 * @param track
-	 *   曲目号
-	 * @throws NullPointerException
-	 *   当 audio 为 null 时
-	 * @throws IllegalArgumentException
-	 *   当曲目号 track 在范围 [0, audio.total_songs) 之外时.
-	 */
-	public void ready(NsfAudio audio, int track) {
-		this.ready0(audio, track);
-	}
-	
-	/**
-	 * <p>在不更改 Nsf 音频的同时, 切换到指定曲目的开头.
-	 * <p>第一次播放时需要指定 Nsf 音频数据.
-	 * 因此第一次需要调用含 {@link NsfAudio} 参数的重载方法
-	 * </p>
-	 * @param track
-	 *   曲目号, 从 0 开始
-	 * @throws NullPointerException
-	 *   当调用该方法前未指定 {@link NsfAudio} 音频时
-	 * @throws IllegalArgumentException
-	 *   当曲目号 track 在范围 [0, audio.total_songs) 之外时.
-	 */
-	public void ready(int track) throws NullPointerException {
-		executor.ready(track);
-	}
-	
-	private void ready0(NsfAudio audio, int track) {
-		n163ChannelCount = -1;
-		channelInit = true;
-		executor.ready(audio, track);
-		
-		super.resetCounterParam(frameRate, param.sampleRate);
-		rate.onParamUpdate(frameRate, executor.cycleRate());
-		apuCounter.setParam(countCycle(param.speed), param.sampleRate);
-		
-		mixer.reset();
-		connectChannels(audio.useN163());
-		clearBuffer();
-		
-		channelInit = false;
-	}
-	
-	/**
-	 * <p>连接执行构件中的 sound 和渲染构件的轨道.
-	 * <p>这个方法可以暂时确定所有轨道号
-	 * </p>
-	 * @param useN163
-	 *   该音频是否使用了 N163 芯片
-	 */
-	private void connectChannels(boolean useN163) {
-		mixer.detachAll();
-		Set<Byte> channels = executor.allChannelSet();
-		
-		// 计算总轨道数.
-		// 当使用了 N163 轨道, 但轨道数量不确定时, 总数 + 8 为了 N163 轨道的数据能补上.
-		if (useN163 && n163ChannelCount == -1) {
-			this.channels = new ChannelParam[channels.size() + 8];
-		} else {
-			this.channels = new ChannelParam[channels.size()];
-		}
-		
-		int index = 0;
-		int mixerChannel = -1;
-		for (byte channelCode: channels) {
-			AbstractNsfSound sound = executor.getSound(channelCode);
-			if (sound != null) {
-				mixerChannel = mixer.allocateChannel(channelCode);
-				IMixerChannel mix = mixer.getMixerChannel(mixerChannel);
-				sound.setOut(mix);
-				
-				// 音量
-				mix.setLevel(getInitLevel(channelCode));
-				
-				// TODO 告诉混音器更多的信息, 包括发声器的输出采样率 (NSF 的为 177万, mpeg 的为 44100 或 48000 等)
-			}
-			
-			// 缓存轨道号
-			ChannelParam p = new ChannelParam();
-			p.channelCode = channelCode;
-			p.mixerChannel = mixerChannel;
-			this.channels[index] = p;
-			index++;
-		}
-	}
-	
-	/* **********
-	 * 渲染部分 *
-	 ********** */
+    private final NsfExecutor executor = new NsfExecutor();
 
-	@Override
-	protected int renderFrame() {
-		int ret = countNextFrame();
-		param.sampleInCurFrame = ret;
-		rate.doConvert();
-		mixerReady();
-		
-		final int exeCount = exeCycle.tick();
-		for (int i = 0; i < exeCount; i++) {
-			executor.tick();
-			processSounds(apuCounter.tick());
-		}
-		endFrame();
+    /**
+     * Calculate how many clocks per frame, counting the speed impact.
+     */
+    public final NsfRateConverter rate;
 
-		// 从 mixer 中读取数据
-		readMixer();
-		
-		return ret;
-	}
-	
-	@Override
-	protected int skipFrame() {
-		int ret = countNextFrame();
-		param.sampleInCurFrame = ret;
-		rate.doConvert();
-		
-		final int exeCount = exeCycle.tick();
-		for (int i = 0; i < exeCount; i++) {
-			executor.tick();
-		}
-		endFrame();
+    /**
+     * Calculate how many samples per frame, counting the speed impact.
+     */
+    private final FloatCycleCounter apuCounter = new FloatCycleCounter();
 
-		return ret;
-	}
-	
-	/**
-	 * 从 Mixer 中读取音频数据
-	 */
-	private void readMixer() {
-		mixer.finishBuffer();
-		mixer.readBuffer(data, 0, data.length);
-	}
-	
-	/**
-	 * <p>询问是否整个乐曲已经渲染完成. 由于 NSF 没有明确的结束播放的结点, 该方法永远返回 false.
-	 * <p>如果要设置结束播放结点的触发器, 需要对 {@link #render(short[], int, int)} 返回的采样数据
-	 * 进行扫描, 通过查看所有采样数据是否相同判断该时段 NSF 没有发出声音.
-	 * <p>当 NSF 已经连续多帧出现该情况（推荐 3 秒, 大约 180 帧）即可判断乐曲渲染结束.
-	 * </p>
-	 */
-	public boolean isFinished() {
-		return false;
-	}
-	
-	/**
-	 * <p>通知混音器, 当前帧的渲染开始了.
-	 * <p>这个方法原本用于通知混音器, 如果本帧的渲染速度需要变化,
-	 * 可以通过该方法, 让混音器提前对此做好准备, 修改存储的采样数容量, 从而调节播放速度.
-	 * </p>
-	 * @since v0.2.9
-	 */
-	private void mixerReady() {
-		mixer.readyBuffer();
-	}
+    private final NsfCommonParameter param = new NsfCommonParameter();
 
-	/**
-	 * 所有的 sound 调用 sound.process(freqPerFrame);
-	 */
-	private void processSounds(int freq) {
-		if (channels == null) {
-			return;
-		}
-		
-		for (ChannelParam p : channels) {
-			if (p == null) {
-				continue;
-			}
-			executor.getSound(p.channelCode).process(freq);
-		}
-	}
-	
-	/**
-	 * 所有的 sound 调用 sound.endFrame();
-	 */
-	private void endFrame() {
-		if (channels == null) {
-			return;
-		}
-		
-		for (ChannelParam p : channels) {
-			if (p == null) {
-				continue;
-			}
-			executor.getSound(p.channelCode).endFrame();
-		}
-	}
-	
-	/* **********
-	 * 仪表盘区 *
-	 ********** */
-	/*
-	 * 用于控制实际播放数据的部分.
-	 * 其中有: 控制音量、控制是否播放、控制渲染组件等
-	 */
-	
-	/**
-	 * @return
-	 *   当前正在播放的曲目号
-	 * @since v0.2.8
-	 */
-	public int getCurrentTrack() {
-		return executor.getCurrentTrack();
-	}
-	
-	/**
-	 * @since v0.2.8
-	 */
-	@Override
-	public Set<Byte> allChannelSet() {
-		return executor.allChannelSet();
-	}
-	
-	/**
-	 * 设置某个轨道的音量
-	 * @param channelCode
-	 *   轨道号
-	 * @param level
-	 *   音量. 范围 [0, 1] 
-	 * @since v0.2.4
-	 */
-	public void setLevel(byte channelCode, float level) {
-		if (level < 0) {
-			level = 0;
-		} else if (level > 1) {
-			level = 1;
-		}
-		
-		int id = findMixerChannelByCode(channelCode);
-		if (id != -1) {
-			mixer.setLevel(id, level);
-		}
-	}
-	
-	/**
-	 * 获得某个轨道的音量
-	 * @param channelCode
-	 *   轨道号
-	 * @return
-	 *   音量. 范围 [0, 1]
-	 * @throws NullPointerException
-	 *   当不存在 <code>channelCode</code> 对应的轨道时
-	 * @since v0.2.4
-	 */
-	public float getLevel(byte channelCode) throws NullPointerException {
-		int id = findMixerChannelByCode(channelCode);
-		if (id != -1) {
-			return mixer.getLevel(id);
-		}
-		throw new NullPointerException("不存在 " + channelCode + " 对应的轨道");
-	}
-	
-	/**
-	 * 设置轨道是否发出声音
-	 * @param channelCode
-	 *   轨道号
-	 * @param mask
-	 *   false, 使该轨道发声; true, 则静音
-	 * @since v0.2.4
-	 */
-	public void setChannelMuted(byte channelCode, boolean mask) {
-		AbstractNsfSound sound = executor.getSound(channelCode);
-		if (sound != null) {
-			sound.setMuted(mask);
-		}
-	}
-	
-	/**
-	 * 查看轨道是否能发出声音
-	 * @param channelCode
-	 *   轨道号
-	 * @return
-	 *   false, 说明该轨道没有被屏蔽; true, 则已经被屏蔽
-	 * @throws NullPointerException
-	 *   当不存在 <code>channelCode</code> 对应的轨道时
-	 * @since v0.2.4
-	 */
-	public boolean isChannelMuted(byte channelCode) throws NullPointerException {
-		return executor.getSound(channelCode).isMuted();
-	}
-	
-	@Override
-	public void setSpeed(float speed) {
-		if (speed > 10) {
-			speed = 10;
-		} else if (speed < 0.1f) {
-			speed = 0.1f;
-		}
-		
-		param.speed = speed;
+    /**
+     * Manage the tick count of the executor
+     * Calculate the number of samples per frame, regardless of playback speed.
+     */
+    private final CycleCounter exeCycle = new CycleCounter();
 
-		super.resetCounterParam(frameRate, param.sampleRate);
-		apuCounter.setParam(countCycle(speed), param.sampleRate);
-		rate.onParamUpdate();
-	}
-	
-	@Override
-	public float getSpeed() {
-		return param.speed;
-	}
-	
-	/**
-	 * 获得混音器的操作者（工具类）. 通过它可以对所使用的混音器进行简单的操作.
-	 * @return
-	 *   混音器的操作者
-	 * @since v0.2.10
-	 */
-	public IMixerHandler getMixerHandler() {
-		return mixer.getHandler();
-	}
-	
-	class N163ReattachListener implements IN163ReattachListener {
+    /**
+     * audio mixer
+     */
+    public ISoundMixer mixer;
 
-		@Override
-		public void onReattach(int n163ChannelCount) {
-			NsfRenderer.this.n163ChannelCount = n163ChannelCount;
-			if (channelInit) {
-				return;
-			}
-			
-			for (int i = 0; i < 8; i++) {
-				byte channelCode = (byte) (NesN163.CHANNEL_N163_1 + i);
-				AbstractNsfSound sound = executor.getSound(channelCode);
-				if (sound != null) {
-					ChannelParam p = searchParam(channelCode);
-					if (p == null) {
-						// 创建连接
-						int mixerChannel = mixer.allocateChannel(channelCode);
-						IMixerChannel mix = mixer.getMixerChannel(mixerChannel);
-						sound.setOut(mix);
-						mix.setLevel(getInitLevel(channelCode));
-						
-						p = new ChannelParam();
-						p.channelCode = channelCode;
-						p.mixerChannel = mixerChannel;
-						
-						putChannelParam(p);
-					}
-				} else {
-					ChannelParam p = searchParam(channelCode);
-					if (p != null) {
-						// 删除连接
-						
-						int mixerChannel = p.mixerChannel;
-						mixer.detach(mixerChannel);
-						
-						removeChannelParam(p);
-					}
-				}
-			}
-		}
-		
-		private ChannelParam searchParam(byte code) {
-			for (ChannelParam p : channels) {
-				if (p == null) {
-					continue;
-				}
-				if (p.channelCode == code) {
-					return p;
-				}
-			}
-			
-			return null;
-		}
-		
-		private void putChannelParam(ChannelParam p) {
-			for (int i = 0; i < channels.length; i++) {
-				if (channels[i] == null) {
-					channels[i] = p;
-					return;
-				}
-			}
-			
-			// 数组需要扩充
-		}
-		
-		private void removeChannelParam(ChannelParam p) {
-			for (int i = 0; i < channels.length; i++) {
-				if (channels[i] == p) {
-					channels[i] = null;
-					return;
-				}
-			}
-		}
-		
-	}
-	private final N163ReattachListener n163lsner = new N163ReattachListener();
-	
-	/**
-	 * 获取每个轨道的音量. 这个值应该是从参数 {@link NsfParameter} 中去取.
-	 * @param channelCode
-	 * @return
-	 */
-	private float getInitLevel(byte channelCode) {
-		float level = 0;
-		switch (channelCode) {
-		case CHANNEL_2A03_PULSE1: level = param.levels.level2A03Pules1; break;
-		case CHANNEL_2A03_PULSE2: level = param.levels.level2A03Pules2; break;
-		case CHANNEL_2A03_TRIANGLE: level = param.levels.level2A03Triangle; break;
-		case CHANNEL_2A03_NOISE: level = param.levels.level2A03Noise; break;
-		case CHANNEL_2A03_DPCM: level = param.levels.level2A03DPCM; break;
+    /**
+     * <p>N163 Number of tracks .
+     * <p>If not determined, the value is -1.
+     * </p>
+     *
+     * @since v0.3.2
+     */
+    private int n163ChannelCount = -1;
 
-		case CHANNEL_VRC6_PULSE1: level = param.levels.levelVRC6Pules1; break;
-		case CHANNEL_VRC6_PULSE2: level = param.levels.levelVRC6Pules2; break;
-		case CHANNEL_VRC6_SAWTOOTH: level = param.levels.levelVRC6Sawtooth; break;
+    /**
+     * <p>Whether track initialization is in progress.
+     * <p>This value is only used when initializing N163 orbits. The number of N163 orbitals is
+     * determined at reset() or runtime, if it is determined at reset() it will operate directly
+     * on uninitialized orbitals and an exception will be thrown.
+     * This value is needed to determine the state of the renderer.
+     * </p>
+     *
+     * @since v0.3.2
+     */
+    private boolean channelInit;
 
-		case CHANNEL_MMC5_PULSE1: level = param.levels.levelMMC5Pules1; break;
-		case CHANNEL_MMC5_PULSE2: level = param.levels.levelMMC5Pules2; break;
-		
-		case CHANNEL_FDS: level = param.levels.levelFDS; break;
-		
-		case CHANNEL_N163_1: level = param.levels.levelN163Namco1; break;
-		case CHANNEL_N163_2: level = param.levels.levelN163Namco2; break;
-		case CHANNEL_N163_3: level = param.levels.levelN163Namco3; break;
-		case CHANNEL_N163_4: level = param.levels.levelN163Namco4; break;
-		case CHANNEL_N163_5: level = param.levels.levelN163Namco5; break;
-		case CHANNEL_N163_6: level = param.levels.levelN163Namco6; break;
-		case CHANNEL_N163_7: level = param.levels.levelN163Namco7; break;
-		case CHANNEL_N163_8: level = param.levels.levelN163Namco8; break;
-		
-		case CHANNEL_VRC7_FM1: level = param.levels.levelVRC7FM1; break;
-		case CHANNEL_VRC7_FM2: level = param.levels.levelVRC7FM2; break;
-		case CHANNEL_VRC7_FM3: level = param.levels.levelVRC7FM3; break;
-		case CHANNEL_VRC7_FM4: level = param.levels.levelVRC7FM4; break;
-		case CHANNEL_VRC7_FM5: level = param.levels.levelVRC7FM5; break;
-		case CHANNEL_VRC7_FM6: level = param.levels.levelVRC7FM6; break;
-		
-		case CHANNEL_S5B_SQUARE1: level = param.levels.levelS5BSquare1; break;
-		case CHANNEL_S5B_SQUARE2: level = param.levels.levelS5BSquare2; break;
-		case CHANNEL_S5B_SQUARE3: level = param.levels.levelS5BSquare3; break;
-		
-		default: level = 1.0f; break;
-		}
-		
-		if (level > 1) {
-			level = 1.0f;
-		} else if (level < 0) {
-			level = 0;
-		}
-		
-		return level;
-	}
-	
-	/**
-	 * 计算指定 speed 影响之后, 实际每秒运行的时钟数
-	 * @param speed
-	 *   速度
-	 * @return
-	 *   实际每秒运行的时钟数
-	 */
-	private int countCycle(float speed) {
-		int cycle = executor.cycleRate();
-		if (speed != 1 && speed > 0) {
-			cycle = (int) (cycle / speed);
-		}
-		return cycle;
-	}
-	
-	class ChannelParam {
-		/**
-		 * 轨道号
-		 */
-		byte channelCode;
-		/**
-		 * Mixer 轨道标识号
-		 */
-		int mixerChannel;
-	}
-	private ChannelParam[] channels;
-	
-	/**
-	 * 根据轨道号, 找到 Mixer 中的轨道标识号
-	 * @param channelCode
-	 *   NSF 定义的轨道号
-	 * @return
-	 *   Mixer 的轨道标识号
-	 * @since v0.3.0
-	 */
-	private int findMixerChannelByCode(byte channelCode) {
-		for (ChannelParam p : channels) {
-			if (p == null) {
-				continue;
-			}
-			if (p.channelCode == channelCode) {
-				return p.mixerChannel;
-			}
-		}
-		return -1;
-	}
+    public NsfRenderer() {
+        this(new NsfRendererConfig());
+    }
 
+    public NsfRenderer(NsfRendererConfig config) {
+        param.sampleRate = config.sampleRate;
+        param.frameRate = frameRate;
+        param.levels.copyFrom(config.channelLevels);
+
+        executor.setRegion(config.region);
+        executor.setRate(config.sampleRate);
+        executor.addN163ReattachListener(n163lsner);
+
+        initMixer(config);
+        rate = new NsfRateConverter(param);
+        exeCycle.setParam(config.sampleRate, this.frameRate);
+    }
+
+    public void initMixer(NsfRendererConfig config) {
+        IMixerConfig mixerConfig = config.mixerConfig;
+        if (mixerConfig == null) {
+            mixerConfig = new XgmMixerConfig();
+        }
+
+        this.mixer = NsfPlayerApplication.app.mixerFactory.create(mixerConfig, param);
+    }
+
+    //
+    // preliminary
+    //
+
+    /**
+     * It doesn't really matter if you choose 50 or 60,
+     * because the Nsf player calculates in steps of one sample, not frames.
+     */
+    private final int frameRate = NsfStatic.FRAME_RATE_NTSC;
+
+    /**
+     * Reads Nsf audio and prepares it with default tracks
+     *
+     * @param audio
+     * @throws NullPointerException When audio is null
+     */
+    @Override
+    public void ready(NsfAudio audio) {
+        ready0(audio, audio.start);
+    }
+
+    /**
+     * Reads Nsf audio, prepares it with a specified track
+     *
+     * @param audio Nsf Audio Examples
+     * @param track track number (of a song)
+     * @throws NullPointerException     When audio is null
+     * @throws IllegalArgumentException When the track number track is outside the range [0, audio.total_songs).
+     */
+    @Override
+    public void ready(NsfAudio audio, int track) {
+        this.ready0(audio, track);
+    }
+
+    /**
+     * <p>Switch to the beginning of the specified track without changing the Nsf audio.
+     * <p>Nsf audio data needs to be specified for the first playback.
+     * So the first time you need to call the overloaded method with the {@link NsfAudio} parameter
+     * </p>
+     *
+     * @param track Track number, from 0
+     * @throws NullPointerException     When {@link NsfAudio} audio is not specified before calling this method
+     * @throws IllegalArgumentException When the track number track is outside the range [0, audio.total_songs).
+     */
+    @Override
+    public void ready(int track) throws NullPointerException {
+        executor.ready(track);
+    }
+
+    private void ready0(NsfAudio audio, int track) {
+        n163ChannelCount = -1;
+        channelInit = true;
+        executor.ready(audio, track);
+
+        super.resetCounterParam(frameRate, param.sampleRate);
+        rate.onParamUpdate(frameRate, executor.cycleRate());
+        apuCounter.setParam(countCycle(param.speed), param.sampleRate);
+
+        mixer.reset();
+        connectChannels(audio.useN163());
+        clearBuffer();
+
+        channelInit = false;
+    }
+
+    /**
+     * <p>Connects the sound in the execution component to the track of the rendering component.
+     * <p>This method temporarily determines all track numbers
+     * </p>
+     *
+     * @param useN163 Does the audio use the N163 chip
+     */
+    private void connectChannels(boolean useN163) {
+        mixer.detachAll();
+        Set<Byte> channels = executor.allChannelSet();
+
+        // Calculate the total number of orbits.
+        // When N163 orbitals are used, but the number of orbitals is uncertain,
+        // the total number + 8 is added in order to make up for the N163 orbitals.
+        if (useN163 && n163ChannelCount == -1) {
+            this.channels = new ChannelParam[channels.size() + 8];
+        } else {
+            this.channels = new ChannelParam[channels.size()];
+        }
+
+        int index = 0;
+        int mixerChannel = -1;
+        for (byte channelCode : channels) {
+            AbstractNsfSound sound = executor.getSound(channelCode);
+            if (sound != null) {
+                mixerChannel = mixer.allocateChannel(channelCode);
+                IMixerChannel mix = mixer.getMixerChannel(mixerChannel);
+                sound.setOut(mix);
+
+                // volume
+                mix.setLevel(getInitLevel(channelCode));
+
+                // TODO Tells the mixer more information, including the output sample rate of the microphone
+                //  (1.77 million for NSF, 44100 or 48000 for mpeg, etc.).
+            }
+
+            // Cache track number
+            ChannelParam p = new ChannelParam();
+            p.channelCode = channelCode;
+            p.mixerChannel = mixerChannel;
+            this.channels[index] = p;
+            index++;
+        }
+    }
+
+    //
+    // rendering section
+    //
+
+    @Override
+    protected int renderFrame() {
+        int ret = countNextFrame();
+        param.sampleInCurFrame = ret;
+        rate.doConvert();
+        mixerReady();
+
+        int exeCount = exeCycle.tick();
+        for (int i = 0; i < exeCount; i++) {
+            executor.tick();
+            processSounds(apuCounter.tick());
+        }
+        endFrame();
+
+        // Reading data from the mixer
+        readMixer();
+
+        return ret;
+    }
+
+    @Override
+    protected int skipFrame() {
+        int ret = countNextFrame();
+        param.sampleInCurFrame = ret;
+        rate.doConvert();
+
+        int exeCount = exeCycle.tick();
+        for (int i = 0; i < exeCount; i++) {
+            executor.tick();
+        }
+        endFrame();
+
+        return ret;
+    }
+
+    /**
+     * Reading Audio Data from the Mixer
+     */
+    private void readMixer() {
+        mixer.finishBuffer();
+        mixer.readBuffer(data, 0, data.length);
+    }
+
+    /**
+     * <p>Asks if the entire song has been rendered. Since NSF does not have
+     * an explicit node to end playback, this method will always return false.
+     * <p>If you want to set a trigger to end the playback node, you need to scan
+     * the samples returned by {@link #render(short[], int, int)} to see
+     * if they are all the same, and then determine that the NSF did not emit
+     * any sound during that period.
+     * <p>When the NSF has been rendered for several frames in a row
+     * (recommended 3 seconds, approx. 180 frames) the rendering of the song is complete.
+     * </p>
+     */
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
+
+    /**
+     * <p>Informs the mixer that the rendering of the current frame has begun.
+     * <p>This method was originally used to notify the mixer if the rendering
+     * speed needed to be changed for this frame.
+     * This method allows the mixer to prepare for this in advance by modifying
+     * the number of samples stored and thus adjusting the playback speed.
+     * </p>
+     *
+     * @since v0.2.9
+     */
+    private void mixerReady() {
+        mixer.readyBuffer();
+    }
+
+    /**
+     * All sound call sound.process(freqPerFrame);
+     */
+    private void processSounds(int freq) {
+        if (channels == null) {
+            return;
+        }
+
+        for (ChannelParam p : channels) {
+            if (p == null) {
+                continue;
+            }
+            executor.getSound(p.channelCode).process(freq);
+        }
+    }
+
+    /**
+     * All the sound calls sound.endFrame();
+     */
+    private void endFrame() {
+        if (channels == null) {
+            return;
+        }
+
+        for (ChannelParam p : channels) {
+            if (p == null) {
+                continue;
+            }
+            executor.getSound(p.channelCode).endFrame();
+        }
+    }
+
+    //
+    // Dashboard area
+    //
+
+    //
+    // The part used to control the actual playback data.
+    // Among them: control volume, control whether to play or not, control rendering components, etc.
+    //
+
+    /**
+     * @return Currently playing track number
+     * @since v0.2.8
+     */
+    @Override
+    public int getCurrentTrack() {
+        return executor.getCurrentTrack();
+    }
+
+    /**
+     * @since v0.2.8
+     */
+    @Override
+    public Set<Byte> allChannelSet() {
+        return executor.allChannelSet();
+    }
+
+    /**
+     * Setting the volume of a track
+     *
+     * @param channelCode channel number
+     * @param level       Volume. range [0, 1]
+     * @since v0.2.4
+     */
+    @Override
+    public void setLevel(byte channelCode, float level) {
+        if (level < 0) {
+            level = 0;
+        } else if (level > 1) {
+            level = 1;
+        }
+
+        int id = findMixerChannelByCode(channelCode);
+        if (id != -1) {
+            mixer.setLevel(id, level);
+        }
+    }
+
+    /**
+     * Get the volume of a channel
+     *
+     * @param channelCode channel number
+     * @return volume. range [0, 1]
+     * @throws NullPointerException When the track corresponding to <code>channelCode</code> does not exist
+     * @since v0.2.4
+     */
+    @Override
+    public float getLevel(byte channelCode) throws NullPointerException {
+        int id = findMixerChannelByCode(channelCode);
+        if (id != -1) {
+            return mixer.getLevel(id);
+        }
+        throw new NullPointerException("No " + channelCode + " corresponding track");
+    }
+
+    /**
+     * Set whether the track makes a sound or not
+     *
+     * @param channelCode channel number
+     * @param mask        false, mute the track; true, mute the track
+     * @since v0.2.4
+     */
+    @Override
+    public void setChannelMuted(byte channelCode, boolean mask) {
+        AbstractNsfSound sound = executor.getSound(channelCode);
+        if (sound != null) {
+            sound.setMuted(mask);
+        }
+    }
+
+    /**
+     * See if the track makes a sound
+     *
+     * @param channelCode channel number
+     * @return false, indicates that the track is not blocked; true, the track is blocked
+     * @throws NullPointerException When the track corresponding to <code>channelCode</code>
+     *                              does not exist
+     * @since v0.2.4
+     */
+    @Override
+    public boolean isChannelMuted(byte channelCode) throws NullPointerException {
+        return executor.getSound(channelCode).isMuted();
+    }
+
+    @Override
+    public void setSpeed(float speed) {
+        if (speed > 10) {
+            speed = 10;
+        } else if (speed < 0.1f) {
+            speed = 0.1f;
+        }
+
+        param.speed = speed;
+
+        super.resetCounterParam(frameRate, param.sampleRate);
+        apuCounter.setParam(countCycle(speed), param.sampleRate);
+        rate.onParamUpdate();
+    }
+
+    @Override
+    public float getSpeed() {
+        return param.speed;
+    }
+
+    /**
+     * Get the operator (tool class) of the mixer.
+     * This allows you to perform simple operations on the used mixer.
+     *
+     * @return channel of the mixer
+     * @since v0.2.10
+     */
+    public IMixerHandler getMixerHandler() {
+        return mixer.getHandler();
+    }
+
+    class N163ReattachListener implements IN163ReattachListener {
+
+        @Override
+        public void onReattach(int n163ChannelCount) {
+            NsfRenderer.this.n163ChannelCount = n163ChannelCount;
+            if (channelInit) {
+                return;
+            }
+
+            for (int i = 0; i < 8; i++) {
+                byte channelCode = (byte) (NesN163.CHANNEL_N163_1 + i);
+                AbstractNsfSound sound = executor.getSound(channelCode);
+                if (sound != null) {
+                    ChannelParam p = searchParam(channelCode);
+                    if (p == null) {
+                        // Create Connection
+                        int mixerChannel = mixer.allocateChannel(channelCode);
+                        IMixerChannel mix = mixer.getMixerChannel(mixerChannel);
+                        sound.setOut(mix);
+                        mix.setLevel(getInitLevel(channelCode));
+
+                        p = new ChannelParam();
+                        p.channelCode = channelCode;
+                        p.mixerChannel = mixerChannel;
+
+                        putChannelParam(p);
+                    }
+                } else {
+                    ChannelParam p = searchParam(channelCode);
+                    if (p != null) {
+                        // Delete connection
+
+                        int mixerChannel = p.mixerChannel;
+                        mixer.detach(mixerChannel);
+
+                        removeChannelParam(p);
+                    }
+                }
+            }
+        }
+
+        private ChannelParam searchParam(byte code) {
+            for (ChannelParam p : channels) {
+                if (p == null) {
+                    continue;
+                }
+                if (p.channelCode == code) {
+                    return p;
+                }
+            }
+
+            return null;
+        }
+
+        private void putChannelParam(ChannelParam p) {
+            for (int i = 0; i < channels.length; i++) {
+                if (channels[i] == null) {
+                    channels[i] = p;
+                    return;
+                }
+            }
+
+            // Arrays need to be expanded
+        }
+
+        private void removeChannelParam(ChannelParam p) {
+            for (int i = 0; i < channels.length; i++) {
+                if (channels[i] == p) {
+                    channels[i] = null;
+                    return;
+                }
+            }
+        }
+    }
+
+    private final N163ReattachListener n163lsner = new N163ReattachListener();
+
+    /**
+     * Get the volume of each track. This value should be taken
+     * from the parameter {@link NsfParameter}.
+     *
+     * @param channelCode
+     * @return
+     */
+    private float getInitLevel(byte channelCode) {
+        float level = switch (channelCode) {
+            case CHANNEL_2A03_PULSE1 -> param.levels.level2A03Pules1;
+            case CHANNEL_2A03_PULSE2 -> param.levels.level2A03Pules2;
+            case CHANNEL_2A03_TRIANGLE -> param.levels.level2A03Triangle;
+            case CHANNEL_2A03_NOISE -> param.levels.level2A03Noise;
+            case CHANNEL_2A03_DPCM -> param.levels.level2A03DPCM;
+            case CHANNEL_VRC6_PULSE1 -> param.levels.levelVRC6Pules1;
+            case CHANNEL_VRC6_PULSE2 -> param.levels.levelVRC6Pules2;
+            case CHANNEL_VRC6_SAWTOOTH -> param.levels.levelVRC6Sawtooth;
+            case CHANNEL_MMC5_PULSE1 -> param.levels.levelMMC5Pules1;
+            case CHANNEL_MMC5_PULSE2 -> param.levels.levelMMC5Pules2;
+            case CHANNEL_FDS -> param.levels.levelFDS;
+            case CHANNEL_N163_1 -> param.levels.levelN163Namco1;
+            case CHANNEL_N163_2 -> param.levels.levelN163Namco2;
+            case CHANNEL_N163_3 -> param.levels.levelN163Namco3;
+            case CHANNEL_N163_4 -> param.levels.levelN163Namco4;
+            case CHANNEL_N163_5 -> param.levels.levelN163Namco5;
+            case CHANNEL_N163_6 -> param.levels.levelN163Namco6;
+            case CHANNEL_N163_7 -> param.levels.levelN163Namco7;
+            case CHANNEL_N163_8 -> param.levels.levelN163Namco8;
+            case CHANNEL_VRC7_FM1 -> param.levels.levelVRC7FM1;
+            case CHANNEL_VRC7_FM2 -> param.levels.levelVRC7FM2;
+            case CHANNEL_VRC7_FM3 -> param.levels.levelVRC7FM3;
+            case CHANNEL_VRC7_FM4 -> param.levels.levelVRC7FM4;
+            case CHANNEL_VRC7_FM5 -> param.levels.levelVRC7FM5;
+            case CHANNEL_VRC7_FM6 -> param.levels.levelVRC7FM6;
+            case CHANNEL_S5B_SQUARE1 -> param.levels.levelS5BSquare1;
+            case CHANNEL_S5B_SQUARE2 -> param.levels.levelS5BSquare2;
+            case CHANNEL_S5B_SQUARE3 -> param.levels.levelS5BSquare3;
+            default -> 1.0f;
+        };
+
+        if (level > 1) {
+            level = 1.0f;
+        } else if (level < 0) {
+            level = 0;
+        }
+
+        return level;
+    }
+
+    /**
+     * Calculate the actual number of clocks per second after
+     * calculating the effect of the specified speed.
+     *
+     * @param speed speed
+     * @return Actual number of clocks running per second
+     */
+    private int countCycle(float speed) {
+        int cycle = executor.cycleRate();
+        if (speed != 1 && speed > 0) {
+            cycle = (int) (cycle / speed);
+        }
+        return cycle;
+    }
+
+    static class ChannelParam {
+
+        /**
+         * channel number
+         */
+        byte channelCode;
+        /**
+         * Mixer track identification number
+         */
+        int mixerChannel;
+    }
+
+    private ChannelParam[] channels;
+
+    /**
+     * According to channel number, find the track identification number in the Mixer.
+     *
+     * @param channelCode NSF-defined channel number
+     * @return Mixer track identification number
+     * @since v0.3.0
+     */
+    private int findMixerChannelByCode(byte channelCode) {
+        for (ChannelParam p : channels) {
+            if (p == null) {
+                continue;
+            }
+            if (p.channelCode == channelCode) {
+                return p.mixerChannel;
+            }
+        }
+        return -1;
+    }
 }

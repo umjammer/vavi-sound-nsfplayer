@@ -1,30 +1,29 @@
 package zdream.nsfplayer.mpeg;
 
 /**
- * <p>Mpeg 格式的音频数据帧
- * 
+ * <p>Audio data frame in Mpeg format
+ *
  * @author Zdream
- * @since v0.1
  * @date 2018-01-16
+ * @since v0.1
  */
 public class MpegFrame {
 
-	MpegFrame(MpegAudio audio, int seq) {
-		this.audio = audio;
-		this.seq = seq;
-	}
-	
-	/**
-	 * 序号
-	 */
-	public final int seq;
-	
-	/**
-	 * 属于哪个 audio 的
-	 */
-	public final MpegAudio audio;
-	
-	int offset;
-	int length;
+    MpegFrame(MpegAudio audio, int seq) {
+        this.audio = audio;
+        this.seq = seq;
+    }
 
+    /**
+     * Serial number
+     */
+    public final int seq;
+
+    /**
+     * Which audio does it belong to?
+     */
+    public final MpegAudio audio;
+
+    int offset;
+    int length;
 }

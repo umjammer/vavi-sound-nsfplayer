@@ -3,37 +3,38 @@ package zdream.nsfplayer.mixer.xgm;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.core.IResetable;
 
+
 /**
- * 合并轨道
- * 
+ * Merge Tracks
+ *
  * @author Zdream
  * @since v0.2.3
  */
 public interface IXgmMultiChannelMixer extends INsfChannelCode, IResetable {
-	
-	/**
-	 * <p>获取剩余对应类型的音频轨道实例.
-	 * <p>如果该合并轨道支持该类型, 并且还有空余的、未使用的轨道, 返回该音频管道.
-	 * </p>
-	 * @param type
-	 *   轨道类型.
-	 * @return
-	 *   音频轨道实例.
-	 *   如果该合并轨道不支持该类型的轨道, 或者没有剩余的该类型的轨道, 返回 null.
-	 */
-	public AbstractXgmAudioChannel getRemainAudioChannel(byte type);
-	
-	/**
-	 * 渲染前调用的方法
-	 */
-	public void beforeRender();
-	
-	/**
-	 * 采样数据提交
-	 * @param index
-	 * @return
-	 *   该采样的值
-	 */
-	public int render(int index);
 
+    /**
+     * <p>Get the remaining audio track instances of the corresponding type.
+     * <p>If the merged track supports the type, and there are free, unused tracks left,
+     * return the audio pipe.
+     * </p>
+     *
+     * @param type The track type.
+     * @return An audio track instance.
+     * If the merged track does not support tracks of this type,
+     * or there are no tracks of this type left, null is returned.
+     */
+    AbstractXgmAudioChannel getRemainAudioChannel(byte type);
+
+    /**
+     * Method called before rendering
+     */
+    void beforeRender();
+
+    /**
+     * Sampling data submission
+     *
+     * @param index
+     * @return The sampled value
+     */
+    int render(int index);
 }

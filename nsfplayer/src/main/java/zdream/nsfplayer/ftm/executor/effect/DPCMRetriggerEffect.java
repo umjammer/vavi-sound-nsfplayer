@@ -4,61 +4,60 @@ import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.executor.channel.ChannelDPCM;
 
+
 /**
- * <p>使 DPCM 的采样循环播放的效果.
- * 一个这样的效果实例最多只能多触发一次循环, 如果多次循环需要多次产生该效果的实例
- * <p>该效果只在 DPCM 轨道上使用
+ * <p>Make the DPCM sampling loop.
+ * An instance of this effect can only trigger one loop at most.
+ * If multiple loops are needed, multiple instances of this effect will be generated.
+ * <p>This effect is only used on DPCM tracks
  * </p>
- * 
+ *
  * @author Zdream
  * @since v0.2.3
  */
 public class DPCMRetriggerEffect implements IFtmEffect {
-	
-	/**
-	 * 循环的时长. 过多久循环一遍, 单位: 帧
-	 */
-	public final int duration;
 
-	private DPCMRetriggerEffect(int duration) {
-		this.duration = duration;
-	}
+    /**
+     * The duration of the loop. How long does it take to loop once? Unit: frame
+     */
+    public final int duration;
 
-	@Override
-	public FtmEffectType type() {
-		return FtmEffectType.RETRIGGER;
-	}
-	
-	/**
-	 * 形成一个使 DPCM 的采样循环播放的效果
-	 * @param duration
-	 *   循环时长, 范围非负数
-	 * @return
-	 *   效果实例
-	 * @throws IllegalArgumentException
-	 *   当 <code>duration</code> 不在指定范围内时
-	 */
-	public static DPCMRetriggerEffect of(int duration) throws IllegalArgumentException {
-		if (duration < 0) {
-			throw new IllegalArgumentException("循环时长 duration 必须是非负整数数值");
-		}
-		return new DPCMRetriggerEffect(duration);
-	}
+    private DPCMRetriggerEffect(int duration) {
+        this.duration = duration;
+    }
 
-	@Override
-	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		if (channelCode != INsfChannelCode.CHANNEL_2A03_DPCM) {
-			throw new IllegalStateException("修改采样起始读取位的效果只能在 DPCM 轨道上触发, 无法在 "
-					+ channelCode + " 轨道上触发.");
-		}
-		
-		ChannelDPCM ch = (ChannelDPCM) runtime.channels.get(channelCode);
-		ch.setRetrigger(duration);
-	}
-	
-	@Override
-	public String toString() {
-		return "Retrigger:" + duration;
-	}
+    @Override
+    public FtmEffectType type() {
+        return FtmEffectType.RETRIGGER;
+    }
 
+    /**
+     * Creates a looping effect of DPCM sampling
+     *
+     * @param duration Loop duration, range is non-negative
+     * @return Effect Examples
+     * @throws IllegalArgumentException When <code>duration</code> is not within the specified range
+     */
+    public static DPCMRetriggerEffect of(int duration) throws IllegalArgumentException {
+        if (duration < 0) {
+            throw new IllegalArgumentException("The loop duration must be a non-negative integer value.");
+        }
+        return new DPCMRetriggerEffect(duration);
+    }
+
+    @Override
+    public void execute(byte channelCode, FamiTrackerRuntime runtime) {
+        if (channelCode != INsfChannelCode.CHANNEL_2A03_DPCM) {
+            throw new IllegalStateException("The effect of modifying the sample start reading bit can only be" +
+                    " triggered on DPCM tracks, not on " + channelCode + " tracks.");
+        }
+
+        ChannelDPCM ch = (ChannelDPCM) runtime.channels.get(channelCode);
+        ch.setRetrigger(duration);
+    }
+
+    @Override
+    public String toString() {
+        return "Retrigger:" + duration;
+    }
 }

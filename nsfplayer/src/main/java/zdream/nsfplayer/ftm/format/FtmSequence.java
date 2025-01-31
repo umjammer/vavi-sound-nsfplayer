@@ -1,114 +1,114 @@
 package zdream.nsfplayer.ftm.format;
 
 /**
- * <p>序列. 每个乐器中音量、音调、音色的变化用数值来定量, 那么这个就是序列.
- * <p>所有的芯片类型的序列都是 FtmSequence.
- * 
+ * <p>Sequence. The changes in volume, pitch, and timbre of each instrument are quantified by numerical values,
+ * and this is a sequence.
+ * <p>The sequence of all chip types is FtmSequence.
+ *
  * @author Zdream
- * @since v0.2.0
  * @date 2018-04-25
+ * @since v0.2.0
  */
 public class FtmSequence {
-	
-	/**
-	 * <p>2A03 和 VRC6 一共有 5 类 FtmSequence
-	 * </p>
-	 */
-	public static final int SEQUENCE_COUNT = 5;
-	
-	/**
-	 * <p>FDS 只有音量 (VOLUME)、琶音 (ARPEGGIO)、音高 (PITCH) 3 类
-	 * </p>
-	 */
-	public static final int SEQUENCE_COUNT_FDS = 3;
-	
-	/**
-	 * <p>琶音设置项. {@link FtmSequenceType#ARPEGGIO} 序列的 setting 有以下三个可选值:
-	 * 
-	 * <li><b>ARP_SETTING_ABSOLUTE  绝对方式 (默认)</b>
-	 * <br>如果设置了该值, 最后产生的音键, 为当前其它状态计算得到的音键, 加上琶音的值.
-	 * <br>例如, 如果其它状态总和得到音键为 C-4, 琶音值为 3, 则最后得到的音键比 C-4 高 3 个半音, 为 D#4.
-	 * </li>
-	 * <p><li><b>ARP_SETTING_RELATIVE  相对方式</b>
-	 * <br>如果设置了该值, 第一帧产生的值的方法与绝对方式一样,
-	 * <br>但是到第二帧, 音键加上的值等于前两帧值的总和.
-	 * <br>例如, 如果其它状态总和得到音键为 C-4, 第一帧琶音值为 3, 则第一帧得到的音键比 C-4 高 3 个半音, 为 D#4.
-	 * 第二帧琶音值为 2, 则前二帧琶音值总和为 5, 得到的音键比 C-4 高 5 个半音, 为 F-4.
-	 * </li>
-	 * <p><li><b>ARP_SETTING_FIXED  修正方式</b>
-	 * <br>如果设置了该值, 则系统会忽略其它状态计算得到的音键, 转而使用琶音值作为音键.
-	 * </li></p>
-	 */
-	public static final byte
-			ARP_SETTING_ABSOLUTE = 0,
-			ARP_SETTING_FIXED = 1,
-			ARP_SETTING_RELATIVE = 2;
-	
-	/**
-	 * 类型
-	 */
-	public final FtmSequenceType type;
-	
-	/**
-	 * 循环的点位.
-	 * <br>默认 -1, 就是不循环
-	 */
-	public int loopPoint;
-	
-	/**
-	 * 释放的点位.
-	 * <br>默认 -1, 就是没有释放效果
-	 */
-	public int releasePoint;
-	
-	/**
-	 * 其它选项数据.
-	 * 只有 ARPEGGIO 会用到, 指示这个序列影响音高的方式.
-	 */
-	public byte settings;
-	
-	/**
-	 * 数据
-	 */
-	public byte[] data;
 
-	public FtmSequence(FtmSequenceType type) {
-		this.type = type;
-	}
+    /**
+     * <p>2A03 and VRC6 have 5 types of FtmSequence
+     * </p>
+     */
+    public static final int SEQUENCE_COUNT = 5;
 
-	public	void clear() {
-		loopPoint = -1;
-		releasePoint = -1;
-		settings = 0;
-		data = null;
-	}
-	
-	public int length() {
-		return (data == null) ? 0 : data.length;
-	}
-	
-	@Override
-	public String toString() {
-		StringBuilder b = new StringBuilder(60);
-		
-		if (data != null) {
-			b.append("Sequence").append('[');
-			final int length = data.length - 1;
-			for (int i = 0; i < length; i++) {
-				if (loopPoint == i) {
-					b.append("| ");
-				}
-				if (releasePoint == i) {
-					b.append("\\ ");
-				}
-				b.append(data[i]).append(' ');
-			}
-			b.append(data[length]).append(']');
-		} else {
-			b.append("Empty Sequence");
-		}
-		
-		return b.toString();
-	}
+    /**
+     * <p>FDS only has 3 types: volume (VOLUME), arpeggio (ARPEGGIO), pitch (PITCH)
+     * </p>
+     */
+    public static final int SEQUENCE_COUNT_FDS = 3;
 
+    /**
+     * <p>Arpeggio settings. {@link FtmSequenceType#ARPEGGIO} sequence setting has the following three optional values:
+     *
+     * <li><b>ARP_SETTING_ABSOLUTE  Absolute mode (default)</b>
+     * <br>If this value is set, the final key produced is the key calculated from the current state plus the value of the arpeggio.
+     * <br>For example, if the sum of the other states gives a key of C-4, and the arpeggio value is 3, then the final key is 3 semitones higher than C-4, which is D#4.
+     * </li>
+     * <p><li><b>ARP_SETTING_RELATIVE  Relative mode</b>
+     * <br>If this value is set, the value generated in the first frame is the same as the absolute value.
+     * <br>But in the second frame, the value added by the key is equal to the sum of the values of the previous two frames.
+     * <br>For example, if the sum of the other states is C-4, and the first frame arpeggio value is 3, then the first frame's key is 3 semitones higher than C-4, which is D#4.
+     * The second frame's arpeggio value is 2, and the sum of the first two frames' arpeggio values is 5, and the key is 5 semitones higher than C-4, which is F-4.
+     * </li>
+     * <p><li><b>ARP_SETTING_FIXED  Correction method</b>
+     * <br>If this value is set, the system will ignore the key calculated in other states and use the arpeggio value as the key instead.
+     * </li></p>
+     */
+    public static final byte
+            ARP_SETTING_ABSOLUTE = 0,
+            ARP_SETTING_FIXED = 1,
+            ARP_SETTING_RELATIVE = 2;
+
+    /**
+     * type
+     */
+    public final FtmSequenceType type;
+
+    /**
+     * Cycle points.
+     * <br>The default is -1, which means no looping.
+     */
+    public int loopPoint;
+
+    /**
+     * Release point.
+     * <br>The default value is -1, which means no release effect.
+     */
+    public int releasePoint;
+
+    /**
+     * Other optional data.
+     * Only used by ARPEGGIO, indicates how this sequence affects the pitch.
+     */
+    public byte settings;
+
+    /**
+     * data
+     */
+    public byte[] data;
+
+    public FtmSequence(FtmSequenceType type) {
+        this.type = type;
+    }
+
+    public void clear() {
+        loopPoint = -1;
+        releasePoint = -1;
+        settings = 0;
+        data = null;
+    }
+
+    public int length() {
+        return (data == null) ? 0 : data.length;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder(60);
+
+        if (data != null) {
+            b.append("Sequence").append('[');
+            int length = data.length - 1;
+            for (int i = 0; i < length; i++) {
+                if (loopPoint == i) {
+                    b.append("| ");
+                }
+                if (releasePoint == i) {
+                    b.append("\\ ");
+                }
+                b.append(data[i]).append(' ');
+            }
+            b.append(data[length]).append(']');
+        } else {
+            b.append("Empty Sequence");
+        }
+
+        return b.toString();
+    }
 }

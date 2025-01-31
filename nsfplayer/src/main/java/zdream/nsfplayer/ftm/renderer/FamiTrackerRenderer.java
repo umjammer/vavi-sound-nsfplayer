@@ -1,7 +1,5 @@
 package zdream.nsfplayer.ftm.renderer;
 
-import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
-
 import java.util.Set;
 
 import zdream.nsfplayer.core.AbstractNsfRenderer;
@@ -23,803 +21,794 @@ import zdream.nsfplayer.mixer.ISoundMixer;
 import zdream.nsfplayer.mixer.xgm.XgmMixerConfig;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
+import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
+
+
 /**
- * <p>默认 FamiTracker 部分的音频渲染器.
- * <p>来源于原 C++ 工程的 SoundGen 类.
- * <p>该渲染器是线程不安全的, 请注意不要在渲染途中设置参数.
+ * <p>Default FamiTracker audio renderer.
+ * <p>SoundGen class from the original C++ project.
+ * <p>This renderer is not thread-safe, please be careful not to set parameters during rendering.
  * </p>
- * 
- * @version <b>v0.2.4</b>
- * <br>抽出抽象渲染器, 将部分方法移交至父类抽象渲染器中.
- *   
- * @version <b>v0.3.0</b>
- * <br>将原来执行相关的构件移至 {@link FamiTrackerExecutor} 中.
- * 
+ *
  * @author Zdream
+ * @version <b>v0.3.0</b>
+ * <br>Move the original execution-related components to {@link FamiTrackerExecutor}.
  * @since v0.2.1
  */
 public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
-	
-	/**
-	 * 执行器
-	 */
-	private final FamiTrackerExecutor executor = new FamiTrackerExecutor();
-	
-	/**
-	 * 速率转换器
-	 */
-	private final NsfRateConverter rate;
-	
-	/**
-	 * 音频混音器
-	 */
-	private ISoundMixer mixer;
-	
-	private FamiTrackerConfig config;
-	
-	private NsfCommonParameter param = new NsfCommonParameter();
-	
-	/**
-	 * 利用默认配置产生一个音频渲染器
-	 */
-	public FamiTrackerRenderer() {
-		this(null);
-	}
-	
-	public FamiTrackerRenderer(FamiTrackerConfig config) {
-		if (config == null) {
-			this.config = new FamiTrackerConfig();
-		} else {
-			this.config = config.clone();
-		}
-		
-		// 采样率数据只有渲染构建需要
-		param.sampleRate = this.config.sampleRate;
-		
-		// 音量参数只有渲染构建需要
-		param.levels.copyFrom(this.config.channelLevels);
-		
-		rate = new NsfRateConverter(param);
-		initMixer();
-	}
-	
-	private void initMixer() {
-		IMixerConfig mixerConfig = config.mixerConfig;
-		if (mixerConfig == null) {
-			mixerConfig = new XgmMixerConfig();
-		}
-		
-		this.mixer = NsfPlayerApplication.app.mixerFactory.create(mixerConfig, param);
-	}
-	
-	/* **********
-	 * 准备部分 *
-	 ********** */
-	
-	/**
-	 * <p>让该渲染器读取对应的 audio 数据.
-	 * <p>设置播放暂停位置为第 1 个曲目 (曲目 0) 的第一段 (段 0)
-	 * </p>
-	 * @param audio
-	 */
-	public void ready(FtmAudio audio) throws NsfPlayerException {
-		ready(audio, 0, 0, 0);
-	}
-	
-	/**
-	 * <p>让该渲染器读取对应的 audio 数据.
-	 * <p>设置播放暂停位置为指定曲目的第一段 (段 0)
-	 * </p>
-	 * @param audio
-	 * @param track
-	 *   曲目号, 从 0 开始
-	 */
-	public void ready(FtmAudio audio, int track) throws NsfPlayerException {
-		ready(audio, track, 0, 0);
-	}
-	
-	/**
-	 * <p>让该渲染器读取对应的 audio 数据.
-	 * <p>设置播放暂停位置为指定曲目的指定段
-	 * </p>
-	 * @param audio
-	 * @param track
-	 *   曲目号, 从 0 开始
-	 * @param section
-	 *   段号, 从 0 开始
-	 */
-	public void ready(
-			FtmAudio audio,
-			int track,
-			int section)
-			throws NsfPlayerException {
-		ready(audio, track, section, 0);
-	}
-	
-	/**
-	 * <p>让该渲染器读取对应的 audio 数据.
-	 * <p>设置播放暂停位置为指定曲目的指定行
-	 * </p>
-	 * @param audio
-	 * @param track
-	 *   曲目号, 从 0 开始
-	 * @param section
-	 *   段号, 从 0 开始
-	 * @param row
-	 *   行号, 从 0 开始
-	 * @since v0.3.1
-	 */
-	public void ready(
-			FtmAudio audio,
-			int track,
-			int section,
-			int row)
-			throws NsfPlayerException {
-		executor.ready(audio, track, section, row);
-		
-		// 重置播放相关的数据
-		int frameRate = executor.getFrameRate();
-		resetCounterParam(frameRate, param.sampleRate);
-		clearBuffer();
-		rate.onParamUpdate(frameRate, BASE_FREQ_NTSC);
-		
-		reloadMixer();
-		connectChannels();
-	}
-	
-	/**
-	 * <p>在不更改 Ftm 音频的同时, 重置当前曲目, 让播放的位置重置到曲目开头
-	 * <p>第一次播放时需要指定 Ftm 音频数据.
-	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
-	 * </p>
-	 * @throws NullPointerException
-	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
-	 */
-	public void ready() throws NsfPlayerException {
-		executor.ready();
-		resetMixer();
-	}
-	
-	/**
-	 * <p>在不更改 Ftm 文件的同时, 切换到指定曲目的开头.
-	 * <p>第一次播放时需要指定 Ftm 音频数据.
-	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
-	 * </p>
-	 * @param track
-	 *   曲目号, 从 0 开始
-	 * @throws NullPointerException
-	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
-	 */
-	public void ready(int track) throws NsfPlayerException {
-		ready(track, 0, 0);
-	}
-	
-	/**
-	 * <p>在不更改 Ftm 文件的同时, 切换曲目、段号
-	 * <p>第一次播放时需要指定 Ftm 音频数据.
-	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
-	 * </p>
-	 * @param track
-	 *   曲目号, 从 0 开始
-	 * @param section
-	 *   段号, 从 0 开始
-	 * @throws NullPointerException
-	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
-	 */
-	public void ready(int track, int section) throws NsfPlayerException {
-		ready(track, section, 0);
-	}
-	
-	/**
-	 * <p>在不更改 Ftm 文件的同时, 切换曲目、段号、行号
-	 * <p>第一次播放时需要指定 Ftm 音频数据.
-	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
-	 * </p>
-	 * @param track
-	 *   曲目号, 从 0 开始
-	 * @param section
-	 *   段号, 从 0 开始
-	 * @param row
-	 *   行号, 从 0 开始
-	 * @throws NullPointerException
-	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
-	 * @since v0.3.1
-	 */
-	public void ready(int track, int section, int row) throws NsfPlayerException {
-		executor.ready(track, section, row);
-		resetMixer();
-	}
-	
-	/**
-	 * <p>在不更改 Ftm 文件、曲目号的同时, 切换段号、行号
-	 * <p>第一次播放时需要指定 Ftm 音频数据.
-	 * @param pos
-	 *   播放位置, 不为 null
-	 * @throws NullPointerException
-	 *   当调用该方法前未指定 {@link FtmAudio} 音频时, 或 pos == null 时
-	 * @since v0.3.1
-	 */
-	public void ready(FtmPosition pos) {
-		executor.ready(pos);
-		resetMixer();
-	}
-	
-	/**
-	 * <p>不改变各个轨道参数的情况下, 切换到指定播放位置.
-	 * 切换时, 各轨道的播放音高、音量、效果等均不改变, 这也包括延迟效果 Gxx.
-	 * 混音器不会重置, 这也意味着上一帧播放的音可能继续延长播放下去.
-	 * 而 FTM 文档的播放速度（不是播放速度 speed）会重新根据 tempo 等数值重置.
-	 * <p>请谨慎使用该方法. 如果前面使用了颤音 4xy 或者其它效果, 而没有消除时,
-	 * 切换位置后, 这些效果会仍然保留下来, 导致后面播放会很奇怪.
-	 * 如果想使用更加稳健的方式切换播放位置, 而不会使播放效果发生较大变化,
-	 * 请使用 {@link #ready(int, int)} 或 {@link #skip(int)} 方法.
-	 * <p>需要在调用前确定该渲染器已经成功加载了 {@link FtmAudio} 音频.
-	 * </p>
-	 * @param track
-	 *   曲目号, 从 0 开始
-	 * @param section
-	 *   段号, 从 0 开始
-	 * @throws NullPointerException
-	 *   当调用该方法前未成功加载 {@link FtmAudio} 音频时
-	 * @see #ready(int, int)
-	 * @see #skip(int)
-	 * @since v0.2.9
-	 */
-	public void switchTo(int track, int section) {
-		executor.switchTo(track, section);
-	}
-	
-	/**
-	 * <p>不改变各个轨道参数的情况下, 切换到指定播放位置.
-	 * 切换时, 各轨道的播放音高、音量、效果等均不改变, 这也包括延迟效果 Gxx.
-	 * 混音器不会重置, 这也意味着上一帧播放的音可能继续延长播放下去.
-	 * 而 FTM 文档的播放速度（不是播放速度 speed）会重新根据 tempo 等数值重置.
-	 * <p>请谨慎使用该方法. 如果前面使用了颤音 4xy 或者其它效果, 而没有消除时,
-	 * 切换位置后, 这些效果会仍然保留下来, 导致后面播放会很奇怪.
-	 * 如果想使用更加稳健的方式切换播放位置, 而不会使播放效果发生较大变化,
-	 * 请使用 {@link #ready(int, int)} 或 {@link #skip(int)} 方法.
-	 * <p>需要在调用前确定该渲染器已经成功加载了 {@link FtmAudio} 音频.
-	 * </p>
-	 * @param track
-	 *   曲目号, 从 0 开始
-	 * @param section
-	 *   段号, 从 0 开始
-	 * @param row
-	 *   行号, 从 0 开始
-	 * @throws NullPointerException
-	 *   当调用该方法前未成功加载 {@link FtmAudio} 音频时
-	 * @see #ready(int, int)
-	 * @see #skip(int)
-	 * @since v0.3.1
-	 */
-	public void switchTo(int track, int section, int row) {
-		executor.switchTo(track, section, row);
-	}
-	
-	/* **********
-	 * 渲染部分 *
-	 ********** */
-	
-	/**
-	 * <p>渲染一帧.
-	 * <p>这个方法在 v0.3.0 版本中有了新的解释, 即: 执行构件执行一帧, 渲染构件也执行一帧.
-	 * </p>
-	 * @return
-	 *   本函数已渲染的采样数 (按单声道计算)
-	 */
-	protected int renderFrame() {
-		int ret = countNextFrame();
-		param.sampleInCurFrame = ret;
-		rate.doConvert();
-		mixer.readyBuffer();
-		
-		handleDelay();
-		executor.tick();
-		triggerSounds();
-		
-		// 从 mixer 中读取数据
-		readMixer();
-		
-		return ret;
-	}
-	
-	/**
-	 * <p>跳过一帧.
-	 * <p>这个方法在 v0.3.0 版本中有了新的解释, 即: 执行构件执行一帧, 渲染构件不执行.
-	 * </p>
-	 * @return
-	 *   本函数已跳过的采样数 (按单声道计算)
-	 */
-	protected int skipFrame() {
-		int ret = countNextFrame();
-		param.sampleInCurFrame = ret;
-		rate.doConvert();
 
-		executor.tick();
-		
-		return ret;
-	}
-	
-	/**
-	 * <p>询问是否已经播放完毕
-	 * <p>如果已经播放完毕的 Ftm 音频尝试再调用 {@link #render(byte[], int, int)}
-	 * 或者 {@link #renderOneFrame(byte[], int, int)}, 则会忽略停止符号,
-	 * 强制再向下播放.
-	 * </p>
-	 * @return
-	 */
-	public boolean isFinished() {
-		return executor.isFinished();
-	}
+    /**
+     * Actuator
+     */
+    private final FamiTrackerExecutor executor = new FamiTrackerExecutor();
 
-	/* **********
-	 * 仪表盘区 *
-	 ********** */
-	/*
-	 * 用于控制实际播放数据的部分.
-	 * 其中有: 控制音量、控制是否播放
-	 */
-	
-	/**
-	 * <p>询问当前帧是否更新了行.
-	 * <p>无论是手动切换执行位置, 还是执行器自动切换下一行,
-	 * 均认为是更新了行
-	 * </p>
-	 * @return
-	 *   true, 如果当前帧更新了行
-	 * @since v0.3.1
-	 */
-	public boolean isRowUpdated() {
-		return executor.isRowUpdated();
-	}
-	
-	/**
-	 * @return
-	 *   获取正在播放的曲目号
-	 */
-	public int getCurrentTrack() {
-		return executor.getCurrentTrack();
-	}
+    /**
+     * Rate Converter
+     */
+    private final NsfRateConverter rate;
 
-	/**
-	 * @return
-	 *   获取正在播放的段号
-	 */
-	public int getCurrentSection() {
-		return executor.getCurrentSection();
-	}
-	
-	/**
-	 * @return
-	 *   获取正在播放的行号
-	 */
-	public int getCurrentRow() {
-		return executor.getCurrentRow();
-	}
-	
-	/**
-	 * @return
-	 *   获取正在执行的位置
-	 * @since v0.3.1
-	 */
-	public FtmPosition currentPosition() {
-		return executor.currentPosition();
-	}
-	
-	/**
-	 * 询问当前行是否播放完毕, 需要跳到下一行 (不是询问当前帧是否播放完)
-	 * @return
-	 *   true, 如果当前行已经播放完毕
-	 * @since v0.2.2
-	 */
-	public boolean currentRowRunOut() {
-		return executor.currentRowRunOut();
-	}
+    /**
+     * Audio Mixer
+     */
+    private ISoundMixer mixer;
 
-	/**
-	 * <p>获取如果跳到下一行（不是下一帧）, 跳到的位置所对应的段号.
-	 * <p>如果侦测到有跳转的效果正在触发, 按触发后的结果返回.
-	 * </p>
-	 * @return
-	 *   下一行对应的段号
-	 * @since v0.2.9
-	 */
-	public int getNextSection() {
-		return executor.getNextSection();
-	}
-	
-	/**
-	 * <p>获取如果跳到下一行（不是下一帧）, 跳到的位置.
-	 * <p>如果侦测到有跳转的效果正在触发, 按触发后的结果返回.
-	 * </p>
-	 * @return
-	 *   获取下一行执行的位置
-	 * @since v0.3.1
-	 */
-	public FtmPosition nextPosition() {
-		return executor.nextPosition();
-	}
-	
-	/**
-	 * <p>获取如果跳到下一行（不是下一帧）, 跳到的位置所对应的行号.
-	 * <p>如果侦测到有跳转的效果正在触发, 按触发后的结果返回.
-	 * </p>
-	 * @return
-	 *   下一行对应的段号
-	 * @since v0.2.9
-	 */
-	public int getNextRow() {
-		return executor.getNextRow();
-	}
-	
-	/**
-	 * 返回所有的轨道号的集合. 轨道号的参数在 {@link INsfChannelCode} 里面写出
-	 * @return
-	 *   所有的轨道号的集合. 如果没有调用 ready(...) 方法时, 返回空集合.
-	 * @since v0.2.2
-	 */
-	public Set<Byte> allChannelSet() {
-		return executor.allChannelSet();
-	}
-	
-	/**
-	 * 设置某个轨道的音量
-	 * @param channelCode
-	 *   轨道号
-	 * @param level
-	 *   音量. 范围 [0, 1]
-	 * @since v0.2.2
-	 */
-	public void setLevel(byte channelCode, float level) {
-		if (level < 0) {
-			level = 0;
-		} else if (level > 1) {
-			level = 1;
-		}
-		
-		int id = findMixerChannelByCode(channelCode);
-		if (id != -1) {
-			mixer.setLevel(id, level);
-		}
-	}
-	
-	/**
-	 * 获得某个轨道的音量
-	 * @param channelCode
-	 *   轨道号
-	 * @return
-	 *   音量. 范围 [0, 1]
-	 * @throws NullPointerException
-	 *   当不存在 <code>channelCode</code> 对应的轨道时
-	 * @since v0.2.3
-	 */
-	public float getLevel(byte channelCode) throws NullPointerException {
-		int id = findMixerChannelByCode(channelCode);
-		if (id != -1) {
-			return mixer.getLevel(id);
-		}
-		throw new NullPointerException("不存在 " + channelCode + " 对应的轨道");
-	}
-	
-	/**
-	 * 设置轨道是否发出声音
-	 * @param channelCode
-	 *   轨道号
-	 * @param muted
-	 *   false, 使该轨道发声; true, 则静音
-	 * @since v0.2.2
-	 */
-	public void setChannelMuted(byte channelCode, boolean muted) {
-		AbstractNsfSound sound = executor.getSound(channelCode);
-		if (sound != null) {
-			sound.setMuted(muted);
-		}
-	}
-	
-	/**
-	 * 查看轨道是否能发出声音
-	 * @param channelCode
-	 *   轨道号
-	 * @return
-	 *   false, 说明该轨道没有被屏蔽; true, 则已经被屏蔽
-	 * @throws NullPointerException
-	 *   当不存在 <code>channelCode</code> 对应的轨道时
-	 * @since v0.2.3
-	 */
-	public boolean isChannelMuted(byte channelCode) throws NullPointerException {
-		return executor.getSound(channelCode).isMuted();
-	}
-	
-	@Override
-	public void setSpeed(float speed) {
-		if (speed > 10) {
-			speed = 10;
-		} else if (speed < 0.1f) {
-			speed = 0.1f;
-		}
-		
-		param.speed = speed;
-		
-		int frameRate = executor.getFrameRate();
-		resetCounterParam(frameRate, param.sampleRate);
-		rate.onParamUpdate();
-	}
-	
-	@Override
-	public float getSpeed() {
-		return param.speed;
-	}
-	
-	/**
-	 * 获得混音器的操作者（工具类）. 通过它可以对所使用的混音器进行简单的操作.
-	 * @return
-	 *   混音器的操作者
-	 * @since v0.2.10
-	 */
-	public IMixerHandler getMixerHandler() {
-		return mixer.getHandler();
-	}
-	
-	/* **********
-	 *  初始化  *
-	 ********** */
-	
-	/**
-	 * 初始化 / 重置音频合成器 (混音器)
-	 */
-	private void reloadMixer() {
-		mixer.detachAll();
-		mixer.reset();
-	}
-	
-	/**
-	 * <p>将执行构件中的发声器取出, 与混音器相连接.
-	 * </p>
-	 */
-	private void connectChannels() {
-		Set<Byte> channels = executor.allChannelSet();
-		this.channels = new ChannelParam[channels.size()];
-		
-		int index = 0;
-		int mixerChannel = -1;
-		for (byte channelCode: channels) {
-			AbstractNsfSound sound = executor.getSound(channelCode);
-			if (sound != null) {
-				mixerChannel = mixer.allocateChannel(channelCode);
-				IMixerChannel mix = mixer.getMixerChannel(mixerChannel);
-				sound.setOut(mix);
-				
-				// 音量
-				mix.setLevel(getInitLevel(channelCode));
-				
-				// TODO 告诉混音器更多的信息, 包括发声器的输出采样率 (NSF 的为 177万, mpeg 的为 44100 或 48000 等)
-				
-			}
-			
-			// channel param
-			ChannelParam p = new ChannelParam();
-			this.channels[index] = p;
-			p.channelCode = channelCode;
-			p.delay = index * 100;
-			p.mixerChannel = mixerChannel;
-			
-			index++;
-		}
-	}
-	
-	/**
-	 * 获得某个轨道的原始音量. 这个值要从 {@link FamiTrackerParameter} 中取
-	 * @param channelCode
-	 *   轨道号
-	 * @return
-	 *   范围 [0, 1]
-	 * @since v0.2.4
-	 */
-	private float getInitLevel(byte channelCode) {
-		float level = 0;
-		switch (channelCode) {
-		case CHANNEL_2A03_PULSE1: level = config.channelLevels.level2A03Pules1; break;
-		case CHANNEL_2A03_PULSE2: level = config.channelLevels.level2A03Pules2; break;
-		case CHANNEL_2A03_TRIANGLE: level = config.channelLevels.level2A03Triangle; break;
-		case CHANNEL_2A03_NOISE: level = config.channelLevels.level2A03Noise; break;
-		case CHANNEL_2A03_DPCM: level = config.channelLevels.level2A03DPCM; break;
+    private final FamiTrackerConfig config;
 
-		case CHANNEL_VRC6_PULSE1: level = config.channelLevels.levelVRC6Pules1; break;
-		case CHANNEL_VRC6_PULSE2: level = config.channelLevels.levelVRC6Pules2; break;
-		case CHANNEL_VRC6_SAWTOOTH: level = config.channelLevels.levelVRC6Sawtooth; break;
+    private final NsfCommonParameter param = new NsfCommonParameter();
 
-		case CHANNEL_MMC5_PULSE1: level = config.channelLevels.levelMMC5Pules1; break;
-		case CHANNEL_MMC5_PULSE2: level = config.channelLevels.levelMMC5Pules2; break;
-		
-		case CHANNEL_FDS: level = config.channelLevels.levelFDS; break;
-		
-		case CHANNEL_N163_1: level = config.channelLevels.levelN163Namco1; break;
-		case CHANNEL_N163_2: level = config.channelLevels.levelN163Namco2; break;
-		case CHANNEL_N163_3: level = config.channelLevels.levelN163Namco3; break;
-		case CHANNEL_N163_4: level = config.channelLevels.levelN163Namco4; break;
-		case CHANNEL_N163_5: level = config.channelLevels.levelN163Namco5; break;
-		case CHANNEL_N163_6: level = config.channelLevels.levelN163Namco6; break;
-		case CHANNEL_N163_7: level = config.channelLevels.levelN163Namco7; break;
-		case CHANNEL_N163_8: level = config.channelLevels.levelN163Namco8; break;
-		
-		case CHANNEL_VRC7_FM1: level = config.channelLevels.levelVRC7FM1; break;
-		case CHANNEL_VRC7_FM2: level = config.channelLevels.levelVRC7FM2; break;
-		case CHANNEL_VRC7_FM3: level = config.channelLevels.levelVRC7FM3; break;
-		case CHANNEL_VRC7_FM4: level = config.channelLevels.levelVRC7FM4; break;
-		case CHANNEL_VRC7_FM5: level = config.channelLevels.levelVRC7FM5; break;
-		case CHANNEL_VRC7_FM6: level = config.channelLevels.levelVRC7FM6; break;
-		
-		case CHANNEL_S5B_SQUARE1: level = config.channelLevels.levelS5BSquare1; break;
-		case CHANNEL_S5B_SQUARE2: level = config.channelLevels.levelS5BSquare2; break;
-		case CHANNEL_S5B_SQUARE3: level = config.channelLevels.levelS5BSquare3; break;
-		
-		default: level = 1.0f; break;
-		}
-		
-		if (level > 1) {
-			level = 1.0f;
-		} else if (level < 0) {
-			level = 0;
-		}
-		
-		return level;
-	}
-	
-	/**
-	 * <p>处理延迟写. 后一个轨道比前一个轨道晚 100 时钟写入数据.
-	 * <p>由于每个轨道的触发时间不同可以有效避免轨道之间共振情况的发生,
-	 * 因此这里需要采用轨道先后写入数据的方式.
-	 * <p>在版本 v0.2.9 与 v0.2.10 时, 延迟写是由 AbstractFtmChannel 完成的.
-	 * 现在由于执行构件的分离, 延迟写的任务现在由渲染器承担.
-	 * </p>
-	 * @see #triggerSounds()
-	 * @since v0.3.0
-	 */
-	private void handleDelay() {
-		for (int i = 0; i < channels.length; i++) {
-			ChannelParam p = channels[i];
-			
-			byte channelCode = p.channelCode;
-			AbstractNsfSound s = executor.getSound(channelCode);
-			s.process(p.delay);
-		}
-	}
-	
-	/**
-	 * <p>让发声器逐个进行工作.
-	 * <p>工作的时钟数, 为该帧需要工作的时钟数, 减去延迟时钟数.
-	 * </p>
-	 * @see #handleDelay()
-	 * @since v0.3.0
-	 */
-	private void triggerSounds() {
-		final int clock = param.freqPerFrame;
-		for (int i = 0; i < channels.length; i++) {
-			ChannelParam p = channels[i];
-			
-			byte channelCode = p.channelCode;
-			AbstractNsfSound s = executor.getSound(channelCode);
-			s.process(clock - p.delay);
-			s.endFrame();
-		}
-	}
-	
-	/**
-	 * 重置 Mixer
-	 */
-	private void resetMixer() {
-		mixer.reset();
-	}
-	
-	/**
-	 * 从 Mixer 中读取音频数据
-	 */
-	private void readMixer() {
-		mixer.finishBuffer();
-		mixer.readBuffer(data, 0, data.length);
-	}
-	
-	class ChannelParam {
-		/**
-		 * 轨道号
-		 */
-		byte channelCode;
-		/**
-		 * 延迟写时钟数
-		 */
-		int delay;
-		/**
-		 * Mixer 轨道标识号
-		 */
-		int mixerChannel;
-	}
-	private ChannelParam[] channels;
-	
-	/**
-	 * 根据轨道号, 找到 Mixer 中的轨道标识号
-	 * @param channelCode
-	 *   NSF 定义的轨道号
-	 * @return
-	 *   Mixer 的轨道标识号
-	 * @since v0.3.0
-	 */
-	private int findMixerChannelByCode(byte channelCode) {
-		for (ChannelParam p : channels) {
-			if (p == null) {
-				continue;
-			}
-			if (p.channelCode == channelCode) {
-				return p.mixerChannel;
-			}
-		}
-		return -1;
-	}
-	
+    /**
+     * Generate an audio renderer using the default configuration
+     */
+    public FamiTrackerRenderer() {
+        this(null);
+    }
 
-	
-	/* **********
-	 *  监听器  *
-	 ********** */
-	
-	/**
-	 * 添加获取音键的监听器
-	 * @param l
-	 *   获取音键的监听器
-	 * @throws NullPointerException
-	 *   当监听器 <code>l == null</code> 时
-	 * @since v0.3.0
-	 */
-	public void addFetchListener(IFtmFetchListener l) {
-		executor.addFetchListener(l);
-	}
-	
-	/**
-	 * 移除获取音键的监听器
-	 * @param l
-	 *   移除音键的监听器
-	 * @since v0.3.0
-	 */
-	public void removeFetchListener(IFtmFetchListener l) {
-		executor.removeFetchListener(l);
-	}
-	
-	/**
-	 * 清空所有获取音键的监听器
-	 * @since v0.3.0
-	 */
-	public void clearFetchListener() {
-		executor.clearFetchListener();
-	}
-	
-	/**
-	 * 添加执行结束的监听器.
-	 * 该监听器会在效果执行结束, 但还未写入 sound 时唤醒.
-	 * @param l
-	 *   执行结束的监听器
-	 * @throws NullPointerException
-	 *   当监听器 <code>l == null</code> 时
-	 * @since v0.3.0
-	 */
-	public void addExecuteFinishedListener(IFtmExecutedListener l) {
-		executor.addExecuteFinishedListener(l);
-	}
-	
-	/**
-	 * 移除执行结束的监听器
-	 * @param l
-	 *   执行结束的监听器
-	 * @since v0.3.0
-	 */
-	public void removeExecuteFinishedListener(IFtmExecutedListener l) {
-		executor.removeExecuteFinishedListener(l);
-	}
-	
-	/**
-	 * 清空所有执行结束的监听器
-	 * @since v0.3.0
-	 */
-	public void clearExecuteFinishedListener() {
-		executor.clearExecuteFinishedListener();
-	}
-	
+    public FamiTrackerRenderer(FamiTrackerConfig config) {
+        if (config == null) {
+            this.config = new FamiTrackerConfig();
+        } else {
+            this.config = config.clone();
+        }
+
+        // Sampling rate data is only needed for rendering builds
+        param.sampleRate = this.config.sampleRate;
+
+        // The volume parameter is only needed for rendering builds
+        param.levels.copyFrom(this.config.channelLevels);
+
+        rate = new NsfRateConverter(param);
+        initMixer();
+    }
+
+    private void initMixer() {
+        IMixerConfig mixerConfig = config.mixerConfig;
+        if (mixerConfig == null) {
+            mixerConfig = new XgmMixerConfig();
+        }
+
+        this.mixer = NsfPlayerApplication.app.mixerFactory.create(mixerConfig, param);
+    }
+
+    /*
+     * Preparation
+     */
+
+    /**
+     * <p>Let the renderer read the corresponding audio data.
+     * <p>Set the playback pause position to the first segment (segment 0) of the first track (track 0)
+     * </p>
+     *
+     * @param audio
+     */
+    @Override
+    public void ready(FtmAudio audio) throws NsfPlayerException {
+        ready(audio, 0, 0, 0);
+    }
+
+    /**
+     * <p>Let the renderer read the corresponding audio data.
+     * <p>Set the playback pause position to the first segment of the specified track (segment 0)
+     * </p>
+     *
+     * @param audio
+     * @param track number, starting from 0
+     */
+    @Override
+    public void ready(FtmAudio audio, int track) throws NsfPlayerException {
+        ready(audio, track, 0, 0);
+    }
+
+    /**
+     * <p>Let the renderer read the corresponding audio data.
+     * <p>Set the playback pause position to the specified segment of the specified track
+     * </p>
+     *
+     * @param audio
+     * @param track   Track number, starting from 0
+     * @param section Segment number, starting from 0
+     */
+    public void ready(
+            FtmAudio audio,
+            int track,
+            int section)
+            throws NsfPlayerException {
+        ready(audio, track, section, 0);
+    }
+
+    /**
+     * <p>Let the renderer read the corresponding audio data.
+     * <p>Set the playback pause position to the specified line of the specified track
+     * </p>
+     *
+     * @param audio
+     * @param track   Track number, starting from 0
+     * @param section Segment number, starting from 0
+     * @param row     Line number, starting from 0
+     * @since v0.3.1
+     */
+    public void ready(
+            FtmAudio audio,
+            int track,
+            int section,
+            int row)
+            throws NsfPlayerException {
+        executor.ready(audio, track, section, row);
+
+        // Reset playback related data
+        int frameRate = executor.getFrameRate();
+        resetCounterParam(frameRate, param.sampleRate);
+        clearBuffer();
+        rate.onParamUpdate(frameRate, BASE_FREQ_NTSC);
+
+        reloadMixer();
+        connectChannels();
+    }
+
+    /**
+     * <p>Reset the current track without changing the Ftm audio,
+     * so that the playback position is reset to the beginning of the track
+     * <p>The Ftm audio data needs to be specified when playing for the first time.
+     * Therefore, the first time you need to call the overloaded method with the {@link FtmAudio} parameter
+     * </p>
+     *
+     * @throws NullPointerException When {@link FtmAudio} audio is not specified before calling this method
+     */
+    public void ready() throws NsfPlayerException {
+        executor.ready();
+        resetMixer();
+    }
+
+    /**
+     * <p>Switch to the beginning of the specified track without changing the Ftm file.
+     * <p>The Ftm audio data needs to be specified when playing for the first time.
+     * Therefore, the first time you need to call the overloaded method with the {@link FtmAudio} parameter
+     * </p>
+     *
+     * @param track Track number, starting from 0
+     * @throws NullPointerException When {@link FtmAudio} audio is not specified before calling this method
+     */
+    @Override
+    public void ready(int track) throws NsfPlayerException {
+        ready(track, 0, 0);
+    }
+
+    /**
+     * <p>Switch tracks and segment numbers without changing the Ftm file
+     * <p>The Ftm audio data needs to be specified when playing for the first time.
+     * Therefore, the first time you need to call the overloaded method with the {@link FtmAudio} parameter
+     * </p>
+     *
+     * @param track   Track number, starting from 0
+     * @param section Segment number, starting from 0
+     * @throws NullPointerException When {@link FtmAudio} audio is not specified before calling this method
+     */
+    public void ready(int track, int section) throws NsfPlayerException {
+        ready(track, section, 0);
+    }
+
+    /**
+     * <p>Switch tracks and segment numbers without changing the Ftm file, line number
+     * <p>The Ftm audio data needs to be specified when playing for the first time.
+     * Therefore, the first time you need to call the overloaded method with the {@link FtmAudio} parameter
+     * </p>
+     *
+     * @param track   Track number, starting from 0
+     * @param section Segment number, starting from 0
+     * @param row     Line number, starting from 0
+     * @throws NullPointerException When {@link FtmAudio} audio is not specified before calling this method
+     * @since v0.3.1
+     */
+    public void ready(int track, int section, int row) throws NsfPlayerException {
+        executor.ready(track, section, row);
+        resetMixer();
+    }
+
+    /**
+     * <p>Switch the segment number and line number without changing the Ftm file or track number
+     * <p>The Ftm audio data needs to be specified when playing for the first time.
+     *
+     * @param pos the playback position, not null
+     * @throws NullPointerException When {@link FtmAudio} audio is not specified before calling this method,or pos == null
+     * @since v0.3.1
+     */
+    public void ready(FtmPosition pos) {
+        executor.ready(pos);
+        resetMixer();
+    }
+
+    /**
+     * <p>Switch to the specified playback position without changing the parameters of each track.
+     * When switching, the playback pitch, volume, effects, etc. of each track will not change,
+     * including the delay effect Gxx.
+     * The mixer is not reset, which means that the sound played in the previous frame may continue
+     * to play for an extended period of time.
+     * The playback speed of the FTM document (not the playback speed) will be reset according
+     * to the tempo and other values.
+     * <p>Please use this method with caution. If you used tremolo 4xy or other effects before and
+     * did not eliminate them, these effects will still remain after switching positions,
+     * causing strange playback later.
+     * If you want to use a more robust way to switch the playback position without
+     * causing major changes in the playback effect,
+     * please use the {@link #ready(int, int)} or {@link #skip(int)} method.
+     * <p>You need to make sure that the renderer has successfully loaded the {@link FtmAudio} audio before calling it.
+     * </p>
+     *
+     * @param track   Track number, starting from 0
+     * @param section Segment number, starting from 0
+     * @throws NullPointerException When the {@link FtmAudio} audio is not loaded successfully before calling this method
+     * @see #ready(int, int)
+     * @see #skip(int)
+     * @since v0.2.9
+     */
+    public void switchTo(int track, int section) {
+        executor.switchTo(track, section);
+    }
+
+    /**
+     * <p>Switch to the specified playback position without changing the parameters of each track.
+     * When switching, the playback pitch, volume, effects, etc. of each track will not change,
+     * including the delay effect Gxx.
+     * The mixer is not reset, which means that the sound played in the previous frame may continue
+     * to play for an extended period of time.
+     * The playback speed of the FTM document (not the playback speed) will be reset according
+     * to the tempo and other values.
+     * <p>Please use this method with caution. If you used tremolo 4xy or other effects before
+     * and did not eliminate them, these effects will still remain after switching positions,
+     * causing strange playback later.
+     * If you want to use a more robust way to switch the playback position without
+     * causing major changes in the playback effect,
+     * please use the {@link #ready(int, int)} or {@link #skip(int)} method.
+     * <p>You need to make sure that the renderer has successfully loaded the {@link FtmAudio} audio before calling it.
+     * </p>
+     *
+     * @param track   Track number, starting from 0
+     * @param section Segment number, starting from 0
+     * @param row     Line number, starting from 0
+     * @throws NullPointerException When the {@link FtmAudio} audio is not loaded successfully before calling this method
+     * @see #ready(int, int)
+     * @see #skip(int)
+     * @since v0.3.1
+     */
+    public void switchTo(int track, int section, int row) {
+        executor.switchTo(track, section, row);
+    }
+
+    /*
+     * Rendering part
+     */
+
+    /**
+     * <p>Render a frame.
+     * <p>This method has a new interpretation in version v0.3.0, namely: the execution component executes one frame,
+     * and the rendering component also executes one frame.
+     * </p>
+     *
+     * @return The number of samples rendered by this function (calculated as mono)
+     */
+    @Override
+    protected int renderFrame() {
+        int ret = countNextFrame();
+        param.sampleInCurFrame = ret;
+        rate.doConvert();
+        mixer.readyBuffer();
+
+        handleDelay();
+        executor.tick();
+        triggerSounds();
+
+        // Reading data from the mixer
+        readMixer();
+
+        return ret;
+    }
+
+    /**
+     * <p>Skip a frame.
+     * <p>This method has a new interpretation in version v0.3.0, namely: the execution component executes one frame,
+     * and the rendering component does not execute.
+     * </p>
+     *
+     * @return Number of samples skipped by this function (based on mono)
+     */
+    @Override
+    protected int skipFrame() {
+        int ret = countNextFrame();
+        param.sampleInCurFrame = ret;
+        rate.doConvert();
+
+        executor.tick();
+
+        return ret;
+    }
+
+    /**
+     * <p>Ask if playback has finished
+     * <p>If the Ftm audio that has already finished playing tries to call {@link #render(byte[], int, int)}
+     * or {@link #renderOneFrame(byte[], int, int)} again, the stop symbol will be ignored,
+     * and the audio will be forced to play again.
+     * </p>
+     *
+     * @return
+     */
+    @Override
+    public boolean isFinished() {
+        return executor.isFinished();
+    }
+
+    /*
+     * Instrument panel area
+     */
+
+    /*
+     * The part used to control the actual playback data.
+     * Among them are: control volume, control whether to play
+     */
+
+    /**
+     * <p>Asks whether the row was updated in the current frame.
+     * <p>Whether the execution position is switched manually or the actuator automatically switches to the next line,
+     * it is considered that the line is updated.
+     * </p>
+     *
+     * @return true, if the current frame updates the row
+     * @since v0.3.1
+     */
+    public boolean isRowUpdated() {
+        return executor.isRowUpdated();
+    }
+
+    /**
+     * @return Get the number of the track currently playing
+     */
+    @Override
+    public int getCurrentTrack() {
+        return executor.getCurrentTrack();
+    }
+
+    /**
+     * @return Get the segment number being played
+     */
+    public int getCurrentSection() {
+        return executor.getCurrentSection();
+    }
+
+    /**
+     * @return Get the line number currently playing
+     */
+    public int getCurrentRow() {
+        return executor.getCurrentRow();
+    }
+
+    /**
+     * @return Get the location of execution
+     * @since v0.3.1
+     */
+    public FtmPosition currentPosition() {
+        return executor.currentPosition();
+    }
+
+    /**
+     * Ask if the current line has finished playing, and you need to jump to the next line
+     * (not asking if the current frame has finished playing)
+     *
+     * @return true, if the current line has finished playing
+     * @since v0.2.2
+     */
+    public boolean currentRowRunOut() {
+        return executor.currentRowRunOut();
+    }
+
+    /**
+     * <p>Get the segment number corresponding to the position jumped to if jumping to the next line (not the next frame).
+     * <p>If it is detected that a jump effect is being triggered, return the result after the trigger.
+     * </p>
+     *
+     * @return The segment number corresponding to the next line
+     * @since v0.2.9
+     */
+    public int getNextSection() {
+        return executor.getNextSection();
+    }
+
+    /**
+     * <p>Get the position to jump to if jumping to the next line (not the next frame).
+     * <p>If it is detected that a jump effect is being triggered, return the result after the trigger.
+     * </p>
+     *
+     * @return Get the position of the next line to be executed
+     * @since v0.3.1
+     */
+    public FtmPosition nextPosition() {
+        return executor.nextPosition();
+    }
+
+    /**
+     * <p>Get the line number corresponding to the position jumped to if jumping to the next line (not the next frame).
+     * <p>If it is detected that a jump effect is being triggered, return the result after the trigger.
+     * </p>
+     *
+     * @return The segment number corresponding to the next line
+     * @since v0.2.9
+     */
+    public int getNextRow() {
+        return executor.getNextRow();
+    }
+
+    /**
+     * Returns a collection of all track numbers. The track number parameters are written in {@link INsfChannelCode}
+     *
+     * @return A collection of all track numbers. If the ready(...) method is not called, an empty collection is returned.
+     * @since v0.2.2
+     */
+    @Override
+    public Set<Byte> allChannelSet() {
+        return executor.allChannelSet();
+    }
+
+    /**
+     * Set the volume of a channel
+     *
+     * @param channelCode channel number
+     * @param level       Volume. range [0, 1]
+     * @since v0.2.2
+     */
+    @Override
+    public void setLevel(byte channelCode, float level) {
+        if (level < 0) {
+            level = 0;
+        } else if (level > 1) {
+            level = 1;
+        }
+
+        int id = findMixerChannelByCode(channelCode);
+        if (id != -1) {
+            mixer.setLevel(id, level);
+        }
+    }
+
+    /**
+     * Get the volume of a channel
+     *
+     * @param channelCode channel number
+     * @return volume. range [0, 1]
+     * @throws NullPointerException When there is no track corresponding to <code>channelCode</code>
+     * @since v0.2.3
+     */
+    @Override
+    public float getLevel(byte channelCode) throws NullPointerException {
+        int id = findMixerChannelByCode(channelCode);
+        if (id != -1) {
+            return mixer.getLevel(id);
+        }
+        throw new NullPointerException("Does not exist " + channelCode + " corresponding track");
+    }
+
+    /**
+     * Sets whether the track should emit sound
+     *
+     * @param channelCode channel number
+     * @param muted       false, makes the track sound; true, mutes it
+     * @since v0.2.2
+     */
+    @Override
+    public void setChannelMuted(byte channelCode, boolean muted) {
+        AbstractNsfSound sound = executor.getSound(channelCode);
+        if (sound != null) {
+            sound.setMuted(muted);
+        }
+    }
+
+    /**
+     * Check if the track can produce sound
+     *
+     * @param channelCode channel number
+     * @return false, Indicates that the track is not blocked; true, it has been blocked
+     * @throws NullPointerException When there is no track corresponding to <code>channelCode</code>
+     * @since v0.2.3
+     */
+    @Override
+    public boolean isChannelMuted(byte channelCode) throws NullPointerException {
+        return executor.getSound(channelCode).isMuted();
+    }
+
+    @Override
+    public void setSpeed(float speed) {
+        if (speed > 10) {
+            speed = 10;
+        } else if (speed < 0.1f) {
+            speed = 0.1f;
+        }
+
+        param.speed = speed;
+
+        int frameRate = executor.getFrameRate();
+        resetCounterParam(frameRate, param.sampleRate);
+        rate.onParamUpdate();
+    }
+
+    @Override
+    public float getSpeed() {
+        return param.speed;
+    }
+
+    /**
+     * Get the operator (tool class) of the mixer.
+     * It can be used to perform simple operations on the mixer used.
+     *
+     * @return Mixer operator
+     * @since v0.2.10
+     */
+    public IMixerHandler getMixerHandler() {
+        return mixer.getHandler();
+    }
+
+    /*
+     * Initialization
+     */
+
+    /**
+     * Initialize/reset the audio synthesizer (mixer)
+     */
+    private void reloadMixer() {
+        mixer.detachAll();
+        mixer.reset();
+    }
+
+    /**
+     * <p>Take out the sound generator from the executive component and connect it to the mixer.
+     * </p>
+     */
+    private void connectChannels() {
+        Set<Byte> channels = executor.allChannelSet();
+        this.channels = new ChannelParam[channels.size()];
+
+        int index = 0;
+        int mixerChannel = -1;
+        for (byte channelCode : channels) {
+            AbstractNsfSound sound = executor.getSound(channelCode);
+            if (sound != null) {
+                mixerChannel = mixer.allocateChannel(channelCode);
+                IMixerChannel mix = mixer.getMixerChannel(mixerChannel);
+                sound.setOut(mix);
+
+                // volume
+                mix.setLevel(getInitLevel(channelCode));
+
+                // TODO Tells the mixer more information, including the output sample rate of the sound generator
+                //  (1.77 million for NSF, 44100 or 48000 for mpeg, etc.)
+            }
+
+            // channel param
+            ChannelParam p = new ChannelParam();
+            this.channels[index] = p;
+            p.channelCode = channelCode;
+            p.delay = index * 100;
+            p.mixerChannel = mixerChannel;
+
+            index++;
+        }
+    }
+
+    /**
+     * Get the original volume of a track. This value is taken from {@link FamiTrackerParameter}
+     *
+     * @param channelCode channel number
+     * @return range [0, 1]
+     * @since v0.2.4
+     */
+    private float getInitLevel(byte channelCode) {
+        float level = switch (channelCode) {
+            case CHANNEL_2A03_PULSE1 -> config.channelLevels.level2A03Pules1;
+            case CHANNEL_2A03_PULSE2 -> config.channelLevels.level2A03Pules2;
+            case CHANNEL_2A03_TRIANGLE -> config.channelLevels.level2A03Triangle;
+            case CHANNEL_2A03_NOISE -> config.channelLevels.level2A03Noise;
+            case CHANNEL_2A03_DPCM -> config.channelLevels.level2A03DPCM;
+            case CHANNEL_VRC6_PULSE1 -> config.channelLevels.levelVRC6Pules1;
+            case CHANNEL_VRC6_PULSE2 -> config.channelLevels.levelVRC6Pules2;
+            case CHANNEL_VRC6_SAWTOOTH -> config.channelLevels.levelVRC6Sawtooth;
+            case CHANNEL_MMC5_PULSE1 -> config.channelLevels.levelMMC5Pules1;
+            case CHANNEL_MMC5_PULSE2 -> config.channelLevels.levelMMC5Pules2;
+            case CHANNEL_FDS -> config.channelLevels.levelFDS;
+            case CHANNEL_N163_1 -> config.channelLevels.levelN163Namco1;
+            case CHANNEL_N163_2 -> config.channelLevels.levelN163Namco2;
+            case CHANNEL_N163_3 -> config.channelLevels.levelN163Namco3;
+            case CHANNEL_N163_4 -> config.channelLevels.levelN163Namco4;
+            case CHANNEL_N163_5 -> config.channelLevels.levelN163Namco5;
+            case CHANNEL_N163_6 -> config.channelLevels.levelN163Namco6;
+            case CHANNEL_N163_7 -> config.channelLevels.levelN163Namco7;
+            case CHANNEL_N163_8 -> config.channelLevels.levelN163Namco8;
+            case CHANNEL_VRC7_FM1 -> config.channelLevels.levelVRC7FM1;
+            case CHANNEL_VRC7_FM2 -> config.channelLevels.levelVRC7FM2;
+            case CHANNEL_VRC7_FM3 -> config.channelLevels.levelVRC7FM3;
+            case CHANNEL_VRC7_FM4 -> config.channelLevels.levelVRC7FM4;
+            case CHANNEL_VRC7_FM5 -> config.channelLevels.levelVRC7FM5;
+            case CHANNEL_VRC7_FM6 -> config.channelLevels.levelVRC7FM6;
+            case CHANNEL_S5B_SQUARE1 -> config.channelLevels.levelS5BSquare1;
+            case CHANNEL_S5B_SQUARE2 -> config.channelLevels.levelS5BSquare2;
+            case CHANNEL_S5B_SQUARE3 -> config.channelLevels.levelS5BSquare3;
+            default -> 1.0f;
+        };
+
+        if (level > 1) {
+            level = 1.0f;
+        } else if (level < 0) {
+            level = 0;
+        }
+
+        return level;
+    }
+
+    /**
+     * <p>Handle delayed write. The latter track writes data 100 clocks later than the former track.
+     * <p>Since the triggering time of each track is different, the resonance between tracks can be
+     * effectively avoided. Therefore, the method of writing data in the tracks one by one is needed.
+     * <p>In versions v0.2.9 and v0.2.10, lazy writing is done by AbstractFtmChannel.
+     * Now due to the separation of execution components, the task of lazy writing is now borne by the renderer.
+     * </p>
+     *
+     * @see #triggerSounds()
+     * @since v0.3.0
+     */
+    private void handleDelay() {
+        for (ChannelParam p : channels) {
+            byte channelCode = p.channelCode;
+            AbstractNsfSound s = executor.getSound(channelCode);
+            s.process(p.delay);
+        }
+    }
+
+    /**
+     * <p>Let the sounders work one by one.
+     * <p>The number of working clocks is the number of clocks required to work for this frame, minus the number of delayed clocks.
+     * </p>
+     *
+     * @see #handleDelay()
+     * @since v0.3.0
+     */
+    private void triggerSounds() {
+        int clock = param.freqPerFrame;
+        for (ChannelParam p : channels) {
+            byte channelCode = p.channelCode;
+            AbstractNsfSound s = executor.getSound(channelCode);
+            s.process(clock - p.delay);
+            s.endFrame();
+        }
+    }
+
+    /**
+     * Reset Mixer
+     */
+    private void resetMixer() {
+        mixer.reset();
+    }
+
+    /**
+     * Reading audio data from Mixer
+     */
+    private void readMixer() {
+        mixer.finishBuffer();
+        mixer.readBuffer(data, 0, data.length);
+    }
+
+    static class ChannelParam {
+
+        /**
+         * channel number
+         */
+        byte channelCode;
+        /**
+         * Delay write clock count
+         */
+        int delay;
+        /**
+         * Mixer track ID
+         */
+        int mixerChannel;
+    }
+
+    private ChannelParam[] channels;
+
+    /**
+     * According to the channel number, find the track identification number in Mixer
+     *
+     * @param channelCode NSF defined channel number
+     * @return Mixer track ID
+     * @since v0.3.0
+     */
+    private int findMixerChannelByCode(byte channelCode) {
+        for (ChannelParam p : channels) {
+            if (p == null) {
+                continue;
+            }
+            if (p.channelCode == channelCode) {
+                return p.mixerChannel;
+            }
+        }
+        return -1;
+    }
+
+    /*
+     * Listeners
+     */
+
+    /**
+     * Add a listener to get the key
+     *
+     * @param l Get the listener for the key
+     * @throws NullPointerException When the listener <code>l == null</code>
+     * @since v0.3.0
+     */
+    public void addFetchListener(IFtmFetchListener l) {
+        executor.addFetchListener(l);
+    }
+
+    /**
+     * Remove the listener for getting the key
+     *
+     * @param l Remove the key listener
+     * @since v0.3.0
+     */
+    public void removeFetchListener(IFtmFetchListener l) {
+        executor.removeFetchListener(l);
+    }
+
+    /**
+     * Clear all listeners for getting key sounds
+     *
+     * @since v0.3.0
+     */
+    public void clearFetchListener() {
+        executor.clearFetchListener();
+    }
+
+    /**
+     * Add a listener for execution completion.
+     * This listener will be woken up when the effect finishes executing but before writing the sound.
+     *
+     * @param l Execution end listener
+     * @throws NullPointerException When the listener <code>l == null</code>
+     * @since v0.3.0
+     */
+    public void addExecuteFinishedListener(IFtmExecutedListener l) {
+        executor.addExecuteFinishedListener(l);
+    }
+
+    /**
+     * Remove the execution end listener
+     *
+     * @param l Execution end listener
+     * @since v0.3.0
+     */
+    public void removeExecuteFinishedListener(IFtmExecutedListener l) {
+        executor.removeExecuteFinishedListener(l);
+    }
+
+    /**
+     * Clear all listeners that have completed execution
+     *
+     * @since v0.3.0
+     */
+    public void clearExecuteFinishedListener() {
+        executor.clearExecuteFinishedListener();
+    }
 }

@@ -1,14 +1,16 @@
 /**
- * <p>发声逻辑相关类所在包.
- * <p>该包里面放置很多由 {@link zdream.nsfplayer.sound.AbstractNsfSound} 的子类,
- * 它们作为执行构件的末端, 用于接收从执行构件核心发来的核心数据,
- * 向渲染构件发送音频数据.
- * <p>在版本 v0.2.x 中, 作为渲染构件主体的混音器放置在该包中.
- * 从 v0.3.0 开始, 这些类移到 {@link zdream.nsfplayer.mixer} 包中,
- * 于是执行构件和渲染构件正式分离.
+ * <p>A package of classes related to vocal logic.
+ * <p>This package contains a number of subclasses of {@link zdream.nsfplayer.sound.AbstractNsfSound},
+ * which act as endpoints of the implementation artifacts and are used to receive kernel data
+ * from the core of the implementation artifacts and send audio data to the rendering artifacts.
+ * <p>In version v0.2.x, the mixer, which is the main body of the rendering artifact,
+ * is placed in this package.
+ * Starting with v0.3.0, these classes have been moved to the {@link zdream.nsfplayer.mixer} package,
+ * thus officially separating the execution and rendering components.
  * </p>
- * 
+ *
  * @author Zdream
  * @since v0.1
  */
+
 package zdream.nsfplayer.sound;

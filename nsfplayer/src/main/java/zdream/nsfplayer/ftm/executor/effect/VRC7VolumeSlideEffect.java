@@ -2,71 +2,70 @@ package zdream.nsfplayer.ftm.executor.effect;
 
 import java.util.HashSet;
 
-import static zdream.nsfplayer.core.NsfChannelCode.chipOfChannel;
-
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.executor.IFtmState;
 
+import static zdream.nsfplayer.core.NsfChannelCode.chipOfChannel;
+
+
 /**
- * <p>随时间变化修改音量的效果, VRC7 专用轨道效果, Axx
+ * <p>Effect that modifies volume over time, VRC7 dedicated channel effect, Axx
  * </p>
- * 
+ *
  * @author Zdream
  * @since 0.2.7
  */
 public class VRC7VolumeSlideEffect extends VolumeSlideEffect {
-	
-	protected VRC7VolumeSlideEffect(int slide) {
-		super(slide);
-	}
-	
-	/**
-	 * 形成一个随时间变化修改音量的效果, VRC7 专用轨道效果
-	 * @param delta
-	 *   变化量. 每帧变化的音量数 (一般是 1/60 s), 范围 [-30, 30]
-	 *   <br>正数, 则随时间变化音量不断增大;
-	 *   <br>负数, 则随时间变化音量不断减小;
-	 *   <br>0, 则音量不随时间变化而变化, 也可以禁掉原来作用在轨道上的随时间变化修改音量的效果;
-	 * @return
-	 *   效果实例
-	 * @throws IllegalArgumentException
-	 *   当变化量 <code>delta</code> 不在指定范围内时
-	 */
-	public static VRC7VolumeSlideEffect of(int delta) throws IllegalArgumentException {
-		if (delta < -30 || delta > 30) {
-			throw new IllegalArgumentException("音量变化量必须在 -30 到 30 之间");
-		}
-		return new VRC7VolumeSlideEffect(delta);
-	}
-	
-	@Override
-	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		if (chipOfChannel(channelCode) != INsfChannelCode.CHIP_VRC7) {
-			throw new IllegalStateException("修改 VRC7 音量随时间变化的效果只能在 VRC7 轨道上触发, 无法在 "
-					+ channelCode + " 轨道上触发.");
-		}
-		AbstractFtmChannel ch = runtime.channels.get(channelCode);
-		
-		/*
-		 * 这里要保证一个轨道最多只有一个随时间变化修改音量的状态
-		 */
-		HashSet<IFtmState> set = ch.filterStates(VolumeAccumulateState.NAME);
-		VolumeAccumulateState s = null;
-		
-		if (!set.isEmpty()) {
-			s = (VolumeAccumulateState) set.iterator().next();
-			s.delta = -delta; // 但不重置累积量
-		} else if (delta != 0) {
-			s = new VolumeAccumulateState(-delta);
-			ch.addState(s);
-		}
-	}
-	
-	@Override
-	public String toString() {
-		return "VRC7VolumeSlide:" + delta;
-	}
 
+    protected VRC7VolumeSlideEffect(int slide) {
+        super(slide);
+    }
+
+    /**
+     * Creates an effect that modifies the volume over time, a VRC7 dedicated channel effect
+     *
+     * @param delta Change amount. The volume change per frame (usually 1/60 s), range [-30, 30]
+     *              <br>If it is a positive number, the volume will increase over time;
+     *              <br>If it is a negative number, the volume will decrease over time;
+     *              <br>0, the volume does not change with time, and the effect of modifying the volume over time
+     *              that originally acts on the channel can also be disabled;
+     * @return Effect Examples
+     * @throws IllegalArgumentException When the change <code>delta</code> is not within the specified range
+     */
+    public static VRC7VolumeSlideEffect of(int delta) throws IllegalArgumentException {
+        if (delta < -30 || delta > 30) {
+            throw new IllegalArgumentException("The volume change must be between -30 and 30");
+        }
+        return new VRC7VolumeSlideEffect(delta);
+    }
+
+    @Override
+    public void execute(byte channelCode, FamiTrackerRuntime runtime) {
+        if (chipOfChannel(channelCode) != INsfChannelCode.CHIP_VRC7) {
+            throw new IllegalStateException("The effect of modifying the VRC7 volume over time can only be triggered on the VRC7 track, not on the "
+                    + channelCode + " track.");
+        }
+        AbstractFtmChannel ch = runtime.channels.get(channelCode);
+
+        /*
+         * Here we need to ensure that a channel has at most one state that changes the volume over time.
+         */
+        HashSet<IFtmState> set = ch.filterStates(VolumeAccumulateState.NAME);
+        VolumeAccumulateState s = null;
+
+        if (!set.isEmpty()) {
+            s = (VolumeAccumulateState) set.iterator().next();
+            s.delta = -delta; // But it does not reset the cumulative amount
+        } else if (delta != 0) {
+            s = new VolumeAccumulateState(-delta);
+            ch.addState(s);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "VRC7VolumeSlide:" + delta;
+    }
 }

@@ -1,64 +1,68 @@
 package zdream.nsfplayer.ftm.executor;
 
 /**
- * <p>状态. 每个轨道和全局在播放时, 每帧都进行触发的.
+ * <p>State. Each channel and global is triggered every frame during playback.
  * </p>
- * 
- * @version 0.2.2
- * 从该版本开始, 状态可以根据优先度进行排序
- * 
+ *
  * @author Zdream
+ * @version 0.2.2
+ * Starting from this version, statuses can be sorted according to priority.
  * @since 0.2.1
  */
 public interface IFtmState extends Comparable<IFtmState> {
-	
-	/**
-	 * 标识名称
-	 * @return
-	 */
-	public String name();
-	
-	/**
-	 * 每帧触发的方法体
-	 * @param channelCode
-	 *   当前轨道号码
-	 * @param runtime
-	 */
-	public void trigger(byte channelCode, FamiTrackerRuntime runtime);
-	
-	/**
-	 * 当该 state 被装配时,
-	 * 即被轨道或全局状态机装配时触发 (在添加后)
-	 * @param channelCode
-	 *   当前轨道号码
-	 * @param runtime
-	 */
-	default public void onAttach(byte channelCode, FamiTrackerRuntime runtime) {}
-	
-	/**
-	 * 当该 state 被拆除时,
-	 * 即被轨道或全局状态机拆除时触发 (在拆除前)
-	 * @param channelCode
-	 *   当前轨道号码
-	 * @param runtime
-	 */
-	default public void onDetach(byte channelCode, FamiTrackerRuntime runtime) {}
-	
-	/**
-	 * 优先度. 优先度越大的越先执行.
-	 * @return
-	 * @since 0.2.2
-	 */
-	default int priority() {
-		return 0;
-	}
-	
-	/**
-	 * 默认是按照从高到低的顺序进行排序
-	 * @since 0.2.2
-	 */
-	default int compareTo(IFtmState o) {
-		return o.priority() - priority();
-	}
-	
+
+    /**
+     * logo name
+     *
+     * @return
+     */
+    String name();
+
+    /**
+     * Method body triggered per frame
+     *
+     * @param channelCode Current channel number
+     * @param runtime
+     */
+    void trigger(byte channelCode, FamiTrackerRuntime runtime);
+
+    /**
+     * Triggered when the state is assembled,
+     * i.e., assembled by the channel or global state machine (after adding it).
+     *
+     * @param channelCode Current channel number
+     * @param runtime
+     */
+    default void onAttach(byte channelCode, FamiTrackerRuntime runtime) {
+    }
+
+    /**
+     * Triggered when the state is dismantled,
+     * i.e. by a channel or global state machine (before dismantling)
+     *
+     * @param channelCode Current channel number
+     * @param runtime
+     */
+    default void onDetach(byte channelCode, FamiTrackerRuntime runtime) {
+    }
+
+    /**
+     * Priority. The higher the priority, the first to be executed.
+     *
+     * @return
+     * @since 0.2.2
+     */
+    default int priority() {
+        return 0;
+    }
+
+    /**
+     * By default, they are sorted in ascending order.
+     *
+     * @since 0.2.2
+     */
+    @Override
+    default int compareTo(IFtmState o) {
+        return o.priority() - priority();
+    }
 }

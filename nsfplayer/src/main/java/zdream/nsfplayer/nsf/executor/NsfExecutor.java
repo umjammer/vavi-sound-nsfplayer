@@ -1,7 +1,5 @@
 package zdream.nsfplayer.nsf.executor;
 
-import static java.util.Objects.requireNonNull;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,234 +10,233 @@ import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
+import static java.util.Objects.requireNonNull;
+
+
 /**
- * <p>Nsf 的执行构件.
- * <p>在 0.2.x 版本中, Nsf 的执行部分是直接写在 NsfRenderer 中的,
- * 从版本 0.3.0 开始, 执行构件从 renderer 中分离出来, 单独构成一个类.
- * 它交接了原本是需要 NsfRuntime 或 NsfRenderer 完成的任务中, 与执行相关的任务.
+ * <p>Execution building blocks for Nsf.
+ * <p>In version 0.2.x, the execution of Nsf is written directly in the NsfRenderer.
+ * As of version 0.3.0, the execution artifacts are separated from the renderer and form a separate class.
+ * It takes over execution-related tasks that would otherwise be done by an NsfRuntime or NsfRenderer.
  * </p>
- * 
+ *
  * @author Zdream
  * @since v0.3.0
  */
 public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
-	
-	private final NsfRuntime runtime;
-	
-	public NsfExecutor() {
-		this.runtime = new NsfRuntime();
-		runtime.init();
-	}
-	
-	/* **********
-	 * 准备部分 *
-	 ********** */
-	
-	/**
-	 * 跟随 Nsf 文件中指定的制式
-	 */
-	public static final int REGION_FOLLOW_AUDIO = 0;
-	/**
-	 * 强制要求 NTSC
-	 */
-	public static final int REGION_FORCE_NTSC = 1;
-	/**
-	 * 强制要求 PAL
-	 */
-	public static final int REGION_FORCE_PAL = 2;
-	/**
-	 * 强制要求 DENDY
-	 */
-	public static final int REGION_FORCE_DENDY = 3;
-	
-	/**
-	 * 设置播放的制式要求
-	 * @param region
-	 *   制式要求
-	 * @see #REGION_FOLLOW_AUDIO
-	 * @see #REGION_FORCE_NTSC
-	 * @see #REGION_FORCE_PAL
-	 * @see #REGION_FORCE_DENDY
-	 * @throws IllegalArgumentException
-	 *   当制式要求不为预设的这四个时
-	 */
-	public void setRegion(int region) {
-		switch (region) {
-		case REGION_FOLLOW_AUDIO:
-		case REGION_FORCE_NTSC:
-		case REGION_FORCE_PAL:
-		case REGION_FORCE_DENDY:
-			runtime.param.region = region;
-			break;
 
-		default:
-			throw new IllegalArgumentException("制式要求: " + region + " 不可解析");
-		}
-	}
-	
-	/**
-	 * 设置 tick() 的执行的速率.
-	 * @param rate
-	 *   执行速率. 一般这个值等于 sampleRate
-	 */
-	public void setRate(int rate) {
-		runtime.param.sampleRate = rate; // 默认: 48000
-	}
+    private final NsfRuntime runtime;
 
-	/**
-	 * 读取 Nsf 音频, 并以默认曲目进行准备
-	 * @param audio
-	 * @throws NullPointerException
-	 *   当 audio 为 null 时
-	 */
-	public void ready(NsfAudio audio) throws NullPointerException {
-		requireNonNull(audio, "NSF 曲目 audio = null");
-		ready0(audio, audio.start);
-	}
-	
-	/**
-	 * 读取 Nsf 音频, 以指定曲目进行准备
-	 * @param audio
-	 *   Nsf 音频实例
-	 * @param track
-	 *   曲目号
-	 * @throws NullPointerException
-	 *   当 audio 为 null 时
-	 * @throws IllegalArgumentException
-	 *   当曲目号 track 在范围 [0, audio.total_songs) 之外时.
-	 */
-	public void ready(NsfAudio audio, int track) throws NullPointerException, IllegalArgumentException {
-		requireNonNull(audio, "NSF 曲目 audio = null");
-		if (track < 0 || track >= audio.total_songs) {
-			throw new IllegalArgumentException(
-					"曲目号 track 需要在范围 [0, " + audio.total_songs + ") 内, " + track + " 是非法值");
-		}
-		
-		this.ready0(audio, track);
-	}
-	
-	/**
-	 * <p>在不更改 Nsf 音频的同时, 切换到指定曲目的开头.
-	 * <p>第一次播放时需要指定 Nsf 音频数据.
-	 * 因此第一次需要调用含 {@link NsfAudio} 参数的重载方法
-	 * </p>
-	 * @param track
-	 *   曲目号, 从 0 开始
-	 * @throws NullPointerException
-	 *   当调用该方法前未指定 {@link NsfAudio} 音频时
-	 * @throws IllegalArgumentException
-	 *   当曲目号 track 在范围 [0, audio.total_songs) 之外时.
-	 */
-	public void ready(int track) throws NullPointerException {
-		NsfAudio audio = runtime.audio;
-		requireNonNull(audio, "NSF 曲目 audio = null");
-		
-		if (track < 0 || track >= audio.total_songs) {
-			throw new IllegalArgumentException(
-					"曲目号 track 需要在范围 [0, " + audio.total_songs + ") 内");
-		}
-		
-		runtime.manager.setSong(track);
-		runtime.reset();
-	}
-	
-	private void ready0(NsfAudio audio, int track) {
-		if (track < 0 || track >= audio.total_songs) {
-			track = 0;
-		}
-		
-		runtime.audio = audio;
-		runtime.manager.setSong(track);
-		
-		runtime.reset();
-	}
-	
-	/* **********
-	 * 渲染部分 *
-	 ********** */
+    public NsfExecutor() {
+        this.runtime = new NsfRuntime();
+        runtime.init();
+    }
 
-	@Override
-	public void tick() {
-		runtime.manager.tickCPU();
-	}
+    //
+    // preparatory section
+    //
 
-	@Override
-	public void reset() {
-		// TODO Auto-generated method stub
+    /**
+     * Follows the format specified in the Nsf file.
+     */
+    public static final int REGION_FOLLOW_AUDIO = 0;
+    /**
+     * Mandatory NTSC
+     */
+    public static final int REGION_FORCE_NTSC = 1;
+    /**
+     * Mandatory PAL
+     */
+    public static final int REGION_FORCE_PAL = 2;
+    /**
+     * Mandatory DENDY
+     */
+    public static final int REGION_FORCE_DENDY = 3;
 
-	}
-	
-	/* **********
-	 * 参数指标 *
-	 ********** */
-	
-	/**
-	 * @return
-	 *   每秒的时钟数
-	 */
-	public int cycleRate() {
-		return runtime.param.freqPerSec;
-	}
-	
-	/**
-	 * @return
-	 *   当前正在播放的曲目号
-	 */
-	public int getCurrentTrack() {
-		return runtime.manager.getSong();
-	}
-	
-	/**
-	 * 返回所有的轨道号的集合. 轨道号的参数在 {@link INsfChannelCode} 里面写出
-	 * @return
-	 *   所有的轨道号的集合. 如果没有调用 ready(...) 方法时, 返回空集合.
-	 */
-	public Set<Byte> allChannelSet() {
-		return new HashSet<>(runtime.chips.keySet());
-	}
-	
-	/**
-	 * <p>获得对应轨道号的发声器.
-	 * <p>发声器就是执行体最后的输出, 所有的执行结果将直接写入到发声器中.
-	 * </p>
-	 * @param channelCode
-	 *   轨道号
-	 * @return
-	 *   对应轨道的发声器实例. 如果没有对应的轨道, 返回 null.
-	 */
-	public AbstractNsfSound getSound(byte channelCode) {
-		AbstractSoundChip chip = runtime.chips.get(channelCode);
-		if (chip == null) {
-			return null;
-		}
-		return chip.getSound(channelCode);
-	}
-	
-	/* **********
-	 *  监听器  *
-	 ********** */
-	
-	/**
-	 * 添加 N163 重连的监听器
-	 * @param listener
-	 */
-	public void addN163ReattachListener(IN163ReattachListener listener) {
-		runtime.n163Lsners.add(listener);
-	}
-	
-	/**
-	 * 删除 N163 重连的监听器
-	 * @param listener
-	 */
-	public void removeReattachListener(IN163ReattachListener listener) {
-		runtime.n163Lsners.remove(listener);
-	}
-	
-	/**
-	 * 清空 N163 重连的监听器
-	 */
-	public void clearReattachListeners() {
-		runtime.n163Lsners.clear();
-	}
+    /**
+     * Setting the format requirements for playback
+     *
+     * @param region Format Requirements
+     * @throws IllegalArgumentException When the format requirements are not preset for these four
+     * @see #REGION_FOLLOW_AUDIO
+     * @see #REGION_FORCE_NTSC
+     * @see #REGION_FORCE_PAL
+     * @see #REGION_FORCE_DENDY
+     */
+    public void setRegion(int region) {
+        switch (region) {
+            case REGION_FOLLOW_AUDIO:
+            case REGION_FORCE_NTSC:
+            case REGION_FORCE_PAL:
+            case REGION_FORCE_DENDY:
+                runtime.param.region = region;
+                break;
 
+            default:
+                throw new IllegalArgumentException("Formatting requirements: " + region + " not parsable");
+        }
+    }
+
+    /**
+     * Sets the rate at which tick() is executed.
+     *
+     * @param rate Execution rate. Typically this value is equal to sampleRate
+     */
+    public void setRate(int rate) {
+        runtime.param.sampleRate = rate; // default: 48000
+    }
+
+    /**
+     * Reads Nsf audio and prepares it with default tracks
+     *
+     * @param audio
+     * @throws NullPointerException When audio is null
+     */
+    @Override
+    public void ready(NsfAudio audio) throws NullPointerException {
+        requireNonNull(audio, "NSF Tracks audio = null");
+        ready0(audio, audio.start);
+    }
+
+    /**
+     * Reads Nsf audio, prepares it with a specified track
+     *
+     * @param audio Nsf Audio Examples
+     * @param track track number (of a song)
+     * @throws NullPointerException     When audio is null
+     * @throws IllegalArgumentException When the track number track is outside the range [0, audio.total_songs).
+     */
+    public void ready(NsfAudio audio, int track) throws NullPointerException, IllegalArgumentException {
+        requireNonNull(audio, "NSF Tracks audio = null");
+        if (track < 0 || track >= audio.total_songs) {
+            throw new IllegalArgumentException(
+                    "Track number track needs to be in range [0, " + audio.total_songs + "), " + track + " is illegal");
+        }
+
+        this.ready0(audio, track);
+    }
+
+    /**
+     * <p>Switch to the beginning of the specified track without changing the Nsf audio.
+     * <p>Nsf audio data needs to be specified for the first playback.
+     * So the first time you need to call the overloaded method with the {@link NsfAudio} parameter
+     * </p>
+     *
+     * @param track Track number, from 0
+     * @throws NullPointerException     When {@link NsfAudio} audio is not specified before calling this method
+     * @throws IllegalArgumentException When the track number track is outside the range [0, audio.total_songs).
+     */
+    public void ready(int track) throws NullPointerException {
+        NsfAudio audio = runtime.audio;
+        requireNonNull(audio, "NSF Tracks audio = null");
+
+        if (track < 0 || track >= audio.total_songs) {
+            throw new IllegalArgumentException(
+                    "Track number track needs to be in range [0, " + audio.total_songs + ")");
+        }
+
+        runtime.manager.setSong(track);
+        runtime.reset();
+    }
+
+    private void ready0(NsfAudio audio, int track) {
+        if (track < 0 || track >= audio.total_songs) {
+            track = 0;
+        }
+
+        runtime.audio = audio;
+        runtime.manager.setSong(track);
+
+        runtime.reset();
+    }
+
+    //
+    // rendering section
+    //
+
+    @Override
+    public void tick() {
+        runtime.manager.tickCPU();
+    }
+
+    @Override
+    public void reset() {
+        // TODO Auto-generated method stub
+    }
+
+    //
+    // Parameter indicators
+    //
+
+    /**
+     * @return Clocks per second
+     */
+    public int cycleRate() {
+        return runtime.param.freqPerSec;
+    }
+
+    /**
+     * @return Currently playing track number
+     */
+    public int getCurrentTrack() {
+        return runtime.manager.getSong();
+    }
+
+    /**
+     * Returns the set of all track numbers. The parameter for
+     * the track number is specified in {@link INsfChannelCode}.
+     *
+     * @return The set of all track numbers. If the ready(...)
+     *         method is not called, the empty set is returned.
+     */
+    public Set<Byte> allChannelSet() {
+        return new HashSet<>(runtime.chips.keySet());
+    }
+
+    /**
+     * <p>Acquisition of a loudspeaker corresponding to the track number.
+     * <p>The speaker is the final output of the actuator, and all execution
+     * results are written directly to the speaker.
+     * </p>
+     *
+     * @param channelCode orbital number
+     * @return An instance of the sound generator for the corresponding track.
+     *         If there is no corresponding track, returns null.
+     */
+    public AbstractNsfSound getSound(byte channelCode) {
+        AbstractSoundChip chip = runtime.chips.get(channelCode);
+        if (chip == null) {
+            return null;
+        }
+        return chip.getSound(channelCode);
+    }
+
+    //
+    // listener
+    //
+
+    /**
+     * Adding a listener for N163 reconnections.
+     *
+     * @param listener
+     */
+    public void addN163ReattachListener(IN163ReattachListener listener) {
+        runtime.n163Lsners.add(listener);
+    }
+
+    /**
+     * Deleting the N163 reconnected listener.
+     *
+     * @param listener
+     */
+    public void removeReattachListener(IN163ReattachListener listener) {
+        runtime.n163Lsners.remove(listener);
+    }
+
+    /**
+     * Empty N163 reconnected listener.
+     */
+    public void clearReattachListeners() {
+        runtime.n163Lsners.clear();
+    }
 }

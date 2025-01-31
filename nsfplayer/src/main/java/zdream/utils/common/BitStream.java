@@ -1,152 +1,163 @@
 package zdream.utils.common;
 
 /**
- * 从输入的字节流获得位流。
- * 原作者 jmp123
+ * Gets the bitstream from the input byte stream.
+ *
+ * @author jmp123
  */
 public class BitStream {
 
-	protected int bitPos;
-	protected int bytePos;
-	protected byte[] bitReservoir;
-	private int endPos; // bitReservoir已填入的字节数
-	private int maxOff;
+    protected int bitPos;
+    protected int bytePos;
+    protected byte[] bitReservoir;
+    private int endPos; // Number of bytes the bitReservoir has been filled with
+    private final int maxOff;
 
-	/**
-	 * 创建一个位流BitStream对象，位流的缓冲区大小len指定，位流的缓冲区尾部空出的长度由extra指定。
-	 * 
-	 * @param len 缓冲区可访问长度。<br>
-	 *            缓冲区用于解码帧边信息时len为9、17或32。<br>
-	 *            缓冲区用于解码主数据(main_data)时长度不小于最大帧长512+1732。
-	 * 
-	 * @param extra 缓冲区尾部空出的字节数，防止哈夫曼解码时位流有错误导致缓冲区溢出，
-	 * 尾部空出512字节(part2_3_length长度，2^12位)。
-	 */
-	public BitStream(int len, int extra) {
-		maxOff = len;
-		bitReservoir = new byte[len + extra];
-	}
+    /**
+     * Creates a BitStream object, the buffer size len of the bitstream is specified,
+     * and the length of the empty buffer tail of the bitstream is specified by extra.
+     *
+     * @param len   Buffer Accessible Length <br>
+     *              The buffer is used to decode frame side information when len is 9, 17 or 32.<br>
+     *              The length of the buffer used to decode the main data (main_data) is not less
+     *              than the maximum frame length of 512+1732.
+     * @param extra The number of empty bytes at the end of the buffer to prevent buffer overflow
+     *              due to errors in the bitstream during Huffman decoding.
+     *              Empty 512 bytes at the end (length of part2_3_length, 2^12 bits).
+     */
+    public BitStream(int len, int extra) {
+        maxOff = len;
+        bitReservoir = new byte[len + extra];
+    }
 
-	/**
-	 * 向缓冲区添加len字节。
-	 * 
-	 * @param b 源数据。
-	 * @param off 源数据偏移量。
-	 * @param len 源数据长度。
-	 * @return 实际填充到缓冲区的字节数。
-	 */
-	public int append(byte[] b, int off, int len) {
-		if (len + endPos > maxOff) {
-			// 将缓冲区bytePos及之后的(未处理过的)数据移动到缓冲区首
-			System.arraycopy(bitReservoir, bytePos, bitReservoir, 0, endPos - bytePos);
-			endPos -= bytePos;
-			bitPos = bytePos = 0;
-		}
-		if (len + endPos > maxOff)
-			len = maxOff - endPos;
-		System.arraycopy(b, off, bitReservoir, endPos, len);
-		endPos += len;
-		return len;
-	}
+    /**
+     * Adds len bytes to the buffer.
+     *
+     * @param b   Source data.
+     * @param off Source data offset.
+     * @param len The length of the source data.
+     * @return The number of bytes actually filled into the buffer.
+     */
+    public int append(byte[] b, int off, int len) {
+        if (len + endPos > maxOff) {
+            // Move buffer bytePos and subsequent (unprocessed) data to the head of the buffer.
+            System.arraycopy(bitReservoir, bytePos, bitReservoir, 0, endPos - bytePos);
+            endPos -= bytePos;
+            bitPos = bytePos = 0;
+        }
+        if (len + endPos > maxOff)
+            len = maxOff - endPos;
+        System.arraycopy(b, off, bitReservoir, endPos, len);
+        endPos += len;
+        return len;
+    }
 
-	/**
-	 * 将缓冲指定为b，缓冲区初始偏移量由off指定。与 {@link #append(byte[], int, int)}
-	 * 方法的区别是，本方法不会从源数据b复制数据。
-	 * 
-	 * @param b 源数据。
-	 * @param off 源数据偏移量。
-	 */
-	public void feed(byte[] b, int off) {
-		bitReservoir = b;
-		bytePos = off;
-		bitPos = 0;
-	}
+    /**
+     * Specify the buffer as b, with the initial offset of the buffer specified by off.
+     * The difference with the {@link #append(byte[], int, int)} method is that
+     * this method does not copy data from the source data b.
+     *
+     * @param b   Source data.
+     * @param off Source data offset.
+     */
+    public void feed(byte[] b, int off) {
+        bitReservoir = b;
+        bytePos = off;
+        bitPos = 0;
+    }
 
-	/**
-	 * 从缓冲区读取一位。
-	 * @return 0或1。
-	 */
-	public int get1Bit() {
-		int bit = bitReservoir[bytePos] << bitPos;
-		bit >>= 7;
-		bit &= 0x1;
-		bitPos++;
-		bytePos += bitPos >> 3;
-		bitPos &= 0x7;
-		return bit;
-	}
+    /**
+     * Reads one bit from the buffer.
+     *
+     * @return 0 or 1.
+     */
+    public int get1Bit() {
+        int bit = bitReservoir[bytePos] << bitPos;
+        bit >>= 7;
+        bit &= 0x1;
+        bitPos++;
+        bytePos += bitPos >> 3;
+        bitPos &= 0x7;
+        return bit;
+    }
 
-	/**
-	 * 从缓冲区读取n位。由于运行时速度方面的原因，若读取的位数不大于9，请考虑用{@link #getBits9(int)}方法更高效。
-	 * @param n 比特数，n=2..17时调用此方法。
-	 * @return n位的值。
-	 */
-	public int getBits17(int n) {
-		int iret = bitReservoir[bytePos];
-		iret <<= 8;
-		iret |= bitReservoir[bytePos + 1] & 0xff;
-		iret <<= 8;
-		iret |= bitReservoir[bytePos + 2] & 0xff;
-		iret <<= bitPos;
-		iret &= 0xffffff; // 高8位置0
-		iret >>= 24 - n;
-		bitPos += n;
-		bytePos += bitPos >> 3;
-		bitPos &= 0x7;
-		return iret;
-	}
+    /**
+     * Read n bits from the buffer. For runtime speed reasons, if the number of bits to be read is not greater than 9,
+     * consider using the {@link #getBits9(int)} method to be more efficient.
+     *
+     * @param n The number of bits, n=2..17 calls this method.
+     * @return The value of n bits.
+     */
+    public int getBits17(int n) {
+        int iret = bitReservoir[bytePos];
+        iret <<= 8;
+        iret |= bitReservoir[bytePos + 1] & 0xff;
+        iret <<= 8;
+        iret |= bitReservoir[bytePos + 2] & 0xff;
+        iret <<= bitPos;
+        iret &= 0xff_ffff; // High 8 position 0
+        iret >>= 24 - n;
+        bitPos += n;
+        bytePos += bitPos >> 3;
+        bitPos &= 0x7;
+        return iret;
+    }
 
-	/**
-	 * 从缓冲区读取n位。
-	 * @param n 比特数，n=2..9时调用此方法。
-	 * @return n位的值。
-	 */
-	public int getBits9(int n) {
-		int iret = bitReservoir[bytePos];
-		iret <<= 8;
-		iret |= bitReservoir[bytePos + 1] & 0xff;
-		iret <<= bitPos;
-		iret &= 0xffff; // 高16位置0
-		iret >>= 16 - n;
-		bitPos += n;
-		bytePos += bitPos >> 3;
-		bitPos &= 0x7;
-		return iret;
-	}
+    /**
+     * Read n bits from the buffer.
+     *
+     * @param n The number of bits, n=2..9 calls this method.
+     * @return The value of n bits.
+     */
+    public int getBits9(int n) {
+        int iret = bitReservoir[bytePos];
+        iret <<= 8;
+        iret |= bitReservoir[bytePos + 1] & 0xff;
+        iret <<= bitPos;
+        iret &= 0xffff; // High 16 position 0
+        iret >>= 16 - n;
+        bitPos += n;
+        bytePos += bitPos >> 3;
+        bitPos &= 0x7;
+        return iret;
+    }
 
-	/**
-	 * 获取缓冲区字节指针。
-	 * @return 缓冲区字节指针。
-	 */
-	public int getBytePos() {
-		return bytePos;
-	}
+    /**
+     * Gets a pointer to the buffer byte.
+     *
+     * @return Buffer byte pointer.
+     */
+    public int getBytePos() {
+        return bytePos;
+    }
 
-	/**
-	 * 获取缓冲区已经填入的字节数。
-	 * @return 缓冲区已经填入的字节数。
-	 */
-	public int getSize() {
-		return endPos;
-	}
+    /**
+     * Gets the number of bytes the buffer has been filled with.
+     *
+     * @return The number of bytes the buffer has been filled with.
+     */
+    public int getSize() {
+        return endPos;
+    }
 
-	/**
-	 * 缓冲区丢弃n字节，缓冲区比特指针复位。
-	 * @param n 丢弃的字节数。
-	 */
-	public void skipBytes(int n) {
-		bytePos += n;
-		bitPos = 0;
-	}
-	
-	/**
-	 * 缓冲区丢弃或回退指定比特。
-	 * @param n 若n>0丢弃n比特，若n<0则回退-n比特。
-	 */
-	public void skipBits(int n) {
-		bitPos += n;
-		bytePos += bitPos >> 3;
-		bitPos &= 0x7;
-	}
+    /**
+     * The buffer discards n bytes and the buffer bit pointer is reset.
+     *
+     * @param n The number of bytes discarded.
+     */
+    public void skipBytes(int n) {
+        bytePos += n;
+        bitPos = 0;
+    }
 
+    /**
+     * The buffer discards or rolls back the specified bit.
+     *
+     * @param n Discard n bits if n>0 and fallback -n bits if n<0.
+     */
+    public void skipBits(int n) {
+        bitPos += n;
+        bytePos += bitPos >> 3;
+        bitPos &= 0x7;
+    }
 }

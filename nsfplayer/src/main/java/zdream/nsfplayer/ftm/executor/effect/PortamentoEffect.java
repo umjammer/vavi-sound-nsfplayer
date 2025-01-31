@@ -6,98 +6,93 @@ import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.executor.IFtmState;
 
+
 /**
- * <p>滑音效果, 1xx 上滑, 2xx 下滑
+ * <p>Portamento effect, 1xx up, 2xx down
  * </p>
- * 
- * @see PitchAccumulateState
- * 
+ *
  * @author Zdream
+ * @see PitchAccumulateState
  * @since v0.2.2
  */
 public class PortamentoEffect implements IFtmEffect {
-	
-	public final int delta;
 
-	private PortamentoEffect(int slide) {
-		this.delta = slide;
-	}
+    public final int delta;
 
-	@Override
-	public FtmEffectType type() {
-		return FtmEffectType.PORTA;
-	}
-	
-	/**
-	 * 形成一个随时间变化修改音高的滑音效果
-	 * @param delta
-	 *   变化量. 每帧变化音高的波长数 (一般是 1/60 s), 无范围
-	 *   <br>正数, 则随时间变化, 波长增大, 声音不断变低;
-	 *   <br>负数, 则随时间变化, 波长增小, 声音不断变高;
-	 *   <br>0, 则音高不随时间变化而变化, 也可以禁掉原来作用在轨道上的滑音效果
-	 *   （无法禁用 3xx 的目的滑音效果）;
-	 * @return
-	 *   效果实例
-	 * @throws IllegalArgumentException
-	 *   当变化量 <code>delta</code> 不在指定范围内时
-	 */
-	public static PortamentoEffect of(int delta) throws IllegalArgumentException {
-		return new PortamentoEffect(delta);
-	}
-	
-	/**
-	 * @return
-	 * 是否是波长增大, 声音不断变低的效果
-	 */
-	public boolean slideUp() {
-		return delta > 0;
-	}
-	
-	/**
-	 * @return
-	 * 是否是波长增小, 声音不断变高的效果
-	 */
-	public boolean slideDown() {
-		return delta < 0;
-	}
-	
-	/**
-	 * @return
-	 * 是否有滑音的效果
-	 */
-	public boolean slide() {
-		return delta != 0;
-	}
-	
-	@Override
-	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		AbstractFtmChannel ch = runtime.channels.get(channelCode);
-		
-		/*
-		 * 这里要保证一个轨道最多只有一个随时间变化修改音量的状态
-		 */
-		HashSet<IFtmState> set = ch.filterStates(PitchAccumulateState.NAME);
-		PitchAccumulateState s = null;
-		
-		if (!set.isEmpty()) {
-			s = (PitchAccumulateState) set.iterator().next();
-			s.delta = delta; // 但不重置累积量
-		} else if (delta != 0) {
-			s = new PitchAccumulateState(delta);
-			ch.addState(s);
-		}
-	}
-	
-	@Override
-	public String toString() {
-		return "Portamento:" + delta;
-	}
-	
-	/**
-	 * 优先度低于 {@link PitchEffect} 和 {@link VibratoEffect}
-	 */
-	public final int priority() {
-		return -3;
-	}
+    private PortamentoEffect(int slide) {
+        this.delta = slide;
+    }
 
+    @Override
+    public FtmEffectType type() {
+        return FtmEffectType.PORTA;
+    }
+
+    /**
+     * Create a glissando effect that modifies the pitch over time
+     *
+     * @param delta Amount of change. The number of wavelengths of pitch change per frame (usually 1/60 s), no range
+     *              <br>If it is a positive number, the wavelength increases over time and the sound becomes lower.
+     *              <br>If it is a negative number, the wavelength will decrease over time and the sound will become higher.
+     *              <br>0, the pitch does not change over time, and the portamento effect originally applied to the channel can also be disabled
+     *              (the 3xx destination portamento effect cannot be disabled);
+     * @return Effect Examples
+     * @throws IllegalArgumentException When the change <code>delta</code> is not within the specified range
+     */
+    public static PortamentoEffect of(int delta) throws IllegalArgumentException {
+        return new PortamentoEffect(delta);
+    }
+
+    /**
+     * @return Is it the effect of the wavelength increasing and the sound getting lower?
+     */
+    public boolean slideUp() {
+        return delta > 0;
+    }
+
+    /**
+     * @return Is it the effect of the wavelength getting smaller and the sound getting higher?
+     */
+    public boolean slideDown() {
+        return delta < 0;
+    }
+
+    /**
+     * @return Is there a glissando effect?
+     */
+    public boolean slide() {
+        return delta != 0;
+    }
+
+    @Override
+    public void execute(byte channelCode, FamiTrackerRuntime runtime) {
+        AbstractFtmChannel ch = runtime.channels.get(channelCode);
+
+        /*
+         * Here we need to ensure that a channel has at most one state that changes the volume over time.
+         */
+        HashSet<IFtmState> set = ch.filterStates(PitchAccumulateState.NAME);
+        PitchAccumulateState s = null;
+
+        if (!set.isEmpty()) {
+            s = (PitchAccumulateState) set.iterator().next();
+            s.delta = delta; // But it does not reset the cumulative amount
+        } else if (delta != 0) {
+            s = new PitchAccumulateState(delta);
+            ch.addState(s);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Portamento:" + delta;
+    }
+
+    /**
+     * Lower priority than {@link PitchEffect} and {@link VibratoEffect}
+     */
+    @Override
+    public final int priority() {
+        return -3;
+    }
 }

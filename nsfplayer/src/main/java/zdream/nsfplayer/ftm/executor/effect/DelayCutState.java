@@ -6,78 +6,77 @@ import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.executor.IFtmState;
 
+
 /**
- * <p>延迟静音状态
- * <p>如果某帧产生了静音效果 {@link NoteHaltEffect}, 该状态删除
+ * <p>delayed mute state
+ * <p>If a frame produces a mute effect {@link NoteHaltEffect}, the state is removed.
  * </p>
- * 
+ *
  * <br>
- * <p><b>补充规则</b>
- * <p>如果该帧有 {@link NoteEffect} 或者 {@link NoiseEffect} 效果触发,
- * 而且现在不是该状态建立的第一帧, 删除该状态
+ * <p><b>Supplementary rules</b>
+ * <p>If there is a {@link NoteEffect} or {@link NoiseEffect} effect triggered in this frame,
+ * and this is not the first frame in which the state was created, delete the state.
  * </p>
- * 
- * @see CutEffect
- * 
+ *
  * @author Zdream
+ * @see CutEffect
  * @since 0.2.2
  */
 public class DelayCutState implements IFtmState {
-	
-	public static final String NAME = "Delay Cut";
-	
-	/**
-	 * 在几帧之后触发静音效果
-	 */
-	public int frames;
-	
-	/**
-	 * 记录现在是否是该状态建立的第一帧.
-	 */
-	private boolean startFrame = true;
 
-	public DelayCutState(int frames) {
-		this.frames = frames;
-	}
+    public static final String NAME = "Delay Cut";
 
-	@Override
-	public String name() {
-		return NAME;
-	}
+    /**
+     * Trigger the mute effect after a few frames
+     */
+    public int frames;
 
-	@Override
-	public void trigger(byte channelCode, FamiTrackerRuntime runtime) {
-		AbstractFtmChannel ch = runtime.channels.get(channelCode);
+    /**
+     * Record whether this is the first frame in which the state is established.
+     */
+    private boolean startFrame = true;
 
-		// 每当轨道中触发了静音效果 NoteHaltEffect, 该效果删除
-		Map<FtmEffectType, IFtmEffect> map = runtime.effects.get(channelCode);
-		if (map.get(FtmEffectType.HALT) != null) {
-			ch.removeState(this);
-			return;
-		}
-		if (!startFrame && map.get(FtmEffectType.NOTE) != null) {
-			ch.removeState(this);
-			return;
-		}
-		
-		if (frames <= 0) {
-			ch.doHalt();
-			ch.removeState(this);
-			return;
-		}
-		
-		frames--;
-		startFrame = false;
-	}
-	
-	@Override
-	public String toString() {
-		return NAME + ":" + frames;
-	}
-	
-	@Override
-	public int priority() {
-		return -1;
-	}
+    public DelayCutState(int frames) {
+        this.frames = frames;
+    }
 
+    @Override
+    public String name() {
+        return NAME;
+    }
+
+    @Override
+    public void trigger(byte channelCode, FamiTrackerRuntime runtime) {
+        AbstractFtmChannel ch = runtime.channels.get(channelCode);
+
+        // Whenever a NoteHaltEffect is triggered in a track, the effect is removed.
+        Map<FtmEffectType, IFtmEffect> map = runtime.effects.get(channelCode);
+        if (map.get(FtmEffectType.HALT) != null) {
+            ch.removeState(this);
+            return;
+        }
+        if (!startFrame && map.get(FtmEffectType.NOTE) != null) {
+            ch.removeState(this);
+            return;
+        }
+
+        if (frames <= 0) {
+            ch.doHalt();
+            ch.removeState(this);
+            return;
+        }
+
+        frames--;
+        startFrame = false;
+    }
+
+    @Override
+    public String toString() {
+        return NAME + ":" + frames;
+    }
+
+    @Override
+    public int priority() {
+        return -1;
+    }
 }

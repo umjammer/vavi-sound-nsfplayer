@@ -1,30 +1,29 @@
 package zdream.nsfplayer.mixer;
 
 /**
- * <p>混音器多声道单接收轨道接口
+ * <p>Mixer multi-Track single receive channel interface
  * </p>
- * 
+ *
  * @author Zdream
  * @since v0.3.0
  */
 public interface ITrackChannel extends IMixerChannel {
-	
-	/**
-	 * 分声道设置音量. 最后呈现的音量为轨道总音量 * 声道音量
-	 * @param level
-	 *   声道音量值, [0, 1]
-	 * @param track
-	 *   声道号
-	 */
-	public void setTrackLevel(float level, int track);
-	
-	/**
-	 * 获得声道音量值. 最后呈现的音量为轨道总音量 * 声道音量, 而不是单个声道音量.
-	 * @param track
-	 *   声道号
-	 * @return
-	 *   声道音量值, [0, 1]
-	 */
-	public float getTrackLevel(int track);
 
+    /**
+     * Set the volume for each track. The final volume is the total volume
+     * of the track volume
+     *
+     * @param level Channel volume value, [0, 1]
+     * @param track Track number
+     */
+    void setTrackLevel(float level, int track);
+
+    /**
+     * Get the track volume value. The final volume presented is the total volume
+     * of the track, not the volume of a single track.
+     *
+     * @param track Track number
+     * @return Channel volume value, [0, 1]
+     */
+    float getTrackLevel(int track);
 }

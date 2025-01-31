@@ -3,50 +3,46 @@ package zdream.nsfplayer.nsf.device;
 import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 
+
 /**
- * 用仪器、设备使用的装置的抽象
+ * Abstraction of devices for use with instruments and equipment
+ *
  * @author Zdream
  */
 public interface IDevice extends IResetable {
-	
-	/**
-	 * 数据写入
-	 * @param adr
-	 *   地址
-	 * @param val
-	 *   填写值
-	 * @param id
-	 *   设备识别信息.
-	 *   一个设备复数的 IO 支持的时候等
-	 *   这个值通常为 0
-	 * @return
-	 *   成功时 true, 失败时 false
-	 */
-	public boolean write(int adr, int val, int id);
-	
-	/**
-	 * 从设备中读取数据
-	 * @param adr
-	 *   地址
-	 * @param val
-	 *   参数. 如果读到数据的话改写这个参数.
-	 * @param id
-	 *   设备识别信息.
-	 *   一个设备复数的 IO 支持的时候等
-	 *   这个值通常为 0
-	 * @return
-	 *   收到的值. 当无法读取或者读取失败时返回 null
-	 *   成功时 true, 失败时 false
-	 */
-	public boolean read(int adr, IntHolder val, int id);
-	
-	/**
-	 * 选项参数设置
-	 * @param id
-	 * @param value
-	 */
-	default void setOption(int id, int value) {
-		// do nothing
-	}
-	
+
+    /**
+     * data writing
+     *
+     * @param adr address
+     * @param val Fill in the value
+     * @param id  Device identification information.
+     *            IO support for the plural of a device, etc.
+     *            This value is usually 0
+     * @return true on success, false on failure
+     */
+    boolean write(int adr, int val, int id);
+
+    /**
+     * Reading data from a device
+     *
+     * @param adr address
+     * @param val Parameter. Rewrite this parameter if data is read.
+     * @param id  Device identification information.
+     *            IO support for the plural of a device, etc.
+     *            This value is usually 0
+     * @return The value received. Returns null if the value could not be read or failed.
+     * true on success, false on failure
+     */
+    boolean read(int adr, IntHolder val, int id);
+
+    /**
+     * Option parameter setting
+     *
+     * @param id
+     * @param value
+     */
+    default void setOption(int id, int value) {
+        // do nothing
+    }
 }

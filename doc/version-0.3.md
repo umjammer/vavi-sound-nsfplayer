@@ -1,56 +1,54 @@
+## Version update history (print version 0.3)
 
-## 版本更新历史 (版本 0.3)
+#### v0.3.2 and after
 
-#### v0.3.2 及后续
-
-在版本 v0.3.1 之后，该项目将暂时关闭。后续版本将视情况启动或者停止，
-但是修改 BUG 的流程将持续下去。
+the current edition v0.3.1, the order will be closed. After the final edition of the version,
+the information was stopped. However, the BUG process has been revised and removed.
 
 #### v0.3.2
 
-（2018-12-13）
+(2018-12-13)
 
-*	（BUG 修复）（NSF）修复了播放含 N163 轨道的音频时初始化失败的 BUG；
+* (BUG fix) (NSF) correction including broadcasting N163 channel  actual sound time BUG;
 
-（2018-12-11）
+(2018-12-11)
 
-*	（BUG 修复）（NSF）修复了 Nsf 部分切歌时 Blip 混音器无法初始化的 BUG；
-*	（BUG 修复）（Mixer）调整了 FDS 轨道的音量, 让它在 Xgm 单轨道中表现的音量没有那么大；
+* (BUG fix) (NSF) fix Nsf partial cut-off Blip mixer free BUG;
+* (BUG fix) (Mixer) Adjust the volume of the FDS track, the volume that appears on the Xgm road is not large;
 
 #### v0.3.1
 
-（2018-12-06）
+(2018-12-06)
 
-*	（FTM）允许 FTM 从指定的行渲染、跳转到指定行；
-*	（FTM）允许指定帧率渲染；
+* (FTM) Permit FTM Specified line to be passed, jump to specified line;
+* (FTM) Designated rate of printing;
 
-（2018-12-07）
+(2018-12-07)
 
-*	（FTM）补充同步音频渲染器，支持同时渲染多个 FTM 音频
+* (FTM) Contains simultaneous sound threading machine, supports simultaneous threading multiple pieces FTM sound
 
-（2018-12-10）
+(2018-12-10)
 
-*	（FTM）同步音频渲染器支持同步等待协议，支持多个 FTM 音频播放时的等待、同步策略；
+* (FTM) Same-time sound broadcasting machine support same-step etc., support multiple FTM music broadcasting time etc., same-step strategy;
 
 #### v0.3.0
 
-版本 0.3.0 将会从版本 0.2.10 的基础上进行开发。
+Version 0.3.0 Version 0.2.10 Progress on the basics.
 
-（2018-10-28）
+(2018-10-28)
 
-*	（General）补充执行器概念；
-*	（FTM）补充 FTM 执行器；
+* (General) Refilling device concept;
+* (FTM) Filling FTM Executor;
 
-（2018-12-01）
+(2018-12-01)
 
-*	（Mixer）重构 Mixer 部分，支持重复类型的轨道；
+* (Mixer) heavy mixer part, support heavy category type track;
 
-（2018-12-02）
+(2018-12-02)
 
-*	（Mixer）Xgm 合并混音器与 Blip 混音器支持不同输入采样率的音频数据的混合；
-*	（FTM）添加监听 FTM 执行构件获取音键、结束执行的监听器接口；
+* (Mixer) Xgm mixed mixer and Blip mixer support non-mixed mixer;
+* (FTM) Addition of the sound key;
 
-（2018-12-03）
+(2018-12-03)
 
-*	（Mixer）Xgm 的两类混音均开始支持多声道输入；
-
+* (Mixer) Xgm The introduction of mixed tones and support for polyphony;

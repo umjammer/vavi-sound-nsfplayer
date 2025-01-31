@@ -1,34 +1,35 @@
 package zdream.nsfplayer.nsf.renderer;
 
 /**
- * <p>NSF 以及常量及常量计算相关, 比如储存每一帧的时钟周期数等等
+ * <p>NSF as well as constants and constant calculations,
+ * such as storing the number of clock cycles per frame, etc.
  * </p>
- * 
+ *
  * @author Zdream
  * @since v0.2.1
  */
 public class NsfParameter {
-	
-	/**
-	 * 现在仅允许包内进行实例化
-	 */
-	NsfParameter() {
-		super();
-	}
-	
-	/**
-	 * 用户指定用哪种制式进行播放, NTSC 或者 PAL
-	 */
-	public int region;
-	
-	/**
-	 * 采样率, 每秒的采样数
-	 */
-	public int sampleRate;
-	
-	/**
-	 * 每秒的时钟周期数, 精确值
-	 */
-	public int freqPerSec;
-	
+
+    /**
+     * Instantiation is now only allowed within packages
+     */
+    NsfParameter() {
+        super();
+    }
+
+    /**
+     * The user specifies which standard to use for playback, NTSC or PAL.
+     */
+    public int region;
+
+    /**
+     * Sample rate, samples per second
+     */
+    public int sampleRate;
+
+    /**
+     * Number of clock cycles per second, exact value
+     */
+    public int freqPerSec;
+
 }

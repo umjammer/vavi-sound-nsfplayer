@@ -6,109 +6,107 @@ import java.util.List;
 
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 
+
 /**
- * 能够安装多个设备的总线, 提供复位, 写入, 读取等动作
+ * Multiple device buses can be installed, providing reset, write, and read actions.
+ *
  * @author Zdream
  */
 public class Bus implements IDevice, Iterable<IDevice> {
-	
-	protected final List<IDevice> vd = new ArrayList<IDevice>();
 
-	/**
-	 * 对所有安装在总线的设备，都进行 <code>reset()</code> 操作.
-	 * 调用次序就是设备所安装的顺序.
-	 */
-	public void reset() {
-		for (Iterator<IDevice> it = vd.iterator(); it.hasNext();) {
-			IDevice d = it.next();
-			d.reset();
-		}
-	}
-	
-	/**
-	 * 卸载所有安装在总线上的设备
-	 */
-	public void detachAll() {
-		vd.clear();
-	}
-	
-	/**
-	 * 安装设备
-	 * <p>在这个总线上安装装置.</p>
-	 * @param d
-	 *   要安装在总线上的设备
-	 */
-	public void attach(IDevice d) {
-		if (d != null) {
-			vd.add(d);
-		}
-	}
+    protected final List<IDevice> vd = new ArrayList<>();
 
-	/**
-	 * 数据写入
-	 * <p>对所有安装在总线的设备，都进行 <code>write()</code> 操作.
-	 * 调用次序就是设备所安装的顺序.</p>
-	 * @param id 在这个方法中会被忽略
-	 */
-	public boolean write(int addr, int value, int id) {
-		boolean ret = false;
-		for (Iterator<IDevice> it = vd.iterator(); it.hasNext();) {
-			IDevice d = it.next();
-			d.write(addr, value, 0);
-		}
-		return ret;
-	}
+    /**
+     * The <code>reset()</code> operation is performed on all devices installed on the bus.
+     * The call order is the order in which the devices are installed.
+     */
+    @Override
+    public void reset() {
+        for (IDevice d : vd) {
+            d.reset();
+        }
+    }
 
-	/**
-	 * 数据读取
-	 * <p>对所有安装在总线的设备，都进行 <code>write()</code> 操作.
-	 * 调用次序就是设备所安装的顺序.</p>
-	 * @return
-	 *   当安装在该总线的所有的设备都正常读取, 返回 true
-	 */
-	public boolean read(int adr, IntHolder val, int id) {
-		boolean ret = false;
-		IntHolder vtmp = new IntHolder(0);
-		
-		val.val = 0;
-		for (Iterator<IDevice> it = vd.iterator(); it.hasNext();) {
-			IDevice d = it.next();
-			
-			if (d.read(adr, vtmp, 0)) {
-				val.val |= vtmp.val;
-				ret = true;
-			}
-		}
-		return ret;
-	}
+    /**
+     * Uninstall all devices installed on the bus
+     */
+    public void detachAll() {
+        vd.clear();
+    }
 
-	@Override
-	public Iterator<IDevice> iterator() {
-		return vd.iterator();
-	}
-	
-	/**
-	 * 复制内存的数据至 bs 数组中
-	 * @param bs
-	 *   盛放数据的数组
-	 * @param offset
-	 *   bs 的 offset
-	 * @param length
-	 *   复制的数据个数
-	 * @param address
-	 *   镜像的复制起点位置
-	 * @since v0.2.8
-	 */
-	public void read(byte[] bs, int offset, int length, int address) {
-		IntHolder holder = new IntHolder();
+    /**
+     * Installation of equipment
+     * <p>Install the device on this bus. </p>
+     *
+     * @param d Devices to be installed on the bus
+     */
+    public void attach(IDevice d) {
+        if (d != null) {
+            vd.add(d);
+        }
+    }
 
-		int bsPtr = offset;
-		int imgPtr = address;
-		for (int i = 0; i < length; i++, bsPtr++, imgPtr++) {
-			if (read(imgPtr, holder, 0)) {
-				bs[bsPtr] = (byte) holder.val;
-			}
-		}
-	}
+    /**
+     * data writing
+     * <p>The <code>write()</code> operation is performed on all devices installed on the bus.
+     * The call order is the order in which the devices are installed. </p>
+     *
+     * @param id will be ignored in this method
+     */
+    @Override
+    public boolean write(int addr, int value, int id) {
+        boolean ret = false;
+        for (IDevice d : vd) {
+            d.write(addr, value, 0);
+        }
+        return ret;
+    }
 
+    /**
+     * data retrieval
+     * <p>The <code>write()</code> operation is performed on all devices installed on the bus.
+     * The call order is the order in which the devices are installed. </p>
+     *
+     * @return Returns true if all devices installed on the bus are read correctly.
+     */
+    @Override
+    public boolean read(int adr, IntHolder val, int id) {
+        boolean ret = false;
+        IntHolder vtmp = new IntHolder(0);
+
+        val.val = 0;
+        for (IDevice d : vd) {
+            if (d.read(adr, vtmp, 0)) {
+                val.val |= vtmp.val;
+                ret = true;
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public Iterator<IDevice> iterator() {
+        return vd.iterator();
+    }
+
+    /**
+     * Copy the data from memory to the bs array.
+     *
+     * @param bs      Arrays of data
+     * @param offset  offset of bs
+     * @param length  Number of data copied
+     * @param address Replication starting position of the mirror image
+     * @since v0.2.8
+     */
+    public void read(byte[] bs, int offset, int length, int address) {
+        IntHolder holder = new IntHolder();
+
+        int bsPtr = offset;
+        int imgPtr = address;
+        for (int i = 0; i < length; i++, bsPtr++, imgPtr++) {
+            if (read(imgPtr, holder, 0)) {
+                bs[bsPtr] = (byte) holder.val;
+            }
+        }
+    }
 }

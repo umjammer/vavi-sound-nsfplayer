@@ -3,179 +3,183 @@ package zdream.nsfplayer.nsf.audio;
 import zdream.nsfplayer.core.AbstractNsfAudio;
 import zdream.nsfplayer.core.ERegion;
 
+
 /**
- * <p>NSF 音频文件内的数据
- * <p>这里将不再存放播放相关的数据
+ * <p>Data in NSF audio files
+ * <p>No playback related data will be stored here
+ *
  * @author Zdream
  * @version v0.1
  * @date 2018-01-16
  */
 public class NsfAudio extends AbstractNsfAudio {
-	
-	/**
-	 * 当前 NSF 文件的版本号<br>
-	 * 地址 0x000005, 单字节
-	 */
-	public int version;
-	/**
-	 * NSF 中乐曲数<br>
-	 * 地址 0x000006, 单字节
-	 */
-	public int total_songs;
-	/**
-	 * 起始乐曲播放的号码<br>
-	 * 地址 0x000007, 单字节
-	 */
-	public int start;
-	
-	/**
-	 * 数据载入的内存地址, 范围 ($8000-$FFFF)<br>
-	 * 地址 0x000008-0x000009, 双字节<br><br>
-	 * 
-	 * 这里说明了在游戏机 RAM 中的地址. 如果游戏放到内存中运行, 则 NSF 将放到内存中.
-	 * 除去文件头 (地址 0x000000 至 0x00007F), 其它数据将放到 lenA 对应的地址中
-	 */
-	public int load_address;
-	/**
-	 * 初始化数据开始的地址, 范围($8000-$FFFF)<br>
-	 * 地址 0x00000A-0x00000B, 双字节
-	 */
-	public int init_address;
-	/**
-	 * 乐曲播放地址, 范围($8000-$FFFF)<br>
-	 * 地址 0x00000C-0x00000D, 双字节
-	 */
-	public int play_address;
-	
-	/*
-	 * 游戏或乐曲的标题、曲作者或艺术家名称、版权部分,附加说明等略过
-	 */
-	/**
-	 * NTSC 制式下乐曲循环播放速度, 常为 [16666]
-	 */
-	public int speed_ntsc;
-	/**
-	 * Bank 切换, 初始 8 bit 值<br>
-	 * 
-	 * 6502 汇编的寻址空间为 64K, 但是 NES 却只用 $8000-$FFFF, 共 32K, 对于像超级玛莉 1 这样的小游戏, 不用
-	 * 考虑存储体 (Bank) 切换, 但是对于像魂斗罗 1, 2 代这样的游戏, 超过 32K, 就要进行存储体 (Bank) 切换,
-	 * 大小可能不太一样, 有的是 16K, 有的是 32K, 有的是 8K 等等.
-	 * 地址也不一样, $8000, $A000, $C000 都有可能.
-	 * NSF 也会遇到空间不够的情况, 这时就要用到存储体 (Bank) 切换. NSF 存储体 (Bank) 切换大小为4K.
-	 */
-	public short bankswitch[] = new short[8];
-	/**
-	 * PAL 制式下乐曲循环播放速度, 常为 [20000]
-	 */
-	public int speed_pal;
-	/**
-	 * PAL/NTSC 制式选择<br>
-	 * 
-	 * <p>位开关, 数据从左（高）到右（低），前 6 位强制为 0
-	 * <p>第 7 位如果为 1, NTSC/PAL, 此时第 8 位必须为 0; (= 2)<br>
-	 * 否则第 7 位为 0, 第 8 位为 0, 为 NTSC 制式; 为 1, 为 PAL 制式
-	 */
-	public byte pal_ntsc;
-	/**
-	 * <b>特殊声音芯片</b><br>
-	 * 
-	 * 位开关, 数据从左（高）到右（低），前 2 位强制为 0<br>
-	 * 第 3 位如果为 1, 使用 Sunsoft (FME7) 芯片;<br>
-	 * 第 4 位如果为 1, 使用 Namcot (106) 芯片;<br>
-	 * 第 5 位如果为 1, 使用 Nintendo (MMC5) 芯片;<br>
-	 * 第 6 位如果为 1, 使用 Nintendo (FDS) 芯片;<br>
-	 * 第 7 位如果为 1, 使用 Konami (VRC7) 芯片;<br>
-	 * 第 8 位如果为 1, 使用 Konami (VRC6) 芯片;<br>
-	 * 
-	 * 如果 f2 == 0, 什么芯片也不用
-	 */
-	public byte soundchip;
-	
-	/**
-	 * 标题
-	 */
-	public String title;
-	
-	/**
-	 * 艺术家
-	 */
-	public String artist;
-	
-	/**
-	 * 版权声明
-	 */
-	public String copyright;
-	
-	/**
-	 * 剩余数据
-	 */
-	public byte[] body;
-	
-	public boolean useVrc6() {
-		return (soundchip & 1) != 0;
-	}
-	
-	public boolean useVrc7() {
-		return (soundchip & 2) != 0;
-	}
-	
-	public boolean useFds() {
-		return (soundchip & 4) != 0;
-	}
-	
-	public boolean useMmc5() {
-		return (soundchip & 8) != 0;
-	}
-	
-	/**
-	 * <p>是否使用了 N163 芯片.
-	 * <p>N163 (Namco 163) 又称为 N106.
-	 * @return
-	 */
-	public boolean useN163() {
-		return (soundchip & 16) != 0;
-	}
-	
-	/**
-	 * <p>是否使用了 S5B 芯片.
-	 * <p>S5B 又称为 FME7.
-	 * @return
-	 */
-	public boolean useS5b() {
-		return (soundchip & 32) != 0;
-	}
-	
-	@Override
-	public int getTrackCount() {
-		return total_songs;
-	}
-	
-	/**
-	 * 返回制式
-	 * @return
-	 *   制式
-	 * @since v0.2.10
-	 */
-	public ERegion getRegion() {
-		int v = pal_ntsc & 3;
-		switch (v) {
-		case 0: return ERegion.NTSC;
-		case 1: return ERegion.PAL;
 
-		default: return ERegion.UNKNOWED;
-		}
-	}
-	
-	NsfAudio() {
-		
-	}
-	
-	@Override
-	public String toString() {
-		StringBuilder b = new StringBuilder();
-		b.append("NSF 乐曲 ").append(title).append(" - ").append(artist).append(" 总曲目: ").append(total_songs);
-		
-		return b.toString();
-	}
+    /**
+     * Version number of the current NSF file<br>
+     * Address 0x000005, single byte
+     */
+    public int version;
+    /**
+     * Number of songs in NSF<br>
+     * Address 0x000006, single byte
+     */
+    public int total_songs;
+    /**
+     * The number of the starting song to be played<br>
+     * Address 0x000007, single byte
+     */
+    public int start;
 
+    /**
+     * Memory address where data is loaded, range ($8000-$FFFF)<br>
+     * Address 0x000008-0x000009, double byte<br><br>
+     * <p>
+     * This specifies the address in the console's RAM. If the game is run from RAM,
+     * then the NSF will be placed in RAM.
+     * Excluding the file header (address 0x000000 to 0x00007F),
+     * the remaining data will be placed at the address corresponding to lenA
+     */
+    public int load_address;
+    /**
+     * Initialization data start address, range ($8000-$FFFF)<br>
+     * Address 0x00000A-0x00000B, double byte
+     */
+    public int init_address;
+    /**
+     * Music playback address, range ($8000-$FFFF)<br>
+     * Address 0x00000C-0x00000D, double byte
+     */
+    public int play_address;
+
+    /*
+     * The game or music title, composer or artist name, copyright part,
+     * additional instructions, etc. are omitted
+     */
+
+    /**
+     * The music loop playback speed under NTSC standard, usually [16666]
+     */
+    public int speed_ntsc;
+    /**
+     * Bank switch, initial 8 bit value<br>
+     * <p>
+     * The addressing space of 6502 assembly is 64K, but NES only uses $8000-$FFFF,
+     * a total of 32K. For small games like Super Mario 1, there is no need to consider bank switching,
+     * but for games like Contra 1 and 2, if the addressing space exceeds 32K, bank switching must be
+     * performed. The size may be different, some are 16K, some are 32K, some are 8K, etc.
+     * The address is different, $8000, $A000, $C000 are all possible.
+     * NSF may also encounter insufficient space, in which case bank switching is required.
+     * The NSF bank switching size is 4K.
+     */
+    public final short[] bankswitch = new short[8];
+    /**
+     * The music loop playback speed in PAL format, usually [20000]
+     */
+    public int speed_pal;
+    /**
+     * PAL/NTSC format selection<br>
+     *
+     * <p>Bit switch, data from left (high) to right (low), the first 6 bits are forced to be 0
+     * <p>If the 7th bit is 1, NTSC/PAL, then the 8th bit must be 0; (= 2)<br>
+     * Otherwise, the 7th bit is 0, the 8th bit is 0, which is NTSC format; if it is 1, it is PAL format.
+     */
+    public byte pal_ntsc;
+    /**
+     * <b>Special sound chip</b><br>
+     * <p>
+     * Bit switch, data from left (high) to right (low), first 2 bits forced to 0<br>
+     * If the 3rd bit is 1, Sunsoft (FME7) chip is used;<br>
+     * If the 4th bit is 1, use the Namcot (106) chip;<br>
+     * If the 5th bit is 1, the Nintendo (MMC5) chip is used;<br>
+     * If the 6th bit is 1, the Nintendo (FDS) chip is used;<br>
+     * If bit 7 is 1, Konami (VRC7) chip is used;<br>
+     * If bit 8 is 1, Konami (VRC6) chip is used;<br>
+     * <p>
+     * If f2 == 0, no chip is used
+     */
+    public byte soundChip;
+
+    /**
+     * title
+     */
+    public String title;
+
+    /**
+     * artist
+     */
+    public String artist;
+
+    /**
+     * Copyright
+     */
+    public String copyright;
+
+    /**
+     * Remaining data
+     */
+    public byte[] body;
+
+    public boolean useVrc6() {
+        return (soundChip & 1) != 0;
+    }
+
+    public boolean useVrc7() {
+        return (soundChip & 2) != 0;
+    }
+
+    public boolean useFds() {
+        return (soundChip & 4) != 0;
+    }
+
+    public boolean useMmc5() {
+        return (soundChip & 8) != 0;
+    }
+
+    /**
+     * <p>Whether the N163 chip is used.
+     * <p>N163 (Namco 163) is also known as N106.
+     *
+     * @return
+     */
+    public boolean useN163() {
+        return (soundChip & 16) != 0;
+    }
+
+    /**
+     * <p>Whether the S5B chip is used.
+     * <p>S5B is also known as FME7.
+     *
+     * @return
+     */
+    public boolean useS5b() {
+        return (soundChip & 32) != 0;
+    }
+
+    @Override
+    public int getTrackCount() {
+        return total_songs;
+    }
+
+    /**
+     * Return to format
+     *
+     * @return Standard
+     * @since v0.2.10
+     */
+    public ERegion getRegion() {
+        int v = pal_ntsc & 3;
+        return switch (v) {
+            case 0 -> ERegion.NTSC;
+            case 1 -> ERegion.PAL;
+            default -> ERegion.UNKNOWED;
+        };
+    }
+
+    NsfAudio() {
+    }
+
+    @Override
+    public String toString() {
+        return "NSF song" + title + " - " + artist + " Total tracks: " + total_songs;
+    }
 }

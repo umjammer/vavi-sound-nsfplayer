@@ -9,533 +9,540 @@ import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
+
 /**
- * 抽象的 Famitracker 轨道, 用于存储各个轨道的播放局部参数, 比如局部 pitch 等
- * 
- * <p>原工程里, 它相当于 TrackerChannel 和 ChannelHandler 的结合体
+ * Abstract Famitracker tracks, used to store playback localization parameters for each track,
+ * such as local pitch, etc.
+ *
+ * <p>In the original project, it is a combination of TrackerChannel and ChannelHandler.
  * </p>
- * 
+ *
  * @author Zdream
  * @data 2018-06-09
  * @since 0.2.1
  */
 public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntimeHolder, IResetable {
 
-	/**
-	 * 轨道号
-	 */
-	public final byte channelCode;
-	
-	/**
-	 * 运行时数据
-	 */
-	private FamiTrackerRuntime runtime;
+    /**
+     * channel number
+     */
+    public final byte channelCode;
 
-	@Override
-	public FamiTrackerRuntime getRuntime() {
-		return runtime;
-	}
-	
-	/**
-	 * 设置环境
-	 * @param runtime
-	 */
-	void setRuntime(FamiTrackerRuntime runtime) {
-		this.runtime = runtime;
-	}
-	
-	public AbstractFtmChannel(byte channelCode) {
-		this.channelCode = channelCode;
-	}
-	
-	/**
-	 * 获取音频发声器
-	 * @return
-	 *   音频发声器实例
-	 */
-	public abstract AbstractNsfSound getSound();
-	
-	/**
-	 * <p>将轨道上的数据写到发声器中
-	 * <p>原本子类都有类似的函数, 从版本 v0.2.9 开始, 将其挪到父类中
-	 * </p>
-	 * @since v0.2.9
-	 */
-	public abstract void writeToSound();
-	
-	/* **********
-	 * 外部接口 *
-	 ********** */
-	
-	/**
-	 * <p>执行 note
-	 * <p>执行部分与播放部分从 v0.2.9 开始, 拆分成了两个函数.
-	 * 该函数为执行部分, 该方法要做的, 就是处理效果和状态的触发.
-	 * 该函数的结果就是修改本 channel 实例中的各项参数, 但是并不对 sound 作任何修改.
-	 * <p>原程序: ChannelHandler.playNote
-	 * </p>
-	 * 
-	 * @version v0.2.9
-	 *   <br>从原来的完成【执行】和【播放】两个任务, 修改为只完成【执行】任务.
-	 *   播放任务挪到函数 {@link #triggerSound()} 中.
-	 *   
-	 * @see #triggerSound()
-	 */
-	public void playNote() {
-		// 初始化
-		startFrame();
-		
-		// 效果
-		forceEffect(runtime.effects.get(this.channelCode).values());
-		
-		// 状态
-		triggleState();
-	}
-	
-	/* **********
-	 *   参数   *
-	 ********** */
-	/*
-	 * 这里说明一下. 下面的参数, 比如 volume 等, 有两个值, curVolume 和 masterVolume.
-	 * 最终使用的值是 curVolume, 但存在这样一个规定: 在 effect 和 state 进行修改时,
-	 * masterVolume 表示主音量, 而 curVolume 表示偏移量, 即 curVolume 在 0 的周围浮动;
-	 * 最终计算总的 curVolume 时, 会将主音量和偏移量共同进入计算, 得出的 curVolume
-	 * 重写 curVolume 的值. 到这时, curVolume 的意义会从偏移量变成当前音量.
-	 * 
-	 * 音高 period, 音键 note 也遵循这个规则.
-	 */
-	
-	/**
-	 * 乐器
-	 */
-	protected int instrument;
-	
-	/**
-	 * 当前帧中, 乐器是否更新过.
-	 * 当该帧音键、乐器变化时, 该值为 true
-	 */
-	protected boolean instrumentUpdated;
-	
-	/**
-	 * 当前帧中, 音键是否更新过.
-	 * 当该帧音键变化时, 该值为 true
-	 */
-	protected boolean noteUpdated;
-	
-	/**
-	 * 音键, 含音符和音高
-	 * <p>curNote: 当前音键
-	 * <p>masterNote: 主音键.
-	 * 主音键有效值为 [1, 96] (Noise 轨道是 [1, 16]), 0 为无效值, 表示不发声
-	 * </p>
-	 */
-	protected int curNote, masterNote;
-	
-	/**
-	 * <p>音量
-	 * <p>curVolume: 当前音量, 需要计算乐器变量.
-	 * 由于我这里为了提高精度, 为原来的音量的 16 倍,
-	 * 并且中途在修改的过程中允许产生负数等超过边界的情况,
-	 * 最后在写入发声器前将其范围限定在 [0, 240] 范围内.
-	 * <p>masterVolume: 主音量 [0, 15]
-	 * </p>
-	 */
-	protected int curVolume, masterVolume = 15;
-	
-	/**
-	 * <p>音高
-	 * <p>curPeriod: 当前波长, 需要计算其它比如颤音等
-	 * <p>masterPitch: 主音高. 这个值在原 C++ 程序中称为 finePitch,
-	 * 由 Pxx 效果控制. 默认值 0
-	 * <p>波长和音高的关系是负相关, 单位相同. 波长越长, 音高越低
-	 * </p>
-	 */
-	protected int curPeriod, masterPitch;
-	
-	/**
-	 * <p>音色
-	 * <p>curDuty: 当前音色
-	 * <p>masterDuty: 主音色. 这个值由 Vxx 效果控制. 默认值 0
-	 * </p>
-	 */
-	protected int curDuty, masterDuty;
-	
-	/**
-	 * 是否在播放状态
-	 */
-	protected boolean playing = false;
-	
-	/**
-	 * @return
-	 *   {@link #instrument}
-	 */
-	public int getInstrument() {
-		return instrument;
-	}
+    /**
+     * Runtime data
+     */
+    private FamiTrackerRuntime runtime;
 
-	/**
-	 * @param instrument
-	 *   {@link #instrument}
-	 */
-	public void setInstrument(int instrument) {
-		instrumentUpdated = true;
-		this.instrument = instrument;
-	}
+    @Override
+    public FamiTrackerRuntime getRuntime() {
+        return runtime;
+    }
 
-	/**
-	 * @return
-	 *   {@link #curNote}
-	 */
-	public int getCurrentNote() {
-		return curNote;
-	}
+    /**
+     * Setting up the environment
+     *
+     * @param runtime
+     */
+    void setRuntime(FamiTrackerRuntime runtime) {
+        this.runtime = runtime;
+    }
 
-	/**
-	 * @param note
-	 *   {@link #curNote}
-	 */
-	public void setCurrentNote(int note) {
-		this.curNote = note;
-	}
+    public AbstractFtmChannel(byte channelCode) {
+        this.channelCode = channelCode;
+    }
 
-	/**
-	 * 为 {@link #curNote} 增加一个值
-	 * @param delta
-	 *   增量, 可以为正数、负数或 0
-	 */
-	public void addCurrentNote(int delta) {
-		this.curNote += delta;
-	}
+    /**
+     * Get Audio Speaker
+     *
+     * @return Examples of Audio Loudspeakers
+     */
+    public abstract AbstractNsfSound getSound();
 
-	/**
-	 * @return
-	 *   {@link #curVolume}
-	 */
-	public int getCurrentVolume() {
-		return curVolume;
-	}
+    /**
+     * <p>Write data from the channel to the transmitter
+     * <p>Originally, subclasses had similar functions, but starting with version v0.2.9,
+     * they have been moved to the parent class.
+     * </p>
+     *
+     * @since v0.2.9
+     */
+    public abstract void writeToSound();
 
-	/**
-	 * @param volume
-	 *   {@link #curVolume}
-	 */
-	public void setCurrentVolume(int volume) {
-		this.curVolume = volume;
-	}
+    /*
+     * external interface
+     */
 
-	/**
-	 * 为 {@link #curVolume} 增加一个值
-	 * @param delta
-	 *   增量, 可以为正数、负数或 0
-	 */
-	public void addCurrentVolume(int delta) {
-		this.curVolume += delta;
-	}
+    /**
+     * <p>Execute note
+     * <p>The execution part and the playback part have been split into
+     * two functions since v0.2.9.
+     * This function is the executable, and all this method does is handle
+     * the triggering of effects and states.
+     * The result of this function modifies the parameters of the channel instance,
+     * but does not modify sound in any way.
+     * <p>original program: ChannelHandler.playNote
+     * </p>
+     *
+     * @version v0.2.9
+     * <br>From completing both [Execute] and [Play] tasks, only [Execute] tasks will be completed.
+     * The playback task is moved to the function {@link #triggerSound()}.
+     * @see #triggerSound()
+     */
+    public void playNote() {
+        // initialization
+        startFrame();
 
-	/**
-	 * @return
-	 *   {@link #curPeriod}
-	 */
-	public int getCurrentPeriod() {
-		return curPeriod;
-	}
+        // effect
+        forceEffect(runtime.effects.get(this.channelCode).values());
 
-	/**
-	 * @param period
-	 *   {@link #curPeriod}
-	 */
-	public void setCurrentPeriod(int period) {
-		this.curPeriod = period;
-	}
+        // statuses
+        triggleState();
+    }
 
-	/**
-	 * 为 {@link #curPeriod} 增加一个值
-	 * @param delta
-	 *   增量, 可以为正数、负数或 0
-	 */
-	public void addCurrentPeriod(int delta) {
-		this.curPeriod += delta;
-	}
+    //
+    // parameters
+    //
 
-	/**
-	 * @return
-	 *   {@link #curDuty}
-	 */
-	public int getCurrentDuty() {
-		return curDuty;
-	}
+    /*
+     * Here's a quick note. The following parameters, such as volume, have two values,
+     * curVolume and masterVolume.
+     * The final value used is curVolume, with the stipulation that when the effect and
+     * state are modified, masterVolume is the master volume and curVolume is the offset,
+     * i.e., curVolume floats around 0; and
+     * When the total curVolume is finally calculated, both the master volume and the offset
+     * are entered into the calculation, and the resulting curVolume rewrites the value of
+     * curVolume. At this point, the meaning of curVolume changes from offset to current volume.
+     *
+     * Pitch period, key note also follow this rule.
+     */
 
-	/**
-	 * 设置并重置现在的音键
-	 * @param note
-	 *   {@link #masterNote}
-	 */
-	public void setMasterNote(int note) {
-		instrumentUpdated = true;
-		noteUpdated = true;
-		this.masterNote = note;
-	}
+    /**
+     * instruments
+     */
+    protected int instrument;
 
-	/**
-	 * <p>设置并重置现在的音键, 但是不将 instrumentUpdated 设置为 true.
-	 * <p>效果 Rxy 和 Qxy 设置音键时, 不会触发 instrumentUpdated.
-	 * </p>
-	 * @param note
-	 *   {@link #masterNote}
-	 * @since v0.2.3
-	 */
-	public void setMasterNoteWithoutUpdate(int note) {
-		this.masterNote = note;
-	}
-	
-	/**
-	 * @return
-	 *   {@link #masterNote}
-	 */
-	public int getMasterNote() {
-		return masterNote;
-	}
-	
-	/**
-	 * 设置并重置现在的音量
-	 * @param masterVolume
-	 *   {@link #masterVolume}
-	 */
-	public void setMasterVolume(int masterVolume) {
-		this.masterVolume = masterVolume;
-	}
-	
-	/**
-	 * @return
-	 *   {@link #masterVolume}
-	 */
-	public int getMasterVolume() {
-		return masterVolume;
-	}
+    /**
+     * If or not the instrument has been updated in the current frame.
+     * This value is true when the key or instrument is changed in the frame.
+     */
+    protected boolean instrumentUpdated;
 
-	/**
-	 * 设置并重置现在的音高
-	 * @param masterPitch
-	 *   {@link #masterPitch}
-	 */
-	public void setMasterPitch(int masterPitch) {
-		this.masterPitch = masterPitch;
-	}
-	
-	/**
-	 * @return
-	 *   {@link #masterPitch}
-	 */
-	public int getMasterPitch() {
-		return masterPitch;
-	}
+    /**
+     * Whether the keys have been updated in the current frame.
+     * This value is true when the key is changed in this frame.
+     */
+    protected boolean noteUpdated;
 
-	/**
-	 * 设置并重置现在的音色
-	 * @param masterDuty
-	 *   {@link #masterDuty}
-	 */
-	public void setMasterDuty(int masterDuty) {
-		this.masterDuty = masterDuty;
-	}
-	
-	/**
-	 * @return
-	 *   {@link #masterDuty}
-	 */
-	public int getMasterDuty() {
-		return masterDuty;
-	}
-	
-	/**
-	 * @return
-	 *   {@link #instrumentUpdated}
-	 * @since v0.2.9
-	 */
-	public boolean isInstrumentUpdated() {
-		return instrumentUpdated;
-	}
-	
-	/**
-	 * @return
-	 *   {@link #noteUpdated}
-	 * @since v0.2.9
-	 */
-	public boolean isNoteUpdated() {
-		return noteUpdated;
-	}
+    /**
+     * Keys, with notes and pitches
+     * <p>curNote: current key
+     * <p>masterNote: Master key.
+     * Valid values for the master key are [1, 96] ([1, 16] for the Noise track),
+     * 0 is an invalid value, meaning no sound is emitted.
+     * </p>
+     */
+    protected int curNote, masterNote;
 
-	/**
-	 * 打开, 让轨道播放.
-	 * 调用它的情况是, 当这个轨道接收一个新的 note 后, 它就要开始播放新的 note.
-	 */
-	public void turnOn() {
-		playing = true;
-	}
+    /**
+     * <p>volume
+     * <p>curVolume: Current volume, need to calculate instrument variables.
+     * Since I was trying to increase the precision here, 16 times the original volume,
+     * and allowed for negative numbers and so on to exceed the bounds in the middle of
+     * the modification process, I ended up limiting the range to [0, 240] before writing
+     * it to the microphone.
+     * <p>masterVolume: master volume [0, 15]
+     * </p>
+     */
+    protected int curVolume, masterVolume = 15;
 
-	/**
-	 * <p>询问当前轨道是否在播放状态.
-	 * <p>注意, 音量为 0 不等于不在播放.
-	 * 只有 halt 效果、Sxx 效果等才能设置 <code>playing = false</code>.
-	 * </p>
-	 * @return
-	 *   当前轨道是否在播放状态
-	 */
-	public boolean isPlaying() {
-		return playing;
-	}
+    /**
+     * <p>pitch
+     * <p>curPeriod: Current wavelength, need to calculate other things like vibrato etc.
+     * <p>masterPitch: Master pitch. This value is called finePitch in the original
+     * C++ program and is controlled by the Pxx effect. The default value is 0
+     * <p>The relationship between wavelength and pitch is negative, in the same units.
+     * The longer the wavelength, the lower the pitch.
+     * </p>
+     */
+    protected int curPeriod, masterPitch;
 
-	@Override
-	public void reset() {
-		playing = true;
-		masterNote = 0;
-		masterVolume = 15;
-		masterDuty = 0;
-		masterPitch = 0;
-		instrument = 0;
-		
-		schedules.clear();
-		states.clear();
-	}
-	
-	/**
-	 * 每帧开始时调用
-	 */
-	protected void startFrame() {
-		curNote = 0;
-		curDuty = 0;
-		curPeriod = 0;
-		curVolume = 0;
-		instrumentUpdated = false;
-		noteUpdated = false;
-		
-		for (IFtmSchedule s : schedules) {
-			s.trigger(channelCode, runtime);
-		}
-		schedules.clear();
-	}
-	
-	/* **********
-	 * 强制执行 *
-	 ********** */
+    /**
+     * <p>tone
+     * <p>curDuty: Current Tone
+     * <p>masterDuty: Master Tone. This value is controlled by the Vxx effect. Default value 0
+     * </p>
+     */
+    protected int curDuty, masterDuty;
 
-	/**
-	 * <p>状态集合.
-	 * <p>原本这里的延迟状态等, 都视为一个状态.
-	 * 状态的触发在效果发生之后. 如果想要在状态发生之前, 需要将状态放在 schedules 中.
-	 * </p>
-	 */
-	HashSet<IFtmState> states = new HashSet<>();
-	
-	/**
-	 * 准备阶段触发的状态集合. 比如 delay 状态触发比效果触发的时间还要早, 就放在这里.
-	 * 准备阶段的状态只调用一次, 调用完自动删除
-	 */
-	HashSet<IFtmSchedule> schedules = new HashSet<>();
-	
-	/**
-	 * 添加状态
-	 * @param state
-	 */
-	public void addState(IFtmState state) {
-		states.add(state);
-		state.onAttach(channelCode, runtime);
-	}
-	
-	/**
-	 * 添加准备阶段触发的状态
-	 * @param state
-	 */
-	public void addSchedule(IFtmSchedule schedule) {
-		schedules.add(schedule);
-	}
-	
-	/**
-	 * 删除状态
-	 * @param state
-	 */
-	public void removeState(IFtmState state) {
-		state.onDetach(channelCode, runtime);
-		states.remove(state);
-	}
-	
-	/**
-	 * 删除名称匹配的所有状态
-	 * @param state
-	 */
-	public void removeStates(String name) {
-		states.removeIf((s) -> {
-			boolean b = s.name().equals(name);
-			if (b) {
-				s.onDetach(channelCode, runtime);
-			}
-			return b;
-		});
-	}
-	
-	/**
-	 * 过滤出所有名称匹配的状态集合
-	 * @param name
-	 * @return
-	 */
-	public HashSet<IFtmState> filterStates(String name) {
-		HashSet<IFtmState> set = new HashSet<>();
-		for (IFtmState s : states) {
-			if (s.name().equals(name)) {
-				set.add(s);
-			}
-		}
-		return set;
-	}
-	
-	/**
-	 * 强制、立即执行效果集合
-	 * @param effs
-	 *   效果集合（非全局效果有效）
-	 */
-	public void forceEffect(Collection<IFtmEffect> effs) {
-		ArrayList<IFtmEffect> list = new ArrayList<>(effs);
-		list.sort(null); // 效果类有自然的优先度排序
-		
-		for (IFtmEffect eff : list) {
-			eff.execute(channelCode, runtime);
-		}
-	}
+    /**
+     * Whether or not it is playing
+     */
+    protected boolean playing = false;
 
-	/**
-	 * 强制按照状态的优先度, 触发现有的状态
-	 */
-	private void triggleState() {
-		ArrayList<IFtmState> list = new ArrayList<>(this.states);
-		list.sort(null); // 状态类有自然的优先度排序
-		
-		list.forEach((state) -> state.trigger(channelCode, runtime));
-	}
-	
-	/**
-	 * 暂停声音播放. ftm 里面显示为 "---" 的 note 的效果
-	 */
-	public void doHalt() {
-		playing = false;
-	}
-	
-	/**
-	 * 播放乐器的释放效果. ftm 里面显示为 "===" 的 note 的效果
-	 */
-	public void doRelease() {
-		// 需要子类完成
-	}
-	
-	
-	/**
-	 * <p>根据音键查询波长值.
-	 * <p>工具方法, 需要子类按照需要来重写
-	 * </p>
-	 * @param note
-	 * @return
-	 */
-	public int periodTable(int note) {
-		throw new IllegalStateException("该轨道不支持查询音键波长的功能");
-	}
+    /**
+     * @return {@link #instrument}
+     */
+    public int getInstrument() {
+        return instrument;
+    }
 
+    /**
+     * @param instrument {@link #instrument}
+     */
+    public void setInstrument(int instrument) {
+        instrumentUpdated = true;
+        this.instrument = instrument;
+    }
+
+    /**
+     * @return {@link #curNote}
+     */
+    public int getCurrentNote() {
+        return curNote;
+    }
+
+    /**
+     * @param note {@link #curNote}
+     */
+    public void setCurrentNote(int note) {
+        this.curNote = note;
+    }
+
+    /**
+     * Adding a value to {@link #curNote}
+     *
+     * @param delta increment, can be positive, negative or 0
+     */
+    public void addCurrentNote(int delta) {
+        this.curNote += delta;
+    }
+
+    /**
+     * @return {@link #curVolume}
+     */
+    public int getCurrentVolume() {
+        return curVolume;
+    }
+
+    /**
+     * @param volume {@link #curVolume}
+     */
+    public void setCurrentVolume(int volume) {
+        this.curVolume = volume;
+    }
+
+    /**
+     * Adding a value to {@link #curVolume}
+     *
+     * @param delta increment, can be positive, negative or 0
+     */
+    public void addCurrentVolume(int delta) {
+        this.curVolume += delta;
+    }
+
+    /**
+     * @return {@link #curPeriod}
+     */
+    public int getCurrentPeriod() {
+        return curPeriod;
+    }
+
+    /**
+     * @param period {@link #curPeriod}
+     */
+    public void setCurrentPeriod(int period) {
+        this.curPeriod = period;
+    }
+
+    /**
+     * Adding a value to {@link #curPeriod}
+     *
+     * @param delta increment, can be positive, negative or 0
+     */
+    public void addCurrentPeriod(int delta) {
+        this.curPeriod += delta;
+    }
+
+    /**
+     * @return {@link #curDuty}
+     */
+    public int getCurrentDuty() {
+        return curDuty;
+    }
+
+    /**
+     * Setting and resetting the current tone key
+     *
+     * @param note {@link #masterNote}
+     */
+    public void setMasterNote(int note) {
+        instrumentUpdated = true;
+        noteUpdated = true;
+        this.masterNote = note;
+    }
+
+    /**
+     * <p>Sets and resets the current key, but does not set instrumentUpdated to true.
+     * <p>The instrumentUpdated is not triggered when the effect Rxy and Qxy set the keys.
+     * </p>
+     *
+     * @param note {@link #masterNote}
+     * @since v0.2.3
+     */
+    public void setMasterNoteWithoutUpdate(int note) {
+        this.masterNote = note;
+    }
+
+    /**
+     * @return {@link #masterNote}
+     */
+    public int getMasterNote() {
+        return masterNote;
+    }
+
+    /**
+     * Set and reset the current volume
+     *
+     * @param masterVolume {@link #masterVolume}
+     */
+    public void setMasterVolume(int masterVolume) {
+        this.masterVolume = masterVolume;
+    }
+
+    /**
+     * @return {@link #masterVolume}
+     */
+    public int getMasterVolume() {
+        return masterVolume;
+    }
+
+    /**
+     * Setting and resetting the current pitch
+     *
+     * @param masterPitch {@link #masterPitch}
+     */
+    public void setMasterPitch(int masterPitch) {
+        this.masterPitch = masterPitch;
+    }
+
+    /**
+     * @return {@link #masterPitch}
+     */
+    public int getMasterPitch() {
+        return masterPitch;
+    }
+
+    /**
+     * Setting and resetting the current tone
+     *
+     * @param masterDuty {@link #masterDuty}
+     */
+    public void setMasterDuty(int masterDuty) {
+        this.masterDuty = masterDuty;
+    }
+
+    /**
+     * @return {@link #masterDuty}
+     */
+    public int getMasterDuty() {
+        return masterDuty;
+    }
+
+    /**
+     * @return {@link #instrumentUpdated}
+     * @since v0.2.9
+     */
+    public boolean isInstrumentUpdated() {
+        return instrumentUpdated;
+    }
+
+    /**
+     * @return {@link #noteUpdated}
+     * @since v0.2.9
+     */
+    public boolean isNoteUpdated() {
+        return noteUpdated;
+    }
+
+    /**
+     * Turn it on, let the channel play.
+     * It is called so that when the channel receives a new note, it starts playing the new note.
+     */
+    public void turnOn() {
+        playing = true;
+    }
+
+    /**
+     * <p>Ask if the current channel is playing.
+     * <p>Note that a volume of 0 does not mean that it is not playing.
+     * Only halt effects, Sxx effects, etc. can set <code>playing = false</code>.
+     * </p>
+     *
+     * @return Whether the current channel is playing or not
+     */
+    public boolean isPlaying() {
+        return playing;
+    }
+
+    @Override
+    public void reset() {
+        playing = true;
+        masterNote = 0;
+        masterVolume = 15;
+        masterDuty = 0;
+        masterPitch = 0;
+        instrument = 0;
+
+        schedules.clear();
+        states.clear();
+    }
+
+    /**
+     * Called at the beginning of each frame
+     */
+    protected void startFrame() {
+        curNote = 0;
+        curDuty = 0;
+        curPeriod = 0;
+        curVolume = 0;
+        instrumentUpdated = false;
+        noteUpdated = false;
+
+        for (IFtmSchedule s : schedules) {
+            s.trigger(channelCode, runtime);
+        }
+        schedules.clear();
+    }
+
+    /*
+     * Enforcement
+     */
+
+    /**
+     * <p>The set of states.
+     * <p>Originally, the delayed state, etc., was considered a state.
+     * The state is triggered after the effect occurs. If you want the state to be
+     * triggered before it happens, you need to put the state in schedules.
+     * </p>
+     */
+    final HashSet<IFtmState> states = new HashSet<>();
+
+    /**
+     * The set of states triggered during the preparation phase. e.g. delay states
+     * triggered before the effect is triggered, put them here.
+     * The state of the preparation phase is called only once and is automatically
+     * deleted after the call.
+     */
+    final HashSet<IFtmSchedule> schedules = new HashSet<>();
+
+    /**
+     * Add Status
+     *
+     * @param state
+     */
+    public void addState(IFtmState state) {
+        states.add(state);
+        state.onAttach(channelCode, runtime);
+    }
+
+    /**
+     * Adding statuses triggered by the preparation phase
+     *
+     * @param schedule
+     */
+    public void addSchedule(IFtmSchedule schedule) {
+        schedules.add(schedule);
+    }
+
+    /**
+     * Delete Status
+     *
+     * @param state
+     */
+    public void removeState(IFtmState state) {
+        state.onDetach(channelCode, runtime);
+        states.remove(state);
+    }
+
+    /**
+     * Delete all states with matching names
+     *
+     * @param name
+     */
+    public void removeStates(String name) {
+        states.removeIf((s) -> {
+            boolean b = s.name().equals(name);
+            if (b) {
+                s.onDetach(channelCode, runtime);
+            }
+            return b;
+        });
+    }
+
+    /**
+     * Filter out all state collections with matching names
+     *
+     * @param name
+     * @return
+     */
+    public HashSet<IFtmState> filterStates(String name) {
+        HashSet<IFtmState> set = new HashSet<>();
+        for (IFtmState s : states) {
+            if (s.name().equals(name)) {
+                set.add(s);
+            }
+        }
+        return set;
+    }
+
+    /**
+     * Compulsory, immediate enforcement effect pooling
+     *
+     * @param effs Collection of effects (valid for non-global effects)
+     */
+    public void forceEffect(Collection<IFtmEffect> effs) {
+        ArrayList<IFtmEffect> list = new ArrayList<>(effs);
+        list.sort(null); // Effect classes have a natural prioritization
+
+        for (IFtmEffect eff : list) {
+            eff.execute(channelCode, runtime);
+        }
+    }
+
+    /**
+     * Forces existing states to be triggered according to their priority.
+     */
+    private void triggleState() {
+        ArrayList<IFtmState> list = new ArrayList<>(this.states);
+        list.sort(null); // State classes have a natural prioritization
+
+        list.forEach((state) -> state.trigger(channelCode, runtime));
+    }
+
+    /**
+     * Pause sound playback. The effect of a note displayed as “---” in ftm.
+     */
+    public void doHalt() {
+        playing = false;
+    }
+
+    /**
+     * Play the release of the instrument. The effect of a note that appears as “===” in ftm.
+     */
+    public void doRelease() {
+        // Requires subclass completion
+    }
+
+
+    /**
+     * <p>Query the wavelength value according to the tone key.
+     * <p>Tool methods, which need to be overridden by subclasses as needed.
+     * </p>
+     *
+     * @param note
+     * @return
+     */
+    public int periodTable(int note) {
+        throw new IllegalStateException("This track does not support the function of querying key wavelengths");
+    }
 }

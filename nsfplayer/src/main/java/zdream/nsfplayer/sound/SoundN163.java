@@ -2,171 +2,173 @@ package zdream.nsfplayer.sound;
 
 import java.util.Arrays;
 
+
 /**
- * <p>N163 轨道的发声器, 在 NSF 中最多有 8 个轨道
- * <p>该发声器输出的值的范围是 [0, 120]
+ * <p>N163 channel sounders, up to 8 channels in the NSF
+ * <p>The range of values output from this audiophile is [0, 120]
  * </p>
- * 
+ *
  * @author Zdream
  * @since v0.2.6
  */
 public class SoundN163 extends AbstractNsfSound {
 
-	public SoundN163() {
-		reset();
-	}
-	
-	/* **********
-	 *   参数   *
-	 ********** */
-	/*
-	 * 原始记录参数
-	 * 
-	 * 波形包络表部分:
-	 * 变长数组、不定起始位置
-	 * 
-	 * 其它参数部分:
-	 * 如果这个是第 n 个轨道 (n 的范围是 [0, 7]), 则:
-	 * 
-	 * 00 号位: 0x40+(n*8) 频率参数的低 8 位（0 - 7 位, 共 18 位）
-	 * 01 号位: 0x41+(n*8) 相位的低 8 位（0 - 7 位, 共 24 位）
-	 * 02 号位: 0x42+(n*8) 频率参数的中 8 位（8 - 15 位, 共 18 位）
-	 * 03 号位: 0x43+(n*8) 相位的中 8 位（8 - 15 位, 共 24 位）
-	 * 04 号位: 0x44+(n*8) 频率参数的高 2 位（16 - 17 位, 共 18 位）; 音量包络长度参数
-	 * 05 号位: 0x45+(n*8) 相位的高 8 位（16 - 23 位, 共 24 位）
-	 * 06 号位: 0x46+(n*8) 包络起点参数 (不记录)
-	 * 07 号位: 0x47+(n*8) 音量
-	 */
-	
-	/**
-	 * <p>波形包络表
-	 * <p>每个单位范围 [0, 15]
-	 * </p>
-	 */
-	public final byte[] wave = new byte[240];
-	
-	/**
-	 * <p>00 号位: xxxxxxxx 作为低 8 位, 02 号位: xxxxxxxx 作为中 8 位,
-	 * 04 号位: 000000xx 作为高 2 位, 共 18 位
-	 * <p>频率参数 (虽说实际上理解成波长更准确), 控制音高
-	 * <p>范围 [0, 0x3FFFF]
-	 * </p>
-	 */
-	public int period;
-	
-	/**
-	 * <p>01 号位: xxxxxxxx 作为低 8 位, 03 号位: xxxxxxxx 作为中 8 位,
-	 * 05 号位: xxxxxxxx 作为高 8 位, 共 24 位
-	 * <p>相位
-	 * <p>范围 [0, 0xFFFFFF]
-	 * </p>
-	 */
-	public int phase;
-	
-	/**
-	 * <p>04 号位: xxxxxx00, 得到的值记为 <code>a</code>, 则:
-	 * <blockquote><pre>
-	 * length = 256 - (4 * a)
-	 * </pre></blockquote>
-	 * <p>音量包络长度参数. 即 {@link #wave} 的有效长度
-	 * <p>范围 [4, 256], 且该值能被 4 整除
-	 * </p>
-	 */
-	public int length;
-	
+    public SoundN163() {
+        reset();
+    }
+
+    //
+    // parameters
+    //
+
+    /*
+     * Original Record Parameters
+     *
+     * Waveform envelope table section:
+     * Variable-length arrays, indeterminate starting position
+     *
+     * Other parameter sections:
+     * If this is the nth channel (n is in the range [0, 7]), then:
+     *
+     * position 00: 0x40+(n*8) Lower 8 bits of frequency parameter（0 - 7 bits, total 18 bits）
+     * position 01: 0x41+(n*8) Lower 8 bits of phase (0 - 7 bits, 24 bits total)
+     * position 02: 0x42+(n*8) Middle 8 bits of frequency parameter (8 - 15 bits, 18 bits total)
+     * position 03: 0x43+(n*8) Middle 8 bits of phase (8 - 15 bits, 24 bits total)
+     * position 04: 0x44+(n*8) Higher 2 bits (16 - 17 bits, 18 bits total) of frequency parameter; Volume envelope length parameter
+     * position 05: 0x45+(n*8) Higher 8 bits of phase (16 - 23 bits, 24 bits total)
+     * position 06: 0x46+(n*8) Envelope starting point parameter (not recorded)
+     * position 07: 0x47+(n*8) volume
+     */
+
+    /**
+     * <p>waveform envelope (math.)
+     * <p>per unit range [0, 15]
+     * </p>
+     */
+    public final byte[] wave = new byte[240];
+
+    /**
+     * <p>Bit 00: xxxxxxxxxx as low 8 bits, Bit 02: xxxxxxxxxx as mid 8 bits, and
+     * Bit 04: 000000xx as high 2 bits, total 18 bits
+     * <p>Frequency parameter (although it's actually more accurate to think of it as wavelength), controls pitch
+     * <p>range [0, 0x3FFFF]
+     * </p>
+     */
+    public int period;
+
+    /**
+     * <p>Bit 01: xxxxxxxxxx as low 8 bits, Bit 03: xxxxxxxxxx as mid 8 bits, and
+     * Bit 05: xxxxxxxxxx as high 8 bits, total 24 bits
+     * <p>phase (waves)
+     * <p>range [0, 0xFFFFFF]
+     * </p>
+     */
+    public int phase;
+
+    /**
+     * <p>Bit 04: xxxxxx00, the value obtained is noted as <code>a</code>, then.
+     * <blockquote><pre>
+     * length = 256 - (4 * a)
+     * </pre></blockquote>
+     * <p>Volume envelope length parameter. That is, the effective length of {@link #wave}
+     * <p>range [4, 256], and the value is divisible by 4
+     * </p>
+     */
+    public int length;
+
 //	/**
-//	 * <p>06 号位: xxxxxxxx
-//	 * <p>音量包络起点参数
-//	 * <p>范围 [0, 255]
+//	 * <p>position 06: xxxxxxxxxx
+//	 * <p>Volume Envelope Starting Point Parameters
+//	 * <p>range [0, 255]
 //	 * </p>
 //	 */
 //	public int offset;
-	
-	/**
-	 * <p>07 号位: 0000xxxx
-	 * <p>音量
-	 * <p>范围 [0, 15]
-	 * </p>
-	 */
-	public int volume;
-	
-	/*
-	 * 辅助参数
-	 */
-	
-	/**
-	 * <p>每次音频的状态变化相隔的时钟数. 该值需要外部输入.
-	 * 该数值有这样的计算方式:
-	 * <blockquote><pre>
-	 * step = 15 * channelCount
-	 * </pre></blockquote>
-	 * 其中 channelCount 为 N163 的轨道个数.
-	 * <p>step 将不会被 {@link #reset()} 重置.
-	 * </p>
-	 */
-	public int step;
-	
-	/**
-	 * 音频的状态每 {@link #step} 个时钟变化一次, 需要向外部输出音频数值.
-	 * 记录现在到下一个 step 触发点剩余的时钟数
-	 */
-	private int counter;
-	
-	/* **********
-	 * 公共方法 *
-	 ********** */
-	
-	@Override
-	public void reset() {
-		// 原始记录参数
-		period = 0;
-		phase = 0;
-		length = 0;
-		volume = 0;
-		Arrays.fill(wave, (byte) 0);
-		
-		// 辅助参数
-		counter = step;
-		// step 不进行初始化
-		
-		super.reset();
-	}
 
-	@Override
-	protected void onProcess(int time) {
-		// 请务必设置 step 的值
-		if (step <= 0) {
-			this.counter = 0;
-			this.time += time;
-			return;
-		}
-		
-		while (time >= counter) {
-			time -= counter;
-			this.time += counter;
-			counter	= step;
-			
-			phase = (phase + period) & 0x00FFFFFF;
+    /**
+     * <p>position 07: 0000xxxx
+     * <p>volume
+     * <p>range [0, 15]
+     * </p>
+     */
+    public int volume;
 
-			// 相位边界值
-			int hilen = length << 16;
-			// 相位控制在相位边界值内
-			if (hilen > 0) {
-				while (phase >= hilen)
-					phase -= hilen;
-			}
-			
-			// NsfPlayer 工程原话:
-			// fetch sample (note: N163 output is centred at 8, and inverted w.r.t 2A03)
-			// 意思是说, N163 输出以 8 为中心, 这个与 2A03 有本质不同
-			int index = (phase >> 16);
-			int sample = 8 - wave[index];
-			
-			mix(sample * volume);
-		}
-		
-		this.time += time;
-		counter -= time;
-	}
+    //
+    // Auxiliary parameters
+    //
 
+    /**
+     * <p>The number of clocks between each audio state change. This value requires an external input.
+     * The value is calculated as follows:
+     * <blockquote><pre>
+     * step = 15 * channelCount
+     * </pre></blockquote>
+     * where channelCount is the number of channels in N163.
+     * <p>step will not be reset by {@link #reset()}.
+     * </p>
+     */
+    public int step;
+
+    /**
+     * The state of the audio changes every {@link #step} clock,
+     * and the audio value needs to be output to an external source.
+     * Record the number of clocks remaining until the next step trigger point.
+     */
+    private int counter;
+
+    //
+    // Public method
+    //
+
+    @Override
+    public void reset() {
+        // Original Record Parameters
+        period = 0;
+        phase = 0;
+        length = 0;
+        volume = 0;
+        Arrays.fill(wave, (byte) 0);
+
+        // Auxiliary parameters
+        counter = step;
+        // step No initialization
+
+        super.reset();
+    }
+
+    @Override
+    protected void onProcess(int time) {
+        // Be sure to set the value of step
+        if (step <= 0) {
+            this.counter = 0;
+            this.time += time;
+            return;
+        }
+
+        while (time >= counter) {
+            time -= counter;
+            this.time += counter;
+            counter = step;
+
+            phase = (phase + period) & 0x00ff_ffff;
+
+            // phase boundary value
+            int hiLen = length << 16;
+            // Phase control within phase boundary values
+            if (hiLen > 0) {
+                while (phase >= hiLen)
+                    phase -= hiLen;
+            }
+
+            // NsfPlayer Project:
+            // fetch sample (note: N163 output is centred at 8, and inverted w.r.t 2A03)
+            // It means that the N163 output is centered on 8, which is fundamentally different from the 2A03.
+            int index = (phase >> 16);
+            int sample = 8 - wave[index];
+
+            mix(sample * volume);
+        }
+
+        this.time += time;
+        counter -= time;
+    }
 }

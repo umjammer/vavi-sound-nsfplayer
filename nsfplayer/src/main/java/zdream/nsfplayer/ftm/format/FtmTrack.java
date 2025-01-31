@@ -1,66 +1,68 @@
 package zdream.nsfplayer.ftm.format;
 
+import zdream.nsfplayer.ftm.audio.FtmAudio;
+
+
 /**
- * <p>FTM 乐曲
- * <p>{@link FtmAudio} 是多个 FTM 乐曲的集合.
+ * <p>FTM Music
+ * <p>{@link FtmAudio} It is a collection of FTM tracks.
  * </p>
- * 
+ *
  * @author Zdream
  * @since v0.1
  */
 public final class FtmTrack {
-	
-	public static final int
-			DEFAULT_NTSC_TEMPO = 150,
-			DEFAULT_PAL_TEMPO = 125;
-	
-	/**
-	 * 每个模式 / 段的最大行数
-	 */
-	public int length;
-	
-	/**
-	 * 播放速度
-	 */
-	public int speed;
-	
-	/**
-	 * 节奏值
-	 */
-	public int tempo;
-	
-	/**
-	 * 名称
-	 */
-	public String name;
-	
-	/* **********
-	 *   模式   *
-	 ********** */
-	/*
-	 * 模式 PATTERN (段是 FRAME)
-	 * [模式号][轨道序号]
-	 */
-	public FtmPattern[][] patterns;
-	
-	/* **********
-	 * 曲目顺序 *
-	 ********** */
-	/*
-	 * 顺序 ORDER
-	 * [段数][轨道序号]
-	 */
-	public int[][] orders;
-	
-	/* **********
-	 *   其它   *
-	 ********** */
-	
-	@Override
-	public String toString() {
-		StringBuilder b = new StringBuilder(24);
-		b.append("Track").append(' ').append(name);
-		return b.toString();
-	}
 
+    public static final int
+            DEFAULT_NTSC_TEMPO = 150,
+            DEFAULT_PAL_TEMPO = 125;
+
+    /**
+     * Maximum number of lines per pattern/segment
+     */
+    public int length;
+
+    /**
+     * playback speed
+     */
+    public int speed;
+
+    /**
+     * tempo value
+     */
+    public int tempo;
+
+    /**
+     * name
+     */
+    public String name;
+
+    //
+    // mode
+    //
+
+    /*
+     * Mode PATTERN (segment is FRAME)
+     * [mode number] [track number]
+     */
+    public FtmPattern[][] patterns;
+
+    /*
+     * Order of repertoire
+     */
+
+    /*
+     * ORDER
+     * [number of paragraphs] [track number]
+     */
+    public int[][] orders;
+
+    //
+    // others
+    //
+
+    @Override
+    public String toString() {
+        return "Track" + ' ' + name;
+    }
 }

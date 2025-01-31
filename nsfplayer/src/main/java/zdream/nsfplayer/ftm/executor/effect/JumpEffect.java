@@ -2,54 +2,52 @@ package zdream.nsfplayer.ftm.executor.effect;
 
 import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 
+
 /**
- * <p>跳到指定的段, Bxx
- * <p>属全局效果
+ * <p>Jump to the specified segment, Bxx
+ * <p>Global effect
  * </p>
- * 
+ *
  * @author Zdream
  * @since 0.2.1
  */
 public class JumpEffect implements IFtmEffect {
-	
-	/**
-	 * 跳到的段号
-	 */
-	public final int section;
 
-	private JumpEffect(int section) {
-		this.section = section;
-	}
+    /**
+     * Jump to segment number
+     */
+    public final int section;
 
-	@Override
-	public FtmEffectType type() {
-		return FtmEffectType.JUMP;
-	}
-	
-	/**
-	 * 形成一个跳到指定段开头, 进行播放的效果
-	 * @param section
-	 *   段号. 必须是非负数
-	 * @return
-	 *   效果实例
-	 * @throws IllegalArgumentException
-	 *   当 <code>section</code> 不在指定范围内时
-	 */
-	public static JumpEffect of(int section) throws IllegalArgumentException {
-		if (section < 0) {
-			throw new IllegalArgumentException("段号必须是正整数数值");
-		}
-		return new JumpEffect(section);
-	}
-	
-	@Override
-	public void execute(byte channelCode, FamiTrackerRuntime rumtime) {
-		rumtime.fetcher.jumpToSection(section);
-	}
-	
-	@Override
-	public String toString() {
-		return "JumpTo:" + section;
-	}
+    private JumpEffect(int section) {
+        this.section = section;
+    }
 
+    @Override
+    public FtmEffectType type() {
+        return FtmEffectType.JUMP;
+    }
+
+    /**
+     * Create an effect of jumping to the beginning of a specified segment and playing it
+     *
+     * @param section Segment number. Must be a non-negative number
+     * @return Effect Examples
+     * @throws IllegalArgumentException When <code>section</code> is not within the specified range
+     */
+    public static JumpEffect of(int section) throws IllegalArgumentException {
+        if (section < 0) {
+            throw new IllegalArgumentException("The segment number must be a positive integer value.");
+        }
+        return new JumpEffect(section);
+    }
+
+    @Override
+    public void execute(byte channelCode, FamiTrackerRuntime rumtime) {
+        rumtime.fetcher.jumpToSection(section);
+    }
+
+    @Override
+    public String toString() {
+        return "JumpTo:" + section;
+    }
 }

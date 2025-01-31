@@ -1,8 +1,9 @@
 /**
- * 
- */
-/**
- * @author Zdream
  *
  */
+
+/**
+ * @author Zdream
+ */
+
 package zdream.nsfplayer.nsf;

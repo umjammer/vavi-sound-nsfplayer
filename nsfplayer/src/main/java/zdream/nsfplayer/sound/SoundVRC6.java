@@ -1,8 +1,8 @@
 package zdream.nsfplayer.sound;
 
 /**
- * VRC6 轨道的发声器
- * 
+ * Sounders for VRC6 channels
+ *
  * @author Zdream
  * @since v0.2.3
  */

@@ -1,15 +1,14 @@
 package zdream.nsfplayer.core;
 
 /**
- * 抽象的 NSF 音源的渲染器, 用于输出以 byte / short 数组组织的 PCM 音频数据
- * 
- * @version 0.3.2
- *   相关方法独立抽出接口, 
- * 
+ * Abstract NSF sound source renderer, used to output PCM audio data organized as byte / short array
+ *
  * @author Zdream
+ * @version 0.3.2
+ * Related methods are independently extracted from the interface,
  * @since v0.2.4
  */
 public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio> extends AbstractRenderer<T>
-	implements INsfRendererHandler<T> {
+        implements INsfRendererHandler<T> {
 
 }

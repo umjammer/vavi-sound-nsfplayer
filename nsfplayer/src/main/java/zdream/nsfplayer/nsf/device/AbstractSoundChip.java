@@ -5,55 +5,56 @@ import zdream.nsfplayer.nsf.renderer.INsfRuntimeHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
+
 /**
- * <p>虚拟音频设备 (相当于虚拟声卡)
- * 
+ * <p>Virtual audio device (equivalent to a virtual sound card)
+ *
  * @author Zdream
  * @since v0.2.4
  */
 public abstract class AbstractSoundChip implements IDevice, INsfChannelCode, INsfRuntimeHolder {
-	
-	public AbstractSoundChip(NsfRuntime runtime) {
-		this.runtime = runtime;
-	}
-	
-	NsfRuntime runtime;
-	
-	/**
-	 * 是否开始渲染的标识.
-	 * 如果为 true, 说明准备开始进行渲染工作
-	 */
-	boolean startRender;
-	
-	@Override
-	public NsfRuntime getRuntime() {
-		return runtime;
-	}
-	
-	/**
-	 * <p>整个渲染的工作分为初始化、执行和渲染三个部分,
-	 * 通过该值能够确定是否已经进入了渲染阶段.
-	 * </p>
-	 * @return
-	 *   是否开始渲染的标识.
-	 * @see #startRender
-	 * @since v0.2.9
-	 */
-	public boolean isStartRender() {
-		return startRender;
-	}
 
-	/**
-	 * 获得指定轨道的音频发声器
-	 * @param channelCode
-	 *   轨道号
-	 * @return
-	 */
-	public abstract AbstractNsfSound getSound(byte channelCode);
-	
-	/**
-	 * 获得支持的所有轨道的轨道号列表
-	 */
-	public abstract byte[] getAllChannelCodes();
-	
+    public AbstractSoundChip(NsfRuntime runtime) {
+        this.runtime = runtime;
+    }
+
+    final NsfRuntime runtime;
+
+    /**
+     * Indicates if rendering has started.
+     * VRC7 Six-track merge track
+     */
+    boolean startRender;
+
+    @Override
+    public NsfRuntime getRuntime() {
+        return runtime;
+    }
+
+    /**
+     * <p></p>The entire rendering process is divided into three parts:
+     * initialization, execution, and rendering. This value can be used to determine whether
+     * the rendering phase has been entered.
+     * </p>
+     *
+     * @return A flag indicating whether to start rendering.
+     * @see #startRender
+     * @since v0.2.9
+     */
+    public boolean isStartRender() {
+        return startRender;
+    }
+
+    /**
+     * Get the audio generator of the specified track
+     *
+     * @param channelCode Track number
+     * @return
+     */
+    public abstract AbstractNsfSound getSound(byte channelCode);
+
+    /**
+     * Get a list of track numbers for all supported tracks
+     */
+    public abstract byte[] getAllChannelCodes();
 }

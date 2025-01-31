@@ -1,120 +1,120 @@
 
-## 版本更新历史 (版本 0.2)
+## Version update history (print version 0.2)
 
 #### v0.2.3
 
-（2018-10-22）
+(2018-10-22）
 
-*	（FTM）支持 VRC6 和 MMC5 芯片音轨；
-*	（Mixer）补充 XgmSoundMixer 混音器，以及相关的拦截器（效果器）；
+*	(FTM）Support VRC6 sum MMC5 core single tone;
+*	(Mixer）XgmSoundMixer Mixer, also referred to as a sound effect device;
 
 #### v0.2.4
 
-（2018-10-29）
+(2018-10-29）
 
-*	（NSF）重构了 Nsf 部分的渲染方式，现在采用的 NsfRender 类的工作方式与 FamiTrackerRender 的工作方式相同；
-*	（NSF）支持 2A03、2A05、VRC6 和 MMC5 芯片音轨；
+*	(NSF）Completed Nsf partial dyeing method, currently used NsfRender type of working method and FamiTrackerRender's working method is homologous;
+*	(NSF）Support 2A03, 2A05, VRC6 sum MMC5 core single tone;
 
-（2018-10-31）
+(2018-10-31）
 
-*	（NSF）支持 FDS 芯片音轨；
-*	（FTM）支持 FDS 芯片音轨；
-*	（Mixer）支持 FDS 芯片类型的音频播放；
+*	(NSF）Support FDS core piece track;
+*	(FTM）Support FDS core piece track;
+*	(Mixer）Support FDS single-core music broadcasting;
 
-（2018-11-01）
+(2018-11-01）
 
-*	（FTM）支持 FDS 的 FamiTracker 效果；
+*	(FTM）Support FDS FamiTracker effect;
 
 #### v0.2.5
 
-（2018-11-03）
+(2018-11-03）
 
-*	（FTM）支持读取 FTM 生成的 TXT 文件，使用该文件生成 FtmAudio。支持的芯片有 2A03、2A05、VRC6、MMC5 和 FDS；
-*	（FTM）统一了在生成 FtmAudio 时，出现的格式错误的异常消息反馈；
-*	（BUG 修复）（FTM）修复了 Gxx 延迟效果在新一个 Gxx 效果出现时产生的问题；
-*	（BUG 修复）（FTM）修复了序列中的琶音（ARPEGGIO）在相对方式（RELATIVE）时产生的问题；
+*	(FTM）Support for FTM generative TXT text, use FtmAudio for text generation. With supporting core piece 2A03, 2A05, VRC6, MMC5 Sum FDS;
+*	(FTM）When FtmAudio was created, different news was heard;
+*	(BUG fix)(FTM）Repair Gxx Prolonged effect of new product Gxx Effect of production time;
+*	(BUG fix)(FTM）Modification of the hierarchy (ARPEGGIO) Reconciliation method (RELATIVE) Time-related problems;
 
 #### v0.2.6
 
-（2018-11-06）
+(2018-11-06）
 
-*	（NSF）支持 N163 芯片音轨；
-*	（FTM）支持 N163 芯片音轨，支持加载含 N163 的 FTM 文件；
-*	（Mixer）支持 N163 芯片类型的音频播放；
-*	（BUG 修复）（FTM）修复了 3xx 在 300 效果触发后修改音高状态仍然存在的 BUG；
+*	(NSF）Support N163 core piece track;
+*	(FTM）Support N163 core monophonic, support added to N163's FTM text;
+*	(Mixer）Support N163 Single-core music broadcast;
+*	(BUG fix)(FTM) Modification 3xx 300 effect change after modification pitch state still exists BUG;
 
-（2018-11-07）
+(2018-11-07）
 
-*	（FTM）支持加载含 N163 的 TXT 文件；
+*	(FTM）Support added to N163's TXT text;
 
 #### v0.2.7
 
-（2018-11-11）
+(2018-11-11）
 
-*	（NSF）支持 VRC7 芯片音轨；
-*	（Mixer）支持 VRC7 芯片类型的音频播放；
+*	(NSF）Support VRC7 core track;
+*	(Mixer）Support VRC7 Single-core music broadcast;
 
-（2018-11-13）
+(2018-11-13）
 
-*	（FTM）支持 VRC7 芯片音轨，支持加载含 VRC7 的 FTM 文件；
+*	(FTM）Support VRC7 core single tone, support added to VRC7's FTM text;
 
-（2018-11-14）
+(2018-11-14）
 
-*	（FTM）支持加载含 VRC7 的 TXT 文件；
+*	(FTM）Support added to VRC7's TXT text;
 
 #### v0.2.8
 
-（2018-11-17）
+(2018-11-17）
 
-*	（NSF）支持 S5B 芯片音轨；
-*	（Mixer）支持 S5B 芯片类型的音频播放；
-*	（BUG 修复）（NSF）（Mixer）修复了含 Envelope 部分 Noise 轨道无法发出声音的 BUG；
-*	（BUG 修复）（Mixer）修复了 Noise 轨道由于采样错误导致轨道音偏大的 BUG；
-	该问题只在 Xgm 混音器中出现；
-*	（BUG 修复）（NSF）修复了 NsfRenderer 在 ready(NsfAudio) 方法启动时无法渲染的 BUG；
-*	（BUG 修复）（NSF）修复了如果使用 Bank 扩充 ROM，DPCM 轨道无法获取采样数据的 BUG；
+*	(NSF）Support S5B core piece track;
+*	(Mixer）Support S5B single-core music broadcast;
+*	(BUG fix)(NSF）(Mixer）Modifications included Envelope part Noise
+*	(BUG fix)(Mixer）Fixed a bug in the Noise track that caused the track sound to be too loud due to a sampling error;
+	The problem is that the Xgm mixer appears;
+*	(BUG fix)(NSF）Edit NsfRenderer in ready(NsfAudio) method BUG;
+*	(BUG FIX) (NSF) Fixed the bug that the DPCM track could not acquire sample data if Bank expansion ROM was used;
 
-（2018-11-18）
+(2018-11-18）
 
-*	（NSF）现在 NSF 部分也支持 Blip 混音器了；
-*	（Mixer）Blip 混音器支持播放 S5B 轨道；
+*	(NSF）Currently NSF part also supports Blip mixer;
+*	(Mixer）Blip mixer support broadcast S5B road;
 
 #### v0.2.9
 
-（2018-11-21）
+(2018-11-21）
 
-*	（FTM）补充了改变播放速度的功能；
+*	(FTM）Replenishment and change dissemination speed function;
 
-（2018-11-22）
+(2018-11-22）
 
-*	（NSF）补充了改变播放速度的功能；
+*	(NSF）Replenishment and change dissemination speed function;
 
-（2018-11-23）
+(2018-11-23）
 
-*	（FTM）（NSF）补充了渲染器的输出 short 采样数组的接口；
-*	（FTM）（NSF）补充了跳帧 skip 功能；
-*	（FTM）补充了重置播放位置 switchTo 功能，以及获取播放下一行位置等功能；
-*	（BUG 修复）（NSF）修复 2A03 芯片轨道在设置 enable=false 时，仍然在播放的 BUG；
+*	(FTM）(NSF）Filling up the dyeing device's exit short number of connections;
+*	(FTM）(NSF）Improved skip function
+*	(FTM）Functions such as the switchTo function, and the position of the next line to be released;
+*	(BUG fix)(NSF）Edit 2A03 Core piece path location enable=false when the BUG is still broadcast;
 
-（2018-11-24）
+(2018-11-24）
 
-*	（BUG 修复）（NSF）修复 DPCM 轨道在 reset 时非法调用 mix 方法导致轨道重置错误的 BUG；
-*	（NSF）补充了 2A03 矩形轨道的 sweep 效果；
-*	（FTM）补充了 2A03 矩形轨道的 sweep 效果；
-*	（BUG 修复）（NSF）修复 2A03 三角轨道在 linear 效果触发时轨道无法正常关闭的 BUG；
+*	(BUG fix)(NSF）Fix the bug that DPCM tracks illegally call the mix method during reset, resulting in track reset error;
+*	(NSF）Completed 2A03 Rectangular sweep effect;
+*	(FTM）Completed 2A03 Rectangular sweep effect;
+*	(BUG fix)(NSF）Modification 2A03 Triangular road is linear when the effect is touched.
 
 #### v0.2.10
 
-（2018-11-25）
+(2018-11-25）
 
-*	（Mixer）对 Xgm 混音器进行了性能的优化；
-*	（FTM）（NSF）补充了控制 Xgm 混音器的接口；
+*	(Mixer）for XGM mixer progresses and improves performance;
+*	(FTM）(NSF）Completion restraint Xgm mixer-like approach;
 
-（2018-11-26）
+(2018-11-26）
 
-*	（BUG 修复）（FTM）修复 DPCM 轨道无法正确响应 Yxx 效果的 BUG；
+*	(BUG FIX) (FTM) Fixes a bug where the DPCM track was not responding correctly to the Yxx effect;
 
-（2018-11-27）
+(2018-11-27）
 
-*	（Mixer）对 Xgm 混音器进行了性能的优化（第二次）；
-*	（BUG 修复）（NSF）修复 FDS 轨道由于主通道关闭无法发出声音的 BUG；
+*	(Mixer）for XGM Mixer progresses to improve performance (second stage);
+*	(BUG fix) (NSF) Fixed the bug where FDS tracks could not be sounded due to the main channel being closed;

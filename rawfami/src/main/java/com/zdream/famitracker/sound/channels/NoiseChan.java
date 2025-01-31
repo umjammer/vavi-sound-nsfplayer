@@ -1,83 +1,88 @@
 package com.zdream.famitracker.sound.channels;
 
-import static com.zdream.famitracker.FamitrackerTypes.*;
+import static com.zdream.famitracker.FamitrackerTypes.EF_PORTAMENTO;
+import static com.zdream.famitracker.FamitrackerTypes.EF_SLIDE_DOWN;
+import static com.zdream.famitracker.FamitrackerTypes.EF_SLIDE_UP;
+
 
 /**
  * 2A03 Noise
+ *
  * @author Zdream
  */
 public final class NoiseChan extends ChannelHandler2A03 {
-	
-	public NoiseChan() {
-		m_iDefaultDuty = 0;
-	}
-	
-	@Override
-	public void refreshChannel() {
-		int period = calculatePeriod();
-		int volume = calculateVolume();
-		byte noiseMode = (byte) ((m_iDutyPeriod & 0x01) << 7);
 
-		if (!m_bGate || volume == 0) {
-			writeRegister(0x400C, (byte) 0x30);
-			return;
-		}
+    public NoiseChan() {
+        m_iDefaultDuty = 0;
+    }
 
-		period = period & 0x0F;
+    @Override
+    public void refreshChannel() {
+        int period = calculatePeriod();
+        int volume = calculateVolume();
+        byte noiseMode = (byte) ((m_iDutyPeriod & 0x01) << 7);
 
-		period ^= 0x0F;
+        if (!m_bGate || volume == 0) {
+            writeRegister(0x400C, (byte) 0x30);
+            return;
+        }
 
-		writeRegister(0x400C, (byte) (0x30 | volume));
-		writeRegister(0x400D, (byte) 0x00);
-		writeRegister(0x400E, (byte) (noiseMode | period));
-		writeRegister(0x400F, (byte) 0x00);
-	}
-	
-	protected void clearRegisters() {
-		writeRegister(0x400C, (byte) 0x30);
-		writeRegister(0x400D, (byte) 0);
-		writeRegister(0x400E, (byte) 0);
-		writeRegister(0x400F, (byte) 0);
-	}
+        period = period & 0x0F;
 
-	@Override
-	protected void handleNote(int note, int octave) {
-		int newNote = ((octave) * 12 + (note) - 1);
-		int nesFreq = triggerNote(newNote);
+        period ^= 0x0F;
 
-		nesFreq = (nesFreq & 0x0F) | 0x10;
+        writeRegister(0x400C, (byte) (0x30 | volume));
+        writeRegister(0x400D, (byte) 0x00);
+        writeRegister(0x400E, (byte) (noiseMode | period));
+        writeRegister(0x400F, (byte) 0x00);
+    }
+
+    @Override
+    protected void clearRegisters() {
+        writeRegister(0x400C, (byte) 0x30);
+        writeRegister(0x400D, (byte) 0);
+        writeRegister(0x400E, (byte) 0);
+        writeRegister(0x400F, (byte) 0);
+    }
+
+    @Override
+    protected void handleNote(int note, int octave) {
+        int newNote = ((octave) * 12 + (note) - 1);
+        int nesFreq = triggerNote(newNote);
+
+        nesFreq = (nesFreq & 0x0F) | 0x10;
 
 //		NewNote &= 0x0F;
 
-		if (m_iPortaSpeed > 0 && m_iEffect == EF_PORTAMENTO) {
-			if (m_iPeriod == 0)
-				m_iPeriod = nesFreq;
-			m_iPortaTo = nesFreq;
-		} else
-			m_iPeriod = nesFreq;
+        if (m_iPortaSpeed > 0 && m_iEffect == EF_PORTAMENTO) {
+            if (m_iPeriod == 0)
+                m_iPeriod = nesFreq;
+            m_iPortaTo = nesFreq;
+        } else
+            m_iPeriod = nesFreq;
 
-		m_bGate = true;
+        m_bGate = true;
 
-		m_iNote			= newNote;
-		m_iDutyPeriod	= m_iDefaultDuty;
-		m_iSeqVolume	= m_iInitVolume;
-	}
+        m_iNote = newNote;
+        m_iDutyPeriod = m_iDefaultDuty;
+        m_iSeqVolume = m_iInitVolume;
+    }
 
-	@Override
-	protected void setupSlide(int type, int effParam) {
-		super.setupSlide(type, effParam);
-		
-		if (m_iEffect == EF_SLIDE_DOWN)
-			m_iEffect = EF_SLIDE_UP;
-		else
-			m_iEffect = EF_SLIDE_DOWN;
-	}
+    @Override
+    protected void setupSlide(int type, int effParam) {
+        super.setupSlide(type, effParam);
 
-	@Override
-	protected int triggerNote(int note) {
-		registerKeyState(note);
-		
-		return note | 0x10;
-	}
+        if (m_iEffect == EF_SLIDE_DOWN)
+            m_iEffect = EF_SLIDE_UP;
+        else
+            m_iEffect = EF_SLIDE_DOWN;
+    }
+
+    @Override
+    protected int triggerNote(int note) {
+        registerKeyState(note);
+
+        return note | 0x10;
+    }
 
 }

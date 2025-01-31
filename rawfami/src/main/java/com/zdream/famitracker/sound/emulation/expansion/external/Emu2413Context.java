@@ -2,109 +2,110 @@ package com.zdream.famitracker.sound.emulation.expansion.external;
 
 public class Emu2413Context {
 
-	public static final int
-		OPLL_2413_TONE = 0,
-		OPLL_VRC7_TONE = 1,
-		OPLL_281B_TONE = 2;
+    public static final int
+            OPLL_2413_TONE = 0,
+            OPLL_VRC7_TONE = 1,
+            OPLL_281B_TONE = 2;
 
-	/* voice data */
-	class OPLL_PATCH {
-		int TL, FB, EG, ML, AR, DR, SL, RR, KR, KL, AM, PM, WF;
-	}
+    /* voice data */
+    static class OPLL_PATCH {
 
-	/* slot */
-	class OPLL_SLOT {
+        int TL, FB, EG, ML, AR, DR, SL, RR, KR, KL, AM, PM, WF;
+    }
 
-		OPLL_PATCH patch;
+    /* slot */
+    static class OPLL_SLOT {
 
-		/**
-		 * 0: modulator<br>
-		 * 1: carrier
-		 */
-		int type;
+        OPLL_PATCH patch;
 
-		/* OUTPUT */
-		int feedback;
-		/**
-		 * Output value of slot
-		 */
-		int[] output = new int[2];
+        /**
+         * 0: modulator<br>
+         * 1: carrier
+         */
+        int type;
 
-		/* for Phase Generator (PG) */
-		/**
-		 * Wavetable, 这个原来是 unsigned 的
-		 */
-		short[] sintbl;
+        /* OUTPUT */
+        int feedback;
+        /**
+         * Output value of slot
+         */
+        int[] output = new int[2];
 
-		/**
-		 * Phase, unsigned
-		 */
-		int phase;
+        /* for Phase Generator (PG) */
+        /**
+         * Wavetable, 这个原来是 unsigned 的
+         */
+        short[] sintbl;
 
-		/**
-		 * Phase increment amount, unsigned
-		 */
-		int dphase;
+        /**
+         * Phase, unsigned
+         */
+        int phase;
 
-		/**
-		 * output, unsigned
-		 */
-		int pgout;
+        /**
+         * Phase increment amount, unsigned
+         */
+        int dphase;
 
-		/* for Envelope Generator (EG) */
+        /**
+         * output, unsigned
+         */
+        int pgout;
 
-		/**
-		 * F-Number
-		 */
-		int fnum;
+        /* for Envelope Generator (EG) */
 
-		/**
-		 * Block
-		 */
-		int block;
+        /**
+         * F-Number
+         */
+        int fnum;
 
-		/**
-		 * Current volume
-		 */
-		int volume;
+        /**
+         * Block
+         */
+        int block;
 
-		/**
-		 * Sustine 1 = ON, 0 = OFF
-		 */
-		int sustine;
+        /**
+         * Current volume
+         */
+        int volume;
 
-		/**
-		 * Total Level + Key scale level, unsigned
-		 */
-		int tll;
+        /**
+         * Sustine 1 = ON, 0 = OFF
+         */
+        int sustine;
 
-		/**
-		 * Key scale offset (Rks), unsigned
-		 */
-		int rks;
+        /**
+         * Total Level + Key scale level, unsigned
+         */
+        int tll;
 
-		/**
-		 * Current state
-		 */
-		int eg_mode;
+        /**
+         * Key scale offset (Rks), unsigned
+         */
+        int rks;
 
-		/**
-		 * Phase, unsigned
-		 */
-		int eg_phase;
+        /**
+         * Current state
+         */
+        int eg_mode;
 
-		/**
-		 * Phase increment amount, unsigned
-		 */
-		int eg_dphase;
+        /**
+         * Phase, unsigned
+         */
+        int eg_phase;
 
-		/**
-		 * output, unsigned
-		 */
-		int egout;
-	}
+        /**
+         * Phase increment amount, unsigned
+         */
+        int eg_dphase;
 
-	/* Mask */
+        /**
+         * output, unsigned
+         */
+        int egout;
+    }
+
+    /* Mask */
 /*	#define OPLL_MASK_CH(x) (1<<(x))
 	#define OPLL_MASK_HH (1<<(9))
 	#define OPLL_MASK_CYM (1<<(10))
@@ -112,37 +113,37 @@ public class Emu2413Context {
 	#define OPLL_MASK_SD (1<<(12))
 	#define OPLL_MASK_BD (1<<(13))
 	#define OPLL_MASK_RHYTHM ( OPLL_MASK_HH | OPLL_MASK_CYM | OPLL_MASK_TOM | OPLL_MASK_SD | OPLL_MASK_BD )*/
-	
-	
-	/* Input clock */
-	int clk = 844451141;
-	/* Sampling rate */
-	int rate = 3354932;
 
-	/* WaveTable for each envelope amp */
-	int[][] waveform = {new int[512], new int[512]};
-	int[] fullsintable = waveform[0];
-	int[] halfsintable = waveform[1];
 
-	/* LFO Table */
-	int[] pmtable = new int[256];
-	int[] amtable = new int[256];
+    /* Input clock */
+    int clk = 844451141;
+    /* Sampling rate */
+    int rate = 3354932;
 
-	/* Phase delta for LFO */
-	int pm_dphase;
-	int am_dphase;
+    /* WaveTable for each envelope amp */
+    final int[][] waveform = {new int[512], new int[512]};
+    int[] fullsintable = waveform[0];
+    int[] halfsintable = waveform[1];
 
-	/* dB to Liner table */
-	int[] DB2LIN_TABLE = new int[1024];
+    /* LFO Table */
+    int[] pmtable = new int[256];
+    int[] amtable = new int[256];
 
-	/* Liner to Log curve conversion table (for Attack rate). */
-	int[] AR_ADJUST_TABLE = new int[128];
+    /* Phase delta for LFO */
+    int pm_dphase;
+    int am_dphase;
 
-	/* Empty voice data */
-	OPLL_PATCH null_patch = new OPLL_PATCH(); // 其中的参数全为 0
+    /* dB to Liner table */
+    int[] DB2LIN_TABLE = new int[1024];
 
-	/* Basic voice Data */
-	OPLL_PATCH[][] default_patch = new OPLL_PATCH[1][38]; // TODO 这里后面没有动
+    /* Liner to Log curve conversion table (for Attack rate). */
+    int[] AR_ADJUST_TABLE = new int[128];
+
+    /* Empty voice data */
+    OPLL_PATCH null_patch = new OPLL_PATCH(); // 其中的参数全为 0
+
+    /* Basic voice Data */
+    OPLL_PATCH[][] default_patch = new OPLL_PATCH[1][38]; // TODO 这里后面没有动
 
 	/* Definition of envelope mode 
 	enum OPLL_EG_STATE 
@@ -162,8 +163,8 @@ public class Emu2413Context {
 
 	// Added by jsr
 	int32 opll_volumes[10];*/
-	
-	{
-		
-	}
+
+    {
+
+    }
 }

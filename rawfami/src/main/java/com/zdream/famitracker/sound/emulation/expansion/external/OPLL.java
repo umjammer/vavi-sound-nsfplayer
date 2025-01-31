@@ -3,85 +3,86 @@ package com.zdream.famitracker.sound.emulation.expansion.external;
 import com.zdream.famitracker.sound.emulation.expansion.external.Emu2413Context.OPLL_PATCH;
 import com.zdream.famitracker.sound.emulation.expansion.external.Emu2413Context.OPLL_SLOT;
 
+
 public class OPLL {
 
-	/**
-	 * unsigned
-	 */
-	int adr;
-	int out;
+    /**
+     * unsigned
+     */
+    int adr;
+    int out;
 
-	/**
-	 * unsigned
-	 */
-	int realstep;
+    /**
+     * unsigned
+     */
+    int realstep;
 
-	/**
-	 * unsigned
-	 */
-	int oplltime;
+    /**
+     * unsigned
+     */
+    int oplltime;
 
-	/**
-	 * unsigned
-	 */
-	int opllstep;
-	int prev, next;
-	int[] sprev = new int[2], snext = new int[2];
+    /**
+     * unsigned
+     */
+    int opllstep;
+    int prev, next;
+    int[] sprev = new int[2], snext = new int[2];
 
-	/**
-	 * unsigned
-	 */
-	int[] pan = new int[16];
+    /**
+     * unsigned
+     */
+    int[] pan = new int[16];
 
-	/* Register */
+    /* Register */
 
-	/**
-	 * unsigned
-	 */
-	byte[] reg = new byte[0x40];
-	int[] slot_on_flag = new int[18];
+    /**
+     * unsigned
+     */
+    byte[] reg = new byte[0x40];
+    int[] slot_on_flag = new int[18];
 
-	/* Pitch Modulator */
+    /* Pitch Modulator */
 
-	/**
-	 * unsigned
-	 */
-	int pm_phase;
-	int lfo_pm;
+    /**
+     * unsigned
+     */
+    int pm_phase;
+    int lfo_pm;
 
-	/* Amp Modulator */
-	int am_phase;
-	int lfo_am;
+    /* Amp Modulator */
+    int am_phase;
+    int lfo_am;
 
-	/**
-	 * unsigned
-	 */
-	int quality;
+    /**
+     * unsigned
+     */
+    int quality;
 
-	/**
-	 * Noise Generator, unsigned
-	 */
-	int noise_seed;
+    /**
+     * Noise Generator, unsigned
+     */
+    int noise_seed;
 
-	/* Channel Data */
-	int[] patch_number = new int[9];
-	int[] key_status = new int[9];
+    /* Channel Data */
+    int[] patch_number = new int[9];
+    int[] key_status = new int[9];
 
-	/* Slot */
-	OPLL_SLOT[] slot = new OPLL_SLOT[18];
+    /* Slot */
+    OPLL_SLOT[] slot = new OPLL_SLOT[18];
 
-	/* Voice Data */
-	OPLL_PATCH[] patch = new OPLL_PATCH[19 * 2];
+    /* Voice Data */
+    OPLL_PATCH[] patch = new OPLL_PATCH[19 * 2];
 
-	/**
-	 * flag for check patch update
-	 */
-	int[] patch_update = new int[2];
+    /**
+     * flag for check patch update
+     */
+    int[] patch_update = new int[2];
 
-	/**
-	 * unsigned
-	 */
-	int mask;
+    /**
+     * unsigned
+     */
+    int mask;
 	
 	/*public OPLL() {
 		  maketables (clk, rate);

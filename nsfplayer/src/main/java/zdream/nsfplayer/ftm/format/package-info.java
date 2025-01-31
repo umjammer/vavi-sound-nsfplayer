@@ -1,6 +1,7 @@
 /**
- * <p>Famitracker 文件播放时所需要的格式等等
- * @author Zdream
+ * <p>Famitracker file formats required for playback, etc.
  *
+ * @author Zdream
  */
+
 package zdream.nsfplayer.ftm.format;

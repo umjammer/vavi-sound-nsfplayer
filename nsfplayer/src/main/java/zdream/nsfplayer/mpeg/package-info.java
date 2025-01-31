@@ -1,8 +1,9 @@
 /**
- * 该包是放 mp3 解码的相关类
+ * This package is related to mp3 decoding
  */
+
 /**
  * @author Zdream
- *
  */
+
 package zdream.nsfplayer.mpeg;

@@ -1,14 +1,18 @@
 /**
- * <p>FamiTracker 里面的渲染部分, 其主要任务就是运行 FTM 文件, 尝试输出音频采样数据.
- * 该包依赖 zdream.nsfplayer.sound 包来进行音频的渲染.
- * 从版本 v0.3.0 开始, 绝大部分的执行构件移动到包 zdream.nsfplayer.ftm.executor 下.
- * 
- * <p>如果需要对 FTM 文件进行渲染播放的话, 这里推荐使用
- * {@link zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer} 类.
- * <p>如果需要对 FTM 文件进行执行的话, 这里推荐使用
- * {@link zdream.nsfplayer.ftm.executor.FamiTrackerExecutor} 类.
+ * <p>The rendering part of FamiTracker is mainly responsible for running FTM files
+ * and trying to output audio sample data.
+ * This package depends on the zdream.nsfplayer.sound package for audio rendering.
+ * Starting from version v0.3.0, most of the executable components are moved to
+ * the package zdream.nsfplayer.ftm.executor.
+ *
+ * <p>If you need to render and play FTM files, it is recommended to use
+ * {@link zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer} class.
+ * <p>If you need to execute the FTM file, it is recommended to use the
+ * {@link zdream.nsfplayer.ftm.executor.FamiTrackerExecutor} class.
  * </p>
+ *
  * @author Zdream
  * @since v0.2.1
  */
+
 package zdream.nsfplayer.ftm.renderer;

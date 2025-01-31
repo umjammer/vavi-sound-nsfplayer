@@ -1,7 +1,5 @@
 package com.zdream.famitracker.sound.channels;
 
-import static com.zdream.famitracker.FamitrackerTypes.*;
-
 import com.zdream.famitracker.FamiTrackerApp;
 import com.zdream.famitracker.FamiTrackerDoc;
 import com.zdream.famitracker.document.DSample;
@@ -10,198 +8,207 @@ import com.zdream.famitracker.document.instrument.Instrument;
 import com.zdream.famitracker.document.instrument.Instrument2A03;
 import com.zdream.famitracker.sound.SampleMem;
 
+import static com.zdream.famitracker.FamitrackerTypes.EF_DAC;
+import static com.zdream.famitracker.FamitrackerTypes.EF_DPCM_PITCH;
+import static com.zdream.famitracker.FamitrackerTypes.EF_NOTE_CUT;
+import static com.zdream.famitracker.FamitrackerTypes.EF_RETRIGGER;
+import static com.zdream.famitracker.FamitrackerTypes.EF_SAMPLE_OFFSET;
+import static com.zdream.famitracker.FamitrackerTypes.NOTE_NONE;
+
+
 public final class DPCMChan extends ChannelHandler2A03 {
-	
-	public DPCMChan(SampleMem pSampleMem) {
-		m_pSampleMem = pSampleMem;
-	}
 
-	@Override
-	public void refreshChannel() {
-		if (m_cDAC != 255) {
-			writeRegister(0x4011, (byte) m_cDAC);
-			m_cDAC = 255;
-		}
+    public DPCMChan(SampleMem pSampleMem) {
+        m_pSampleMem = pSampleMem;
+    }
 
-		if (m_iRetrigger != 0) {
-			m_iRetriggerCntr--;
-			if (m_iRetriggerCntr == 0) {
-				m_iRetriggerCntr = m_iRetrigger;
-				m_bEnabled = true;
-				m_bTrigger = true;
-			}
-		}
+    @Override
+    public void refreshChannel() {
+        if (m_cDAC != 255) {
+            writeRegister(0x4011, (byte) m_cDAC);
+            m_cDAC = 255;
+        }
 
-		if (m_bRelease) {
-			// Release command
-			writeRegister(0x4015, (byte) 0x0F);
-			m_bEnabled = false;
-			m_bRelease = false;
-		}
-		
-		if (!m_bEnabled)
-			return;
+        if (m_iRetrigger != 0) {
+            m_iRetriggerCntr--;
+            if (m_iRetriggerCntr == 0) {
+                m_iRetriggerCntr = m_iRetrigger;
+                m_bEnabled = true;
+                m_bTrigger = true;
+            }
+        }
 
-		if (!m_bGate) {
-			// Cut sample
-			writeRegister(0x4015, (byte) 0x0F);
+        if (m_bRelease) {
+            // Release command
+            writeRegister(0x4015, (byte) 0x0F);
+            m_bEnabled = false;
+            m_bRelease = false;
+        }
 
-			if (!FamiTrackerApp.getInstance().getSettings().general.bNoDPCMReset || FamiTrackerApp.getInstance().isPlaying()) {
-				writeRegister(0x4011, (byte) 0);	// regain full volume for TN
-			}
+        if (!m_bEnabled)
+            return;
 
-			m_bEnabled = false;		// don't write to this channel anymore
-		}
-		else if (m_bTrigger) {
-			// Start playing the sample
-			writeRegister(0x4010, (byte) ((m_iPeriod & 0x0F) | m_iLoop));
-			writeRegister(0x4012, (byte) m_iOffset);							// load address, start at $C000
-			writeRegister(0x4013, (byte) m_iSampleLength);						// length
-			writeRegister(0x4015, (byte) 0x0F);
-			writeRegister(0x4015, (byte) 0x1F);								// fire sample
+        if (!m_bGate) {
+            // Cut sample
+            writeRegister(0x4015, (byte) 0x0F);
 
-			// Loop offset
-			if (m_iLoopOffset > 0) {
-				writeRegister(0x4012, (byte) m_iLoopOffset);
-				writeRegister(0x4013, (byte) m_iLoopLength);
-			}
+            if (!FamiTrackerApp.getInstance().getSettings().general.bNoDPCMReset || FamiTrackerApp.getInstance().isPlaying()) {
+                writeRegister(0x4011, (byte) 0);    // regain full volume for TN
+            }
 
-			m_bTrigger = false;
-		}
-	}
-	
-	@Override
-	protected void handleNoteData(StChanNote pNoteData, int effColumns) {
-		m_iCustomPitch = -1;
-		m_iRetrigger = 0;
+            m_bEnabled = false;        // don't write to this channel anymore
+        } else if (m_bTrigger) {
+            // Start playing the sample
+            writeRegister(0x4010, (byte) ((m_iPeriod & 0x0F) | m_iLoop));
+            writeRegister(0x4012, (byte) m_iOffset);                            // load address, start at $C000
+            writeRegister(0x4013, (byte) m_iSampleLength);                        // length
+            writeRegister(0x4015, (byte) 0x0F);
+            writeRegister(0x4015, (byte) 0x1F);                                // fire sample
 
-		if (pNoteData.note != NOTE_NONE) {
-			m_iNoteCut = 0;
-		}
-		
-		super.handleNoteData(pNoteData, effColumns);
-	}
-	
-	protected void handleCustomEffects(int effNum, int effParam) {
-		switch (effNum) {
-		case EF_DAC: // Zxx
-			m_cDAC = effParam & 0x7F;
-			break;
-		case EF_SAMPLE_OFFSET: // Yxx
-			m_iOffset = effParam;
-			break;
-		case EF_DPCM_PITCH: // Wxx
-			m_iCustomPitch = effParam;
-			break;
-		case EF_RETRIGGER: // Xxx
+            // Loop offset
+            if (m_iLoopOffset > 0) {
+                writeRegister(0x4012, (byte) m_iLoopOffset);
+                writeRegister(0x4013, (byte) m_iLoopLength);
+            }
+
+            m_bTrigger = false;
+        }
+    }
+
+    @Override
+    protected void handleNoteData(StChanNote pNoteData, int effColumns) {
+        m_iCustomPitch = -1;
+        m_iRetrigger = 0;
+
+        if (pNoteData.note != NOTE_NONE) {
+            m_iNoteCut = 0;
+        }
+
+        super.handleNoteData(pNoteData, effColumns);
+    }
+
+    @Override
+    protected void handleCustomEffects(int effNum, int effParam) {
+        switch (effNum) {
+            case EF_DAC: // Zxx
+                m_cDAC = effParam & 0x7F;
+                break;
+            case EF_SAMPLE_OFFSET: // Yxx
+                m_iOffset = effParam;
+                break;
+            case EF_DPCM_PITCH: // Wxx
+                m_iCustomPitch = effParam;
+                break;
+            case EF_RETRIGGER: // Xxx
 //				if (NoteData->EffParam[i] > 0) {
-				m_iRetrigger = effParam + 1;
-				if (m_iRetriggerCntr == 0)
-					m_iRetriggerCntr = m_iRetrigger;
+                m_iRetrigger = effParam + 1;
+                if (m_iRetriggerCntr == 0)
+                    m_iRetriggerCntr = m_iRetrigger;
 //				}
 //				m_iEnableRetrigger = 1;
-			break;
-		case EF_NOTE_CUT: // Sxx
-			m_iNoteCut = (byte) (effParam + 1);
-			break;
-		}
-	}
-	
-	@Override
-	protected boolean handleInstrument(int instrument, boolean trigger, boolean newInstrument) {
-		return true;
-	}
+                break;
+            case EF_NOTE_CUT: // Sxx
+                m_iNoteCut = (byte) (effParam + 1);
+                break;
+        }
+    }
 
-	@Override
-	protected void handleEmptyNote() {}
+    @Override
+    protected boolean handleInstrument(int instrument, boolean trigger, boolean newInstrument) {
+        return true;
+    }
 
-	@Override
-	protected void handleRelease() {
-		m_bRelease = true;
-	}
+    @Override
+    protected void handleEmptyNote() {
+    }
 
-	@Override
-	protected void handleNote(int note, int octave) {
-		FamiTrackerDoc pDocument = m_pSoundGen.getDocument();
-		Instrument2A03 pInstrument = (Instrument2A03) pDocument.getInstrument(m_iInstrument);
+    @Override
+    protected void handleRelease() {
+        m_bRelease = true;
+    }
 
-		if (pInstrument == null)
-			return;
+    @Override
+    protected void handleNote(int note, int octave) {
+        FamiTrackerDoc pDocument = m_pSoundGen.getDocument();
+        Instrument2A03 pInstrument = (Instrument2A03) pDocument.getInstrument(m_iInstrument);
 
-		if (pInstrument.getType() != Instrument.INST_2A03)
-			return;
+        if (pInstrument == null)
+            return;
 
-		int sampleIndex = pInstrument.getSample(octave, note - 1);
+        if (pInstrument.getType() != Instrument.INST_2A03)
+            return;
 
-		if (sampleIndex > 0) {
+        int sampleIndex = pInstrument.getSample(octave, note - 1);
 
-			int pitch = pInstrument.getSamplePitch(octave, note - 1);
-			m_iLoop = (pitch & 0x80) >> 1;
+        if (sampleIndex > 0) {
 
-			if (m_iCustomPitch != -1) // 如果有 Wxx 效果, 以该效果为准
-				pitch = m_iCustomPitch;
-		
-			m_iLoopOffset = pInstrument.getSampleLoopOffset(octave, note - 1);
+            int pitch = pInstrument.getSamplePitch(octave, note - 1);
+            m_iLoop = (pitch & 0x80) >> 1;
 
-			final DSample pDSample = pDocument.getSample1(sampleIndex - 1);
-			int sampleSize = pDSample.getSize(); // byte 总数
+            if (m_iCustomPitch != -1) // 如果有 Wxx 效果, 以该效果为准
+                pitch = m_iCustomPitch;
 
-			if (sampleSize > 0) {
-				m_pSampleMem.setMem(pDSample.getData());
-				m_iPeriod = pitch & 0x0F;
-				m_iSampleLength = (sampleSize >> 4) - (m_iOffset << 2); // sampleSize / 16 - m_iOffset * 4
-				m_iLoopLength = sampleSize - m_iLoopOffset;
-				m_bEnabled = true;
-				m_bTrigger = true;
-				m_bGate = true;
+            m_iLoopOffset = pInstrument.getSampleLoopOffset(octave, note - 1);
 
-				// Initial delta counter value
-				byte delta = pInstrument.getSampleDeltaValue(octave, note - 1);
-				
-				if (delta != 255 && m_cDAC == 255)
-					m_cDAC = delta & 0xFF;
+            DSample pDSample = pDocument.getSample1(sampleIndex - 1);
+            int sampleSize = pDSample.getSize(); // byte 总数
 
-				m_iRetriggerCntr = m_iRetrigger;
-			}
-		}
+            if (sampleSize > 0) {
+                m_pSampleMem.setMem(pDSample.getData());
+                m_iPeriod = pitch & 0x0F;
+                m_iSampleLength = (sampleSize >> 4) - (m_iOffset << 2); // sampleSize / 16 - m_iOffset * 4
+                m_iLoopLength = sampleSize - m_iLoopOffset;
+                m_bEnabled = true;
+                m_bTrigger = true;
+                m_bGate = true;
 
-		registerKeyState((note - 1) + (octave * 12));
-	}
-	
-	@Override
-	protected void clearRegisters() {
-		writeRegister(0x4015, (byte) 0x0F);
+                // Initial delta counter value
+                byte delta = pInstrument.getSampleDeltaValue(octave, note - 1);
 
-		writeRegister(0x4010, (byte) 0);	
-		writeRegister(0x4011, (byte) 0);
-		writeRegister(0x4012, (byte) 0);
-		writeRegister(0x4013, (byte) 0);
+                if (delta != 255 && m_cDAC == 255)
+                    m_cDAC = delta & 0xFF;
 
-		m_iOffset = 0;
-		m_cDAC = 255;
-	}
-	
-	// DPCM variables
-	private SampleMem m_pSampleMem;
+                m_iRetriggerCntr = m_iRetrigger;
+            }
+        }
 
-	/**
-	 * 范围 0 - 255
-	 */
-	
-	/*
-	 * 6 个 unsigned
-	 */
-	
-	private int m_cDAC = 255;
-	private int m_iLoop;
-	private int m_iOffset;
-	private int m_iSampleLength;
-	private int m_iLoopOffset;
-	private int m_iLoopLength;
-	
-	private int m_iRetrigger;
-	private int m_iRetriggerCntr;
-	private int m_iCustomPitch;
-	private boolean m_bTrigger;
-	private boolean m_bEnabled;
+        registerKeyState((note - 1) + (octave * 12));
+    }
+
+    @Override
+    protected void clearRegisters() {
+        writeRegister(0x4015, (byte) 0x0F);
+
+        writeRegister(0x4010, (byte) 0);
+        writeRegister(0x4011, (byte) 0);
+        writeRegister(0x4012, (byte) 0);
+        writeRegister(0x4013, (byte) 0);
+
+        m_iOffset = 0;
+        m_cDAC = 255;
+    }
+
+    // DPCM variables
+    private final SampleMem m_pSampleMem;
+
+    /**
+     * range 0 - 255
+     */
+
+    /*
+     * 6 个 unsigned
+     */
+
+    private int m_cDAC = 255;
+    private int m_iLoop;
+    private int m_iOffset;
+    private int m_iSampleLength;
+    private int m_iLoopOffset;
+    private int m_iLoopLength;
+
+    private int m_iRetrigger;
+    private int m_iRetriggerCntr;
+    private int m_iCustomPitch;
+    private boolean m_bTrigger;
+    private boolean m_bEnabled;
 }

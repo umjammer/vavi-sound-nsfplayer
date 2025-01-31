@@ -1,21 +1,21 @@
 package zdream.nsfplayer.ftm.executor;
 
 /**
- * <p>每帧开始前触发的任务. 仅在第一帧的效果触发之前执行一次, 执行完后就删除
+ * <p>A task that is triggered before the start of each frame. It is executed only once
+ * before the effect of the first frame is triggered, and then deleted.
  * </p>
- * 
+ *
  * @author Zdream
  * @since 0.2.2
  */
 public interface IFtmSchedule {
-	
-	/**
-	 * 每帧触发的方法体
-	 * @param channelCode
-	 *   当前轨道号码
-	 * @param runtime
-	 *   运行环境
-	 */
-	public void trigger(byte channelCode, FamiTrackerRuntime runtime);
+
+    /**
+     * Method body triggered per frame
+     *
+     * @param channelCode Current channel number
+     * @param runtime     operating environment
+     */
+    void trigger(byte channelCode, FamiTrackerRuntime runtime);
 
 }

@@ -1,11 +1,13 @@
 /**
- * <p>渲染构件所在包.
- * <p>该包里面放置 blip 与 xgm 两类混音器.
- * 混音器主要作用是接收执行构件的 {@link zdream.nsfplayer.sound.AbstractNsfSound} 
- * 发来的音频数据, 转化为 PCM 音频采样数据.
+ * <p>The package where the rendering component is located.
+ * <p>This package contains two types of mixers: blip and xgm.
+ * The main function of the mixer is to receive the audio data sent
+ * by the execution component {@link zdream.nsfplayer.sound.AbstractNsfSound}
+ * and convert it into PCM audio sampling data.
  * </p>
- * 
+ *
  * @author Zdream
  * @since v0.3.0
  */
+
 package zdream.nsfplayer.mixer;

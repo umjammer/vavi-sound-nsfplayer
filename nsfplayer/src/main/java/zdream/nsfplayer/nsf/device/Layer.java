@@ -1,51 +1,52 @@
 package zdream.nsfplayer.nsf.device;
 
-import java.util.Iterator;
-
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 
+
 /**
- * 层
- * <p>与 Bus 类似, 但不会把读写的工作在全部设备间传播.<br>
- * 当有一个设备确认读写之后, 传播就会停止</p>
+ * Layer.
+ * <p>Similar to Bus, but does not propagate reads and writes across all devices.<br>
+ * The propagation stops when a device confirms the read or write.</p>
+ *
  * @author Zdream
  */
 public class Layer extends Bus {
-	
-	/**
-	 * 数据写入
-	 * <p>对安装在总线的设备，进行 <code>write()</code> 操作.
-	 * 调用次序就是设备所安装的顺序.
-	 * 如果其中一个设备写入成功后直接 <code>return</code></p>
-	 * @param id 在这个方法中会被忽略
-	 */
-	public boolean write(int addr, int value, int id) {
-		boolean ret;
-		for (Iterator<IDevice> it = vd.iterator(); it.hasNext();) {
-			IDevice d = it.next();
-			ret = d.write(addr, value, 0);
-			if (ret) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	/**
-	 * 数据读取
-	 * <p>对安装在总线的设备，进行 <code>read()</code> 操作.
-	 * 调用次序就是设备所安装的顺序.
-	 * 如果其中一个设备读取成功后直接 <code>return</code></p>
-	 * @param id 在这个方法中会被忽略
-	 */
-	public boolean read(int adr, IntHolder val, int id) {
-		val.val = 0;
-		for (Iterator<IDevice> it = vd.iterator(); it.hasNext();) {
-			IDevice d = it.next();
-			if (d.read(adr, val, 0))
-				return true;
-		}
-		return false;
-	}
 
+    /**
+     * data writing
+     * <p>Performs a <code>write()</code> operation on a device installed on the bus.
+     * The call order is the order in which the devices are installed.
+     * If one of the devices writes successfully directly <code>return</code></p>
+     *
+     * @param id will be ignored in this method
+     */
+    @Override
+    public boolean write(int addr, int value, int id) {
+        boolean ret;
+        for (IDevice d : vd) {
+            ret = d.write(addr, value, 0);
+            if (ret) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * data retrieval
+     * <p>Perform a <code>read()</code> operation on a device installed on the bus.
+     * The call order is the order in which the devices are installed.
+     * If one of the devices reads successfully then directly <code>return</code></p>
+     *
+     * @param id will be ignored in this method
+     */
+    @Override
+    public boolean read(int adr, IntHolder val, int id) {
+        val.val = 0;
+        for (IDevice d : vd) {
+            if (d.read(adr, val, 0))
+                return true;
+        }
+        return false;
+    }
 }

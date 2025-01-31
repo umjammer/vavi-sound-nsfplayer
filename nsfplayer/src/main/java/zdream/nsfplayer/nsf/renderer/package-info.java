@@ -1,6 +1,8 @@
 /**
- * NSF 渲染器所在的包
+ * NSF Renderer Packages
+ *
  * @author Zdream
- * @date 2018-05-09
+ * @version 2018-05-09
  */
+
 package zdream.nsfplayer.nsf.renderer;

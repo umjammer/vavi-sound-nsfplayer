@@ -2,147 +2,147 @@ package zdream.nsfplayer.sound;
 
 import zdream.nsfplayer.core.IFrameSequence;
 
+
 /**
- * 拥有 linear 声部的噪音发声器
- * 
+ * Noise generator with linear voice
+ *
  * @author Zdream
  * @since v0.2.9
  */
 public class SoundLinearTriangle extends SoundTriangle implements IFrameSequence {
-	
-	/* **********
-	 *   参数   *
-	 ********** */
-	/*
-	 * 原始记录参数
-	 */
 
-	/**
-	 * <p>0 号位: x0000000
-	 * <p>为 1 时为 true, 为 0 时为 false
-	 * </p>
-	 */
-	public boolean looping;
-	
-	/**
-	 * <p>0 号位: 0xxxxxxx
-	 * <p>unsigned, 值域 [0, 127]
-	 * </p>
-	 */
-	public int linearLoad;
-	
-	
-	/*
-	 * 辅助参数
-	 */
-	
-	/**
-	 * 该帧有多少 Frame Sequence 已经过去了
-	 */
-	private int sequenceCount;
-	
-	/**
-	 * 每个 Frame Sequence 需要的时钟数
-	 */
-	private int sequenceStep = SEQUENCE_STEP_NTSC;
-	
-	/**
-	 * 到达下一个 Frame Sequence 触发时间还需要多少时钟数
-	 */
-	private int sequenceRemain;
-	
-	/*
-	 * linear 部分
-	 */
-	private boolean linearCounterHalt;
-	private int linearCounter;
-	
-	
-	/* **********
-	 *   设置   *
-	 ********** */
+    //
+    // parameters
+    //
 
-	@Override
-	public void setSequenceStep(int clock) {
-		this.sequenceStep = clock;
-	}
-	
-	/**
-	 * 如果刚刚更新了 3 号位, 请调用该方法
-	 */
-	public void onEnvelopeUpdated() {
-		linearCounterHalt = true;
-	}
-	
-	/* **********
-	 * 公共方法 *
-	 ********** */
-	
-	@Override
-	public void endFrame() {
-		sequenceCount = 0;
-		sequenceRemain = 0;
-		super.endFrame();
-	}
-	
-	@Override
-	public void reset() {
-		// 原始记录参数
-		looping = false;
-		linearLoad = 0;
-		
-		// 辅助参数
-		linearCounterHalt = false;
-		linearCounter = 0;
-		
-		super.reset();
-	}
-	
-	/* **********
-	 *   渲染   *
-	 ********** */
-	
-	private void sequenceUpdate() {
-		sequenceCount++;
-		// 规定一帧最多触发 4 次
-		if (sequenceCount > 4) {
-			return;
-		}
-		
-		// 240hz clock
-		{
-			if (linearCounterHalt) {
-				linearCounter = linearLoad;
-			} else {
-				if (linearCounter > 0)
-					--linearCounter;
-			}
-			if (!looping) {
-				linearCounterHalt = false;
-			}
-		}
-		
-		// 120hz clock
-		if ((sequenceCount & 1) == 1) {
-			if (!looping && (lengthCounter > 0))
-				--lengthCounter;
-		}
-	}
-	
-	@Override
-	protected int processStep(int period) {
-		// Frame Sequence 更新部分
-		sequenceRemain -= period;
-		while (sequenceRemain < 0) {
-			sequenceRemain += sequenceStep;
-			sequenceUpdate();
-		}
-		
-		return super.processStep(period);
-	}
-	
-	protected boolean isStatusValid() {
-		return super.isStatusValid() && linearCounter > 0;
-	}
+    /*
+     * Original Record Parameters
+     */
 
+    /**
+     * <p>0 position: x0000000
+     * <p>True if 1, false if 0
+     * </p>
+     */
+    public boolean looping;
+
+    /**
+     * <p>0 position: 0xxxxxxx
+     * <p>unsigned, value field [0, 127]
+     * </p>
+     */
+    public int linearLoad;
+
+    //
+    // Auxiliary parameters
+    //
+
+    /**
+     * How many Frame Sequences have passed in this frame?
+     */
+    private int sequenceCount;
+
+    /**
+     * Number of clocks per Frame Sequence
+     */
+    private int sequenceStep = SEQUENCE_STEP_NTSC;
+
+    /**
+     * How many clocks are needed to reach the next Frame Sequence trigger time?
+     */
+    private int sequenceRemain;
+
+    /*
+     * linear part
+     */
+    private boolean linearCounterHalt;
+    private int linearCounter;
+
+    //
+    // set up
+    //
+
+    @Override
+    public void setSequenceStep(int clock) {
+        this.sequenceStep = clock;
+    }
+
+    /**
+     * If you have just updated 3 positions, call this method
+     */
+    public void onEnvelopeUpdated() {
+        linearCounterHalt = true;
+    }
+
+    //
+    // Public method
+    //
+
+    @Override
+    public void endFrame() {
+        sequenceCount = 0;
+        sequenceRemain = 0;
+        super.endFrame();
+    }
+
+    @Override
+    public void reset() {
+        // Original Record Parameters
+        looping = false;
+        linearLoad = 0;
+
+        // Auxiliary parameters
+        linearCounterHalt = false;
+        linearCounter = 0;
+
+        super.reset();
+    }
+
+    //
+    // rendering
+    //
+
+    private void sequenceUpdate() {
+        sequenceCount++;
+        // Provides for a maximum of 4 triggers per frame
+        if (sequenceCount > 4) {
+            return;
+        }
+
+        // 240hz clock
+        {
+            if (linearCounterHalt) {
+                linearCounter = linearLoad;
+            } else {
+                if (linearCounter > 0)
+                    --linearCounter;
+            }
+            if (!looping) {
+                linearCounterHalt = false;
+            }
+        }
+
+        // 120hz clock
+        if ((sequenceCount & 1) == 1) {
+            if (!looping && (lengthCounter > 0))
+                --lengthCounter;
+        }
+    }
+
+    @Override
+    protected int processStep(int period) {
+        // Frame Sequence update section
+        sequenceRemain -= period;
+        while (sequenceRemain < 0) {
+            sequenceRemain += sequenceStep;
+            sequenceUpdate();
+        }
+
+        return super.processStep(period);
+    }
+
+    @Override
+    protected boolean isStatusValid() {
+        return super.isStatusValid() && linearCounter > 0;
+    }
 }
