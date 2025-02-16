@@ -5,6 +5,8 @@ import java.nio.file.Paths;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
@@ -29,13 +31,20 @@ public class TestFtmUseBlipMixer {
     }
 
     @Property(name = "ftm")
-    String path = "test\\assets\\test\\mm10nsf.ftm";
+    String path = "src/test/resources/assets/mm10nsf.ftm";
+
+    @Property(name = "vavi.test.volume")
+    double volume = 0.2;
+
+    static final boolean onIde = System.getProperty("vavi.test", "").equals("ide");
+    static final long time = onIde ? 3600 : 15;
 
     @BeforeEach
     void setup() throws Exception {
         if (localPropertiesExists()) {
             PropsEntity.Util.bind(this);
         }
+Debug.println("volume: " + volume);
     }
 
     @Test
@@ -51,9 +60,10 @@ public class TestFtmUseBlipMixer {
         renderer.ready(audio, 44);
 
         BytesPlayer player = new BytesPlayer();
+        player.setVolume(volume);
         byte[] bs = new byte[2400];
 
-        for (int i = 0; i < 3600; i++) {
+        for (int i = 0; i < time; i++) {
             int size = renderer.render(bs, 0, 2400);
             player.writeSamples(bs, 0, size);
             if (renderer.isFinished()) {

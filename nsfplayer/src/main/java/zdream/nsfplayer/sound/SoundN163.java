@@ -135,6 +135,7 @@ public class SoundN163 extends AbstractNsfSound {
         super.reset();
     }
 
+int CC;
     @Override
     protected void onProcess(int time) {
         // Be sure to set the value of step
@@ -166,6 +167,8 @@ public class SoundN163 extends AbstractNsfSound {
             int sample = 8 - wave[index];
 
             mix(sample * volume);
+//if (CC++ < 300) { System.err.printf("%d, %d\n", phase, sample * volume); }
+//else { System.exit(1); }
         }
 
         this.time += time;

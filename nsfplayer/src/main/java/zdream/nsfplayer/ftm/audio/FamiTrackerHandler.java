@@ -3,6 +3,7 @@ package zdream.nsfplayer.ftm.audio;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
+import java.util.List;
 
 import zdream.nsfplayer.core.ERegion;
 import zdream.nsfplayer.core.FtmChipType;
@@ -84,8 +85,8 @@ public class FamiTrackerHandler implements INsfChannelCode {
         audio.useMmc5 = (c & 8) > 0;
         audio.useN163 = (c & 16) > 0;
         audio.useS5b = (c & 32) > 0;
-        logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(audio.useVrc6 ? "6" : "_", audio.useVrc7 ? "7" : "_", audio.useFds ? "F" : "_", audio.useMmc5 ? "M" : "_", audio.useN163 ? "N" : "_", audio.useS5b ? "S" : "_"));
-        new Exception().printStackTrace();
+logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(audio.useVrc6 ? "6" : "_", audio.useVrc7 ? "7" : "_", audio.useFds ? "F" : "_", audio.useMmc5 ? "M" : "_", audio.useN163 ? "N" : "_", audio.useS5b ? "S" : "_"));
+//new Exception().printStackTrace();
         channelDirt = true;
     }
 
@@ -138,7 +139,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
      * @return New track.
      */
     public FtmTrack createTrack() {
-        ArrayList<FtmTrack> tracks = audio.tracks;
+        List<FtmTrack> tracks = audio.tracks;
 
         FtmTrack track = new FtmTrack();
         tracks.add(track);
@@ -153,7 +154,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
      * @return
      */
     public FtmTrack getOrCreateTrack(int index) {
-        ArrayList<FtmTrack> tracks = audio.tracks;
+        List<FtmTrack> tracks = audio.tracks;
 
         if (index <= tracks.size()) {
             FtmTrack track = tracks.get(index);
@@ -495,7 +496,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
      */
     public void registerInstrument(AbstractFtmInstrument inst) {
         int index = inst.seq;
-        ArrayList<AbstractFtmInstrument> list = audio.insts;
+        List<AbstractFtmInstrument> list = audio.insts;
         registerT(list, inst, index);
     }
 
@@ -512,7 +513,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
      * @since v0.2.5
      */
     public FtmInstrumentFDS getOrCreateInstrumentFDS(int index) {
-        ArrayList<AbstractFtmInstrument> list = audio.insts;
+        List<AbstractFtmInstrument> list = audio.insts;
         AbstractFtmInstrument inst;
         if (index < list.size()) {
             inst = list.get(index);
@@ -544,7 +545,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
      * @since v0.2.6
      */
     public FtmInstrumentN163 getOrCreateInstrumentN163(int index) {
-        ArrayList<AbstractFtmInstrument> list = audio.insts;
+        List<AbstractFtmInstrument> list = audio.insts;
         AbstractFtmInstrument inst;
         if (index < list.size()) {
             inst = list.get(index);
@@ -570,7 +571,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
      * @return
      */
     public FtmDPCMSample getOrCreateDPCMSample(int index) {
-        ArrayList<FtmDPCMSample> list = audio.samples;
+        List<FtmDPCMSample> list = audio.samples;
         FtmDPCMSample sample = null;
 
         if (list.size() > index) {
@@ -585,7 +586,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
         return sample;
     }
 
-    private <T> void registerT(ArrayList<T> list, T t, int index) {
+    private <T> void registerT(List<T> list, T t, int index) {
         int size = list.size();
         int d = index - size;
         if (d < 0) {

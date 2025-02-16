@@ -40,7 +40,7 @@ Debug.println("volume: " + volume);
     }
 
     static final boolean onIde = System.getProperty("vavi.test", "").equals("ide");
-    static final long time = onIde ? 1000 * 1000 : 10 * 1000;
+    static final long time = onIde ? 3600 : 15;
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
@@ -56,7 +56,7 @@ Debug.println(in);
         player.setVolume(volume);
         byte[] bs = new byte[1600];
 
-        for (int i = 0; i < 3600; i++) {
+        for (int i = 0; i < time; i++) {
             int len = renderer.renderOneFrame(bs, 0, bs.length);
             player.writeSamples(bs, 0, len);
         }

@@ -78,8 +78,9 @@ import static com.zdream.famitracker.sound.emulation.Types.SNDCHIP_VRC7;
 
 
 /**
- * <p>这里面放置了整个 Famitracker 音频文档所包含的所有数据.
- * <p>不过我将源 C++ 文件中的和音频输出相关的方法和类全部移除并移到上层执行, 保证其独立性
+ * <p>This includes all data contained in a complete Famitracker audio document.
+ * <p>But I have removed all methods and classes related to audio output from the source
+ * C++ file and moved them up to ensure their independence.
  *
  * @author Zdream
  */
@@ -170,7 +171,7 @@ public class FamiTrackerDoc {
 //		m_bDisplayComment = false;
 
         // Register this object to the sound generator
-        // 这部分的代码由于解耦, 被移到上层 FamiTrackerApp 来工作.
+        // This part of the code has been decoupled and moved up to work in the top level FamiTrackerApp.
     }
 
     // DECLARE_DYNCREATE(CFamiTrackerDoc)
@@ -632,7 +633,7 @@ public class FamiTrackerDoc {
      * Add a new instrument
      *
      * @param pName
-     * @param ChipType
+     * @param chipType
      * @return
      */
     public int addInstrument(String pName, int chipType) {
@@ -681,7 +682,7 @@ public class FamiTrackerDoc {
     /**
      * Create a copy of an instrument
      *
-     * @param Index
+     * @param index
      * @return
      */
     public int cloneInstrument(int index) {

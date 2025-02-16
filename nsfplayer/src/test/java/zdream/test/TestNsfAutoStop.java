@@ -21,7 +21,7 @@ public class TestNsfAutoStop {
         NsfAudio nsf;
 
         try {
-            nsf = factory.createFromFile("test/assets/test/mm10nsf.nsf");
+            nsf = factory.createFromFile("src/test/resources/assets/mm10nsf.nsf");
         } catch (IOException e) {
             e.printStackTrace();
             return;

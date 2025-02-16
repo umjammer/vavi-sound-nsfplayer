@@ -2,6 +2,8 @@ package zdream.nsfplayer.ftm.audio;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import zdream.nsfplayer.core.AbstractNsfAudio;
 import zdream.nsfplayer.core.ERegion;
@@ -197,18 +199,18 @@ public class FtmAudio extends AbstractNsfAudio {
     /**
      * Instruments
      */
-    final ArrayList<AbstractFtmInstrument> insts = new ArrayList<>();
+    final List<AbstractFtmInstrument> insts = new ArrayList<>();
 
     /**
      * sequences
      * int (chip * seqtype.length + seqtype) - seq
      */
-    final HashMap<Integer, ArrayList<FtmSequence>> seqs = new HashMap<>();
+    final Map<Integer, ArrayList<FtmSequence>> seqs = new HashMap<>();
 
     /**
      * sample list
      */
-    final ArrayList<FtmDPCMSample> samples = new ArrayList<>();
+    final List<FtmDPCMSample> samples = new ArrayList<>();
 
     /**
      * Acquisition of musical instruments
@@ -228,7 +230,7 @@ public class FtmAudio extends AbstractNsfAudio {
     }
 
     public FtmSequence getSequence(FtmChipType chip, FtmSequenceType type, int index) {
-        ArrayList<FtmSequence> list = seqs.get(chip.ordinal() * FtmSequenceType.values().length + type.ordinal());
+        List<FtmSequence> list = seqs.get(chip.ordinal() * FtmSequenceType.values().length + type.ordinal());
         if (list == null || index >= list.size()) {
             return null;
         }
@@ -239,7 +241,7 @@ public class FtmAudio extends AbstractNsfAudio {
      * Get the number of sequences
      */
     public int sequenceCount(FtmChipType chip, FtmSequenceType type) {
-        ArrayList<FtmSequence> list = seqs.get(chip.ordinal() * FtmSequenceType.values().length + type.ordinal());
+        List<FtmSequence> list = seqs.get(chip.ordinal() * FtmSequenceType.values().length + type.ordinal());
         if (list == null) {
             return 0;
         }
@@ -254,7 +256,7 @@ public class FtmAudio extends AbstractNsfAudio {
      * Tracks
      */
 
-    final ArrayList<FtmTrack> tracks = new ArrayList<>();
+    final List<FtmTrack> tracks = new ArrayList<>();
 
     public FtmTrack getTrack(int index) {
         return tracks.get(index);

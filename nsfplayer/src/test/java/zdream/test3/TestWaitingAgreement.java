@@ -39,9 +39,9 @@ public class TestWaitingAgreement {
 
     public static void main(String[] args) throws FamiTrackerFormatException, IOException {
         String path =
-                "test\\assets\\test\\N163 - Enigma of Aqua (Sync Play Version).ftm";
+                "src/test/resources/assets/N163 - Enigma of Aqua (Sync Play Version).ftm";
         String path2 =
-                "test\\assets\\test\\VRC7 - Enigma of Aqua (Sync Play Version).ftm";
+                "src/test/resources/assets/VRC7 - Enigma of Aqua (Sync Play Version).ftm";
 
         FtmAudioFactory factory = new FtmAudioFactory();
         FtmAudio audio = factory.create(path);

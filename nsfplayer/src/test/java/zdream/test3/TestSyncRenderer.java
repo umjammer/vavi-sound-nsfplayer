@@ -21,9 +21,9 @@ public class TestSyncRenderer {
 
     public static void main(String[] args) throws FamiTrackerFormatException, IOException {
         String path =
-                "test\\assets\\test\\Hornet 2xVRC7.ftm";
+                "src/test/resources/assets/Hornet 2xVRC7.ftm";
         String path2 =
-                "test\\assets\\test\\mm9nsf.ftm";
+                "src/test/resources/assets/mm9nsf.ftm";
 
         FtmAudioFactory factory = new FtmAudioFactory();
         FtmAudio audio = factory.create(path);

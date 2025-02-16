@@ -1,5 +1,7 @@
 package zdream.nsfplayer.ftm.factory;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -20,6 +22,7 @@ import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 import zdream.utils.common.TextReader;
 
+import static java.lang.System.getLogger;
 import static zdream.nsfplayer.core.FtmChipType.N163;
 import static zdream.nsfplayer.core.FtmChipType.VRC6;
 import static zdream.nsfplayer.core.FtmChipType._2A03;
@@ -53,6 +56,8 @@ import static zdream.utils.common.CodeSpliter.split;
  * @since v0.1
  */
 public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReader> {
+
+    private static final Logger logger = getLogger(FamiTrackerTextCreater.class.getName());
 
     /**
      * Text Reader
@@ -313,6 +318,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
             break;
 
             default:
+logger.log(Level.WARNING, "unhandled: " + strs[0]);
                 break;
         }
     }

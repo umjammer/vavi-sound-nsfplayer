@@ -62,8 +62,11 @@ public class NesN163 extends AbstractSoundChip {
         ons[0] = true;
     }
 
+int CC=0;
     @Override
     public boolean write(int adr, int val, int id) {
+//if (CC++ < 300) { System.err.printf("%04x, %d, %d\n", adr, val, id); }
+//else { System.exit(1); }
         if (adr == 0xE000) { // Main disable parameter
             masterDisable = ((val & 0x40) != 0);
             return true;
