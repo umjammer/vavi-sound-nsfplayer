@@ -6,7 +6,7 @@
   <parent>
     <groupId>zdream</groupId>
     <artifactId>nsfplayer-parent</artifactId>
-    <version>0.2.11-SNAPSHOT</version>
+    <version>0.2.11</version>
   </parent>
 
   <artifactId>rawfami</artifactId>
@@ -58,7 +58,7 @@
     <dependency>
       <groupId>zdream</groupId>
       <artifactId>nsfplayer</artifactId>
-      <version>0.2.11-SNAPSHOT</version>
+      <version>0.2.11</version>
     </dependency>
 
     <dependency>
