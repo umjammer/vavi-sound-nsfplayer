@@ -1,4 +1,25 @@
-# NsfPlayer
+[![Release](https://jitpack.io/v/umjammer/vavi-sound-nsfplayer.svg)](https://jitpack.io/#umjammer/vavi-sound-nsfplayer)
+[![Java CI](https://github.com/umjammer/vavi-sound-nsfplayer/actions/workflows/maven.yml/badge.svg)](https://github.com/umjammer/vavi-sound-nsfplayer/actions/workflows/maven.yml)
+[![CodeQL](https://github.com/umjammer/vavi-sound-nsfplayer/actions/workflows/codeql.yml/badge.svg)](https://github.com/umjammer/vavi-sound-nsfplayer/actions/workflows/codeql.yml)
+![Java](https://img.shields.io/badge/Java-17-b07219)
+
+# vavi-sound-nsfplayer
+
+<img alt="duke jumps like mario" src="https://github.com/user-attachments/assets/147cc7a3-b1b4-44fc-be17-de20669283af" width="80" />
+
+## Install
+
+* [maven](https://jitpack.io/#umjammer/vavi-sound-nsfplayer)
+
+## Usage
+
+## References
+
+## TODO
+
+---
+
+# [Original](https://github.com/Gnzdream/NsfPlayer)
 
 NsfPlayer (NSF analysis/distribution device), which is based on Java dissemination and NSF text development process.
 Mainly supports converting 8-bit audio files such as .nsf (NSF files), .ftm (FamiTracker editor files) into audio sample streams (PCM arrays).
