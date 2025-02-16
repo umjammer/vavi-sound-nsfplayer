@@ -1,6 +1,6 @@
 [![Release](https://jitpack.io/v/umjammer/vavi-sound-nsfplayer.svg)](https://jitpack.io/#umjammer/vavi-sound-nsfplayer)
 [![Java CI](https://github.com/umjammer/vavi-sound-nsfplayer/actions/workflows/maven.yml/badge.svg)](https://github.com/umjammer/vavi-sound-nsfplayer/actions/workflows/maven.yml)
-[![CodeQL](https://github.com/umjammer/vavi-sound-nsfplayer/actions/workflows/codeql.yml/badge.svg)](https://github.com/umjammer/vavi-sound-nsfplayer/actions/workflows/codeql.yml)
+[![CodeQL](https://github.com/umjammer/vavi-sound-nsfplayer/actions/workflows/codeql-analysys.yml/badge.svg)](https://github.com/umjammer/vavi-sound-nsfplayer/actions/workflows/codeql-analysys.yml)
 ![Java](https://img.shields.io/badge/Java-17-b07219)
 
 # vavi-sound-nsfplayer
