@@ -4,9 +4,9 @@ import java.util.Arrays;
 
 
 /**
- * sublimate 方法同 delete + getStr()<br>
- * length 方法同 .length<br>
- * getn 方法同 .str<br>
+ * sublimate method is the same as delete + getStr()<br>
+ * length method is the same as .length<br>
+ * getn method is the same as .str<br>
  *
  * @author Zdream
  */
@@ -92,7 +92,7 @@ public class SST implements CharSequence {
     }
 
     /**
-     * ppls.cpp - skip_space 函数
+     * ppls.cpp - skip_space function
      */
     public void skip_space() {
         int c;
@@ -107,7 +107,7 @@ public class SST implements CharSequence {
     }
 
     /**
-     * ppls.cpp - get_filename 函数
+     * ppls.cpp - get_filename function
      */
     public char[] get_filename() {
         SST token;

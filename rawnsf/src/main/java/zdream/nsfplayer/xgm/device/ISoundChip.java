@@ -4,21 +4,21 @@ import zdream.nsfplayer.nsf.device.IDevice;
 
 
 /**
- * 虚拟声卡
+ * virtual sound card
  *
  * @author Zdream
  */
 public interface ISoundChip extends IDevice, IRenderable0 {
 
     /**
-     * 设置芯片的时钟周期
+     * Set the clock cycle of the chip
      *
-     * @param clock 时钟周期数
+     * @param clock clock cycles
      */
     void setClock(double clock);
 
     /**
-     * 设置语言合成率
+     * Set speech synthesis rate
      */
     void setRate(double r);
 
@@ -30,8 +30,8 @@ public interface ISoundChip extends IDevice, IRenderable0 {
     /**
      * Stereo mix.
      *
-     * @param mixl 左声道 = 0-256
-     * @param mixr 右声道 = 0-256
+     * @param mixl left channel = 0-256
+     * @param mixr right channel = 0-256
      *             128 = neutral
      *             256 = double
      *             0 = nil
@@ -43,7 +43,7 @@ public interface ISoundChip extends IDevice, IRenderable0 {
      * Track info for keyboard view.
      *
      * @param trk
-     * @return 默认返回 null
+     * @return Default is null
      */
     ITrackInfo getTrackInfo(int trk);
 

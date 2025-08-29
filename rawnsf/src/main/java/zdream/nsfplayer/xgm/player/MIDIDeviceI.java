@@ -1,54 +1,54 @@
 package zdream.nsfplayer.xgm.player;
 
 /**
- * 标准 MIDI 音源的接口
+ * Interface of standard MIDI sound source
  *
  * @author Zdream
  */
 public interface MIDIDeviceI {
 
     /**
-     * @param velocity=0 的时候是消音
+     * @param velocity=0 is mute
      */
     void NoteOn(int ch, int note, int velocity);
 
     /**
-     * @param velocity 是音消失的速度
+     * @param velocity is the speed at which the sound disappears
      */
     void NoteOff(int ch, int note, int velocity);
 
     /**
-     * 模拟按下复音键
+     * Simulate pressing a polyphonic key
      */
     void PolyKeyPressure(int ch, int note, int pressure);
 
     /**
-     * 模拟按下通道
+     * Simulate pressing a channel
      */
     void ChannelPressure(int ch, int pressure);
 
     /**
-     * 音高弯
+     * Pitch bend
      */
     void PitchBendChange(int ch, int data);
 
     /**
-     * 控制变更
+     * Control change
      */
     void ControlChange(int ch, int ctrl_no, int data);
 
     /**
-     * 计划变更
+     * Program change
      */
     void ProgramChange(int ch, int prg_no);
 
     /**
-     * 模式消息
+     * Mode message
      */
     void ModeMessage(int ch, int mode, int data);
 
     /**
-     * 独家消息
+     * Exclusive message
      */
     void ExclusiveMessage(int id, int[] data, int offset, int size);
 }

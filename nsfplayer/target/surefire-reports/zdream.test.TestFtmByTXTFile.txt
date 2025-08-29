@@ -1,0 +1,14 @@
+-------------------------------------------------------------------------------
+Test set: zdream.test.TestFtmByTXTFile
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.488 s <<< FAILURE! -- in zdream.test.TestFtmByTXTFile
+zdream.test.TestFtmByTXTFile.test1 -- Time elapsed: 0.448 s <<< ERROR!
+java.lang.IllegalArgumentException: No line matching interface SourceDataLine supporting format PCM_SIGNED 48000.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian is supported.
+	at java.desktop/javax.sound.sampled.AudioSystem.getLine(AudioSystem.java:423)
+	at java.desktop/javax.sound.sampled.AudioSystem.getSourceDataLine(AudioSystem.java:532)
+	at zdream.utils.common.BytesPlayer.<init>(BytesPlayer.java:37)
+	at zdream.utils.common.BytesPlayer.<init>(BytesPlayer.java:25)
+	at zdream.test.TestFtmByTXTFile.test1(TestFtmByTXTFile.java:59)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)

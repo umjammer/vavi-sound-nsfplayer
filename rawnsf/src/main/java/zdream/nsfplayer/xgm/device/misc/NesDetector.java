@@ -34,7 +34,7 @@ public class NesDetector extends BasicDetector {
             case 0x4017:
                 recordDMC(adr, val, id);
                 break;
-            case 0x4015: // 这个参数特别. 这个地方的数据控制着 APU 和 DMC 一共五个通道的开闭
+            case 0x4015: // This parameter is special. The data in this place controls the opening and closing of the five channels of APU and DMC.
                 recordAPU(adr, val, id);
                 recordDMC(adr, val, id);
                 break;
@@ -51,7 +51,7 @@ public class NesDetector extends BasicDetector {
                 recordVRC6(adr, val, id);
                 break;
 
-            case 0x9003: // 原来的判断中, 也不知道为什么, 没有 0x9003
+            case 0x9003: // In the original judgment, I don't know why, there is no 0x9003
                 recordVRC6(adr, val, id);
                 return false;
 
@@ -61,7 +61,7 @@ public class NesDetector extends BasicDetector {
                 break;
 
             case 0x4800:
-            case 0xF800: // 或者 N163 ?
+            case 0xF800: // or N163 ?
                 recordN106(adr, val, id);
                 break;
 
@@ -82,7 +82,7 @@ public class NesDetector extends BasicDetector {
                 recordFME7(adr, val, id);
                 break;
 
-            case 0xE000: // 两个设备又访问同一地址了
+            case 0xE000: // The two devices access the same address again
                 recordN106(adr, val, id);
                 recordFME7(adr, val, id);
                 break;

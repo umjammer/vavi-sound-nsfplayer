@@ -144,7 +144,7 @@ public class NesDMC implements ISoundChip, IFrameSequencer, IDeviceValue {
 //	protected boolean frame_irq_enable;
 
     /**
-     * frame sequencer 的大部分参数已经封装成 {@link FrameSequenceCounter} 这个类中.
+     * Most of the parameters of the frame sequencer have been encapsulated in the FrameSequenceCounter class.
      */
     FrameSequenceCounter frameCounter;
 
@@ -289,7 +289,7 @@ public class NesDMC implements ISoundChip, IFrameSequencer, IDeviceValue {
     }
 
     /**
-     * 三角浪频道的计算返回值在 0 - 15 之间
+     * The calculated return value of the triangle wave channel is between 0 - 15
      */
     public final int calc_tri(int clocks) {
         int[] tritbl =
@@ -313,9 +313,9 @@ public class NesDMC implements ISoundChip, IFrameSequencer, IDeviceValue {
     }
 
     /**
-     * 噪声信道的计算值为 0 - 127
-     * 由于低抽样的合成的话，因为被替换的噪音激烈
-     * 只有在这个函数内高时钟合成，简单的抽样率变换。
+     * The calculated value of the noise channel is 0 - 127.
+     * Due to the low-sampling synthesis, the replaced noise is intense.
+     * Only in this function, high-clock synthesis, simple sampling rate transformation.
      *
      * @param clocks unsigned
      * @return unsigned
@@ -363,7 +363,7 @@ public class NesDMC implements ISoundChip, IFrameSequencer, IDeviceValue {
     }
 
     /**
-     * DMC 频道的计算返回值为 0 - 127
+     * The calculated return value of the DMC channel is 0 - 127
      *
      * @param clocks unsigned
      * @return unsigned
@@ -372,7 +372,7 @@ public class NesDMC implements ISoundChip, IFrameSequencer, IDeviceValue {
         counter[2] += clocks;
         assert (dfreq > 0); // prevent infinite loop
         while (counter[2] >= dfreq) {
-            if (data != 0x100) { // data = 0x100 是 EMPTY 的意思
+            if (data != 0x100) { // data = 0x100 means EMPTY
                 if ((data & 1) != 0 && (damp < 63))
                     damp++;
                 else if ((data & 1) == 0 && (0 < damp))
@@ -384,7 +384,7 @@ public class NesDMC implements ISoundChip, IFrameSequencer, IDeviceValue {
                 IntHolder val = new IntHolder(data);
                 memory.read(daddress, val, 0);
                 data = val.val;
-                data |= (data & 0xFF) | 0x10000; // 8 个 bit 移动
+                data |= (data & 0xFF) | 0x10000; // 8-bit shift
                 if (length > 0) {
                     daddress = ((daddress + 1) & 0xFFFF) | 0x8000;
                     length--;
@@ -392,12 +392,12 @@ public class NesDMC implements ISoundChip, IFrameSequencer, IDeviceValue {
 
             }
 
-            if (length == 0) { // 最后的抽取结束（播放完毕前）马上结束处理
+            if (length == 0) { // The final extraction ends (before the playback is over) and the processing ends immediately
                 if ((mode & 1) != 0) {
                     daddress = ((adr_reg << 6) | 0xC000);
                     length = (len_reg << 4) + 1;
                 } else {
-                    irq = (mode == 2 && active) ? true : false; // 之前有 active 了的时候 IRQ 发动
+                    irq = (mode == 2 && active) ? true : false; // IRQ is activated when there was an active before
                     active = false;
                 }
             }
@@ -720,12 +720,12 @@ public class NesDMC implements ISoundChip, IFrameSequencer, IDeviceValue {
 
             case 0x4012:
                 adr_reg = val & 0xff;
-                // 在这里 daddress 被更新
+                // daddress is updated here
                 break;
 
             case 0x4013:
                 len_reg = val & 0xff;
-                // 在这里length被更新
+                // length is updated here
                 break;
 
             default:

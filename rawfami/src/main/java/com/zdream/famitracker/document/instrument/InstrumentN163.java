@@ -111,7 +111,7 @@ public class InstrumentN163 extends Instrument {
 
     @Override
     public boolean loadFile() {
-        throw new RuntimeException("我不允许你调用");
+        throw new RuntimeException("I don't allow you to call");
     }
 
     @Override
@@ -223,7 +223,7 @@ public class InstrumentN163 extends Instrument {
     };
 
     /**
-     * Wave size (32 samples), 后面会扩展为 128
+     * Wave size (32 samples), will be expanded to 128 later
      */
     public static final int MAX_WAVE_SIZE = 32;
     /**

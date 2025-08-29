@@ -1,7 +1,7 @@
 package com.zdream.famitracker.sound;
 
 /**
- * <p>当缓冲区满的时候, 让系统去播放这段数据
+ * <p>When the buffer is full, let the system play this piece of data
  * <p>Used to play the audio when the buffer is full
  *
  * @author Zdream
@@ -9,7 +9,7 @@ package com.zdream.famitracker.sound;
 public interface IAudioCallback {
 
     /**
-     * @param buffer 音频采样数组
+     * @param buffer audio sample array
      * @param offset
      * @param length
      */

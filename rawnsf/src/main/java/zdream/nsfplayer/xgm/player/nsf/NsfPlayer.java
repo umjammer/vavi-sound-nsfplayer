@@ -38,7 +38,7 @@ import zdream.nsfplayer.xgm.player.SoundData;
 public class NsfPlayer extends MultiSongPlayer {
 
     /**
-     * 类似于轨道编号的枚举
+     * Enumeration similar to track number
      */
     public static final int
             APU1_TRK0 = 0, APU1_TRK1 = 1, APU2_TRK0 = 2, APU2_TRK1 = 3, APU2_TRK2 = 4, FDS_TRK0 = 5, MMC5_TRK0 = 6,
@@ -60,11 +60,11 @@ public class NsfPlayer extends MultiSongPlayer {
     protected double apu_clock_rest;
 
     /**
-     * 演奏的时间
+     * Playing time
      */
     protected int time_in_ms;
     /**
-     * 如果演奏时间被查出的话, 设为 true
+     * If the playing time is found, set it to true
      */
     protected boolean playtime_detected;
 
@@ -77,48 +77,48 @@ public class NsfPlayer extends MultiSongPlayer {
     public final NesMem mem = new NesMem();
     public final NesBank bank = new NesBank();
 
-    /** 声音芯片的实例 */
+    /** Instance of the sound chip */
     public final ISoundChip[] sc = new ISoundChip[NsfPlayerConfig.NES_DEVICE_MAX];
-    /** 抽样器 */
+    /** Sampler */
     public final RateConverter[] rconv = new RateConverter[NsfPlayerConfig.NES_DEVICE_MAX];
-    /** 滤波器 */
+    /** Filter */
     public final Filter[] filter = new Filter[NsfPlayerConfig.NES_DEVICE_MAX];
-    /** 增幅器 */
+    /** Amplifier */
     public final Amplifier[] amp = new Amplifier[NsfPlayerConfig.NES_DEVICE_MAX];
-    /** 最后输出阶段直流通过滤器 */
+    /** DC pass filter in the final output stage */
     public final DCFilter dcf = new DCFilter();
-    /** 最后输出输出到滤波器 */
+    /** The final output is output to the filter */
     public final Filter lpf = new Filter();
-    /** 最终输出阶段悬挂的压缩机 */
+    /** Compressor suspended in the final output stage */
     public final Compressor cmp = new Compressor();
-    /** 循环检验器 */
+    /** Loop checker */
     public NesDetector ld = new NesDetector();
     /** Logs CPU to file */
     public final CPULogger logcpu = new CPULogger();
     public final EchoUnit echo = new EchoUnit();
-//	/** 小的噪音对策的中位数滤波器 */
-//	public MedianFilter mfilter; // 在构造函数中生成
+//	/** Median filter for small noise countermeasures */
+//	public MedianFilter mfilter; // Generated in the constructor
 
     /**
-     * 所有音轨数据的缓存
+     * Cache of all track data
      */
     public final InfoBuffer[] infobuf = new InfoBuffer[NES_TRACK_MAX];
 
     /**
-     * 到现在为止生成的波形的采样数 (不考虑声道, 多声道按单声道计数)
+     * The number of samples of the waveform generated so far (regardless of the channel, multi-channel is counted as mono)
      */
     public int total_render;
     /**
-     * 一帧数字节数
+     * Number of bytes per frame
      */
     public int frame_render;
     /**
-     * 一帧的长度 (ms)
+     * Length of a frame (ms)
      */
     public int frame_in_ms;
 
     /**
-     * 各声音芯片的别名参照
+     * Alias reference of each sound chip
      */
     public NesAPU apu;
     public NesDMC dmc;
@@ -167,14 +167,14 @@ public class NsfPlayer extends MultiSongPlayer {
 
         fsc = new FrameSequenceCounter();
 
-        // dmc.setApu(apu); // APU 与 DMC 已经解除关联
+        // dmc.setApu(apu); // APU and DMC have been disassociated
         mmc5.setCPU(cpu); // MMC5 PCM read action requires CPU read access
         dmc.setFrameCounter(fsc);
 
         fsc.addSequencer(apu);
         fsc.addSequencer(dmc);
 
-        /* 放大器 ← 滤芯速率转换器 ← 连接 */
+        /* Amplifier <- Filter element rate converter <- Connection */
         for (int i = 0; i < NsfPlayerConfig.NES_DEVICE_MAX; i++) {
             rconv[i].attach(sc[i]);
             filter[i].attach(rconv[i]);
@@ -292,7 +292,7 @@ public class NsfPlayer extends MultiSongPlayer {
         // APU units are combined into a single bus
         apu_bus.attach(sc[NsfPlayerConfig.APU]);
         apu_bus.attach(sc[NsfPlayerConfig.DMC]);
-        apu_bus.attach(fsc); // 新加入的
+        apu_bus.attach(fsc); // newly added
         stack.attach(apu_bus);
 
         mixer.attach(amp[NsfPlayerConfig.APU]);
@@ -365,7 +365,7 @@ public class NsfPlayer extends MultiSongPlayer {
         boolean pal = (region == REGION_PAL);
         fsc.setPal(pal);
 
-        // 使用 rate 转换器
+        // Use rate converter
         int[][] MULT = {
                 {1, 5, 8, 20}, // APU1
                 {1, 5, 8, 20}, // DMC
@@ -398,10 +398,10 @@ public class NsfPlayer extends MultiSongPlayer {
             if (quality != 0) {
                 filter[i].attach(rconv[i]);
             } else {
-                // 不要使用速率转换器
+                // Do not use rate converter
                 filter[i].attach(sc[i]);
             }
-            // 设置滤波器的工作频率
+            // Set the working frequency of the filter
             filter[i].setRate(rate);
             filter[i].reset();
         }
@@ -430,7 +430,7 @@ public class NsfPlayer extends MultiSongPlayer {
         silent_length = 0;
         playtime_detected = false;
         total_render = 0;
-        frame_render = (int) (rate) / 60; // 演奏数据更新的周期
+        frame_render = (int) (rate) / 60; // The period of performance data update
         apu_clock_rest = 0.0;
         cpu_clock_rest = 0.0;
 
@@ -451,15 +451,15 @@ public class NsfPlayer extends MultiSongPlayer {
         if (logcpu.getLogLevel() > 0)
             logcpu.begin(getTitleString());
 
-        // 由于RAM空间可能在播放后被修改, 因此需要重新加载
+        // Since the RAM space may be modified after playback, it needs to be reloaded
         reload();
-        // 速率设置应在复位前完成
+        // Rate setting should be completed before reset
         setPlayFreq(rate);
-        // 应用所有配置
+        // Apply all configurations
         config.notify(-1);
-        // 复位总线
+        // Reset bus
         stack.reset();
-        // 总线复位后总是重启（重要）
+        // Always restart after bus reset (important)
         cpu.reset();
 
         double speed;
@@ -477,7 +477,7 @@ public class NsfPlayer extends MultiSongPlayer {
 
         cpu.start(nsf.init_address, nsf.play_address, speed, song, (region == REGION_PAL) ? 1 : 0, 0);
 
-        // mask 更新
+        // mask update
         int mask = this.config.get("MASK").toInt();
         apu.setMask(mask);
         dmc.setMask(mask);
@@ -507,7 +507,7 @@ public class NsfPlayer extends MultiSongPlayer {
     }
 
     /**
-     * 检查到一个歌曲已经放完
+     * Check that a song has finished playing
      */
     protected void detectSilent() {
         if (mixer.isFading() || playtime_detected || !nsf.playtime_unknown || nsf.useNSFePlaytime())
@@ -522,7 +522,7 @@ public class NsfPlayer extends MultiSongPlayer {
     }
 
     /**
-     * 检查到一个歌曲已经放完一个循环, 准备开始下一个循环
+     * Check that a song has finished a loop and is ready to start the next loop
      */
     protected void detectLoop() {
         if (mixer.isFading() || playtime_detected || !nsf.playtime_unknown || nsf.useNSFePlaytime())
@@ -532,8 +532,8 @@ public class NsfPlayer extends MultiSongPlayer {
 
         if (v != null) {
             /*
-             * 检查, 如果出现 AUTO_DETECT 被关闭 (为 0) 时,
-             * 如果碰到能够循环的曲目将会一直循环, 且不会停下并切换曲目
+             * Check, if AUTO_DETECT is turned off (is 0),
+             * If you encounter a track that can be looped, it will loop forever, and will not stop and switch tracks
              */
             if (v.toInt() == 0) {
                 return;
@@ -549,7 +549,7 @@ public class NsfPlayer extends MultiSongPlayer {
     }
 
     /**
-     * <p>询问该播放器是否检查循环.
+     * <p>Ask if the player checks for loops.
      *
      * @return
      * @since v0.0.2
@@ -563,8 +563,8 @@ public class NsfPlayer extends MultiSongPlayer {
     }
 
     /**
-     * <p>设置播放器是否自动侦测循环.
-     * <p>设置为 false 时, 播放器遇到会循环的曲目时会一直循环播放下去
+     * <p>Set whether the player automatically detects loops.
+     * <p>When set to false, the player will loop indefinitely when it encounters a loopable track
      *
      * @since v0.0.2
      */
@@ -573,10 +573,10 @@ public class NsfPlayer extends MultiSongPlayer {
     }
 
     /**
-     * <p>询问播放器在播放不循环的歌曲时, 如果播放完毕后, 是否自动跳到下一曲进行播放.
+     * <p>Ask the player whether to automatically skip to the next track after playing a non-looping song.
      *
-     * @return true 会自动跳转到下一曲 (默认)<br>
-     * false 会直接停住, 什么都不做
+     * @return true will automatically jump to the next song (default)<br>
+     * false will stop directly and do nothing
      * @since v0.0.2
      */
     public boolean isAutoStop() {
@@ -584,10 +584,10 @@ public class NsfPlayer extends MultiSongPlayer {
     }
 
     /**
-     * <p>设置播放器在播放不循环的歌曲时, 如果播放完毕后, 是否自动跳到下一曲进行播放.
+     * <p>Set whether the player automatically skips to the next track after playing a non-looping song.
      *
-     * @param b true 会自动跳转到下一曲 (默认)<br>
-     *          false 会直接停住, 什么都不做
+     * @param b true will automatically jump to the next song (default)<br>
+     *          false will stop directly and do nothing
      * @since v0.0.2
      */
     public void setAutoStop(boolean b) {
@@ -622,7 +622,7 @@ public class NsfPlayer extends MultiSongPlayer {
                 cpu_clock_rest += cpu_clock_per_sample;
                 int cpu_clocks = (int) (cpu_clock_rest);
                 if (cpu_clocks > 0) {
-                    // TODO 注意这里 ！！！ CPU 机器码的操作
+                    // TODO pay attention here! ! ! CPU machine code operation
                     int real_cpu_clocks = cpu.exec(cpu_clocks);
                     cpu_clock_rest -= real_cpu_clocks;
 
@@ -716,13 +716,13 @@ public class NsfPlayer extends MultiSongPlayer {
         int[] buf = new int[2], out = new int[2];
         int outm, i;
         int master_volume = intConfig("MASTER_VOLUME");
-        int ptr = offset; // 指向 b 的索引指针
+        int ptr = offset; // index pointer to b
 
         double apu_clock_per_sample = cpu.NES_BASECYCLES / rate;
-        // MULT_SPEED 起到变速的作用
+        // MULT_SPEED plays the role of shifting
         double cpu_clock_per_sample = apu_clock_per_sample * (intConfig("MULT_SPEED") / 256.0);
 
-        int length = size / 4; // 2 = 16 / 8, 每个音频采样需要 2 byte (16 bit)
+        int length = size / 4; // 2 = 16 / 8, each audio sample requires 2 bytes (16 bit)
         for (i = 0; i < length; i++) {
             total_render++;
 
@@ -752,7 +752,7 @@ public class NsfPlayer extends MultiSongPlayer {
             // render output
             mixer.render(buf);
             outm = (buf[0] + buf[1]) >> 1; // mono mix
-            if (outm == last_out) // 这里用两段时间里面输出采样没变来判定 silent
+            if (outm == last_out) // Here, it is determined that it is silent by the fact that the output samples have not changed in two periods of time
                 silent_length++;
             else
                 silent_length = 0;
@@ -780,16 +780,16 @@ public class NsfPlayer extends MultiSongPlayer {
                 out[1] = 32767;
 
             if (nch == 2) {
-                b[ptr++] = (byte) out[0]; // 低位 (一声道)
-                b[ptr++] = (byte) ((out[0] & 0xFF00) >> 8); // 高位 (一声道)
-                b[ptr++] = (byte) out[1]; // 低位 (二声道)
-                b[ptr++] = (byte) ((out[1] & 0xFF00) >> 8); // 高位 (二声道)
+                b[ptr++] = (byte) out[0]; // low bit (one channel)
+                b[ptr++] = (byte) ((out[0] & 0xFF00) >> 8); // high bit (one channel)
+                b[ptr++] = (byte) out[1]; // low bit (two channels)
+                b[ptr++] = (byte) ((out[1] & 0xFF00) >> 8); // high bit (two channels)
             } else // if not 2 channels, presume mono
             {
                 outm = (out[0] + out[1]) >> 1;
                 for (int ii = 0; ii < nch; ++ii) {
-                    b[ptr++] = (byte) outm; // 低位
-                    b[ptr++] = (byte) ((outm & 0xFF00) >> 8); // 高位
+                    b[ptr++] = (byte) outm; // low bit
+                    b[ptr++] = (byte) ((outm & 0xFF00) >> 8); // high bit
                 }
             }
         }

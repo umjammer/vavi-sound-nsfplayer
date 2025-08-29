@@ -4,7 +4,7 @@ import static com.zdream.famitracker.sound.emulation.buffer.BufferContext.blip_s
 
 
 /**
- * <p>对自定义格式的方式读取采样数据进行优化.
+ * <p>Optimize the way to read sample data in a custom format.
  * <p>Optimized inline sample reader for custom sample formats and mixing of Blip_Buffer samples
  *
  * @author Zdream
@@ -12,7 +12,7 @@ import static com.zdream.famitracker.sound.emulation.buffer.BufferContext.blip_s
 public class BlipReader {
 
     /**
-     * <p>开始从 buffer 中读取采样数据.
+     * <p>Start reading sample data from the buffer.
      * <p>Begin reading samples from buffer.<br>
      * Returns value to pass to next() (can be ignored if default bass_freq is acceptable).
      *
@@ -25,7 +25,7 @@ public class BlipReader {
     }
 
     /**
-     * <p>当前采样值
+     * <p>Current sample value
      * <p>Current sample
      *
      * @return
@@ -35,7 +35,7 @@ public class BlipReader {
     }
 
     /**
-     * <p>没有进行过修改的原始采样值. 这个值是计算后直接得出, 并没有进行高通等优化.
+     * <p>The original sample value that has not been modified. This value is directly obtained after calculation, and has not been optimized by high-pass, etc.
      * <p>Current raw sample in full internal resolution
      *
      * @return
@@ -45,19 +45,19 @@ public class BlipReader {
     }
 
     /**
-     * <p>下一个样本值
+     * <p>Next sample value
      * <p>Advance to next sample
      *
-     * @param bass_shift 默认为 9
+     * @param bass_shift defaults to 9
      */
     public void next(int bass_shift) {
         accum += buf.buffer_[ptr++] - (accum >> bass_shift);
     }
 
     /**
-     * <p>结束从 buffer 中读取采样数据.<br>
-     * 读取的采样数据之后, 你需要调用 {@link BlipBuffer#removeSamples(int)}, 将读取采样的个数作为参数传入,
-     * 来将这些数据从缓冲区删除掉.
+     * <p>End reading sample data from the buffer.<br>
+     * After reading the sample data, you need to call {@link BlipBuffer#removeSamples(int)}, pass the number of samples read as a parameter,
+     * to delete these data from the buffer.
      * <p>End reading samples from buffer.<br>
      * The number of samples read must now be removed using {@link BlipBuffer#removeSamples(int)}.
      */
@@ -67,7 +67,7 @@ public class BlipReader {
 
     private BlipBuffer buf;
     /**
-     * 这个是指向 buf.buffer_ 的索引指针
+     * This is the index pointer to buf.buffer_
      */
     private int ptr;
     private long accum;

@@ -9,7 +9,7 @@ import static com.zdream.famitracker.sound.emulation.buffer.BufferContext.buffer
 
 
 /**
- * <p>源文件 Blip_Buffer 0.4.0
+ * <p>Source file Blip_Buffer 0.4.0
  * <p>Band-limited sound synthesis and buffering
  *
  * @author Zdream
@@ -24,26 +24,26 @@ public class BlipBuffer {
     }
 
     /**
-     * <p>将输出采样速率和缓冲区长度 (需要换算成毫秒数, 默认为 1/4 秒, 即 250 毫秒), 然后清除缓冲区.<br>
-     * 如果成功返回 null, 如果内存不足, 抛出错误, 但不影响当前缓冲设置。
+     * <p>Set the output sample rate and buffer length (need to be converted to milliseconds, the default is 1/4 second, that is, 250 milliseconds), and then clear the buffer.<br>
+     * If successful, return null, if there is not enough memory, an error is thrown, but it does not affect the current buffer settings.
      * <p>Set output sample rate and buffer length in milliseconds (1/1000 sec, defaults
      * to 1/4 second), then clear buffer.<br>
      * If there isn't enough memory, throw error without affecting current buffer setup.
-     * <p>原工程中同方法 sampleRate(1, 2)
+     * <p>The same method in the original project sampleRate(1, 2)
      *
-     * @param new_rate 输出的采样速率, 每秒多少个采样点
-     * @param msec     缓冲区长度, 以毫秒为单位, 调用的默认值是 1000 / 4 = 250
-     * @throws IllegalStateException 要求的缓冲区长度已经超过最大限度, 可能是内存不足
+     * @param new_rate output sample rate, how many sample points per second
+     * @param msec     buffer length, in milliseconds, the default value of the call is 1000 / 4 = 250
+     * @throws IllegalStateException The required buffer length has exceeded the maximum limit, possibly due to insufficient memory
      */
     public void setSampleRate(int new_rate, int msec) throws IllegalStateException {
-        // 原本是 (0xFFFFFFFFUL >> 16) - buffer_extra - 64;
+        // Originally (0xFFFFFFFFUL >> 16) - buffer_extra - 64;
         int new_size = 65535 - buffer_extra - 64;
         if (msec != blip_max_length) {
             int s = (new_rate * (msec + 1) + 999) / 1000;
             if (s < new_size)
                 new_size = s;
             else
-                throw new IllegalStateException("要求的缓冲区长度已经超过最大限度");
+                throw new IllegalStateException("The required buffer length has exceeded the maximum limit");
         }
 
         if (buffer_size_ != new_size) {
@@ -68,7 +68,7 @@ public class BlipBuffer {
     }
 
     /**
-     * <p>设置每秒的时钟数
+     * <p>Set the number of clocks per second
      * <p>Set number of source time units per second
      *
      * @param rate
@@ -78,42 +78,42 @@ public class BlipBuffer {
     }
 
     /**
-     * <p>根据特定的持续时间, 结束当前时间帧,
-     * 使采样数据能够在调用 {@link #readSamples()} 方法时能够获取到（连同任何还未读的采样）.
-     * 在当前帧的结尾处开始一个新的帧。
+     * <p>End the current time frame according to the specified duration,
+     * so that the sample data can be obtained when the {@link #readSamples()} method is called (along with any unread samples).
+     * Start a new frame at the end of the current frame.
      * <p>End current time frame of specified duration and make its samples available
      * (along with any still-unread samples) for reading with read_samples(). Begins
      * a new time frame at the end of the current frame.
      *
-     * @param time 所指定的持续时间, 单位 TODO
-     * @throws IllegalStateException 当采样数据的数量将超过缓冲区长度, 即计算的 {@link #offset_} 将超出 {@link #buffer_size_}
+     * @param time The specified duration, unit TODO
+     * @throws IllegalStateException when the number of sample data will exceed the buffer length, that is, the calculated {@link #offset_} will exceed {@link #buffer_size_}
      */
     public void endFrame(int time) {
         offset_ += time * factor_;
         // time outside buffer length
         if (samplesAvail() > buffer_size_) {
-            throw new IllegalStateException("采样数据的数量将超过缓冲区长度");
+            throw new IllegalStateException("The number of sample data will exceed the buffer length");
         }
     }
 
     /**
-     * <p>从缓冲区中读取 {@code max_samples} 个采样点的数据到 {@code dest} 中, 这些数据在读完后将从缓冲区中移除.<br>
-     * 返回真正读了多少采样点的数据 (不是数组长度).<br>
-     * 如果设置为立体声 ({@code stereo = true}), 那么会写完一个采样点的数据之后,
-     * 在 {@code dest} 上跳过一个采样点的数据的位置, 将下一个数据写到第三个采样点数据的位置.<br>
-     * 这样能够更容易地将两个声道的数据写在一个数组中.
+     * <p>Read {@code max_samples} sample points of data from the buffer to {@code dest}, and these data will be removed from the buffer after reading.<br>
+     * Returns the number of sample points of data actually read (not the length of the array).<br>
+     * If it is set to stereo ({@code stereo = true}), then after writing the data of one sample point,
+     * skip the position of the data of one sample point on {@code dest}, and write the next data to the position of the data of the third sample point.<br>
+     * This makes it easier to write the data of the two channels in one array.
      * <p>Read at most {@code max_samples} out of buffer into {@code dest}, removing them from
      * the buffer. Returns number of samples actually read and removed. If stereo is
      * true, increments 'dest' one extra time after writing each sample, to allow
      * easy interleving of two channels into a stereo output buffer.
-     * <p>另外注意, 因为要将 16 位的采样数据写到每个单元 8 位的 byte 数组中, 所以一个采样数据占两个 byte 位.
+     * <p>In addition, note that because the 16-bit sample data is to be written to a byte array of 8 bits per unit, one sample data occupies two byte bits.
      *
-     * @param dest        已经转成 byte 数组
-     * @param offset      默认为 0, 表示 dest 这个数组从哪里开始写入数据.<br>
-     *                    单声道 (stereo = false) 时, 一般为 0<br>
-     *                    立体声 (stereo = true) 时, 一号声道一般为 0, 二号声道为 2
-     * @param max_samples 这是 16 位的采样, 那应该小于等于 dest.length / 2
-     * @param stereo      默认 false. 如果为 true, 说明为立体声
+     * @param dest        has been converted to a byte array
+     * @param offset      defaults to 0, which means where to start writing data from the dest array.<br>
+     *                    In mono (stereo = false), it is generally 0<br>
+     *                    In stereo (stereo = true), channel 1 is generally 0, and channel 2 is 2
+     * @param max_samples This is a 16-bit sample, which should be less than or equal to dest.length / 2
+     * @param stereo      defaults to false. If true, it means stereo
      * @return
      */
     public int readSamples(byte[] dest, int offset, int max_samples, boolean stereo) {
@@ -146,8 +146,8 @@ public class BlipBuffer {
                     if (out != s)
                         out = (short) (0x7FFF - (s >> 24));
 
-                    dest[outptr++] = (byte) out; // 低位
-                    dest[outptr++] = (byte) ((out & 0xFF00) >> 8); // 高位
+                    dest[outptr++] = (byte) out; // low bit
+                    dest[outptr++] = (byte) ((out & 0xFF00) >> 8); // high bit
                 }
             } else {
                 for (int n = count; (--n) >= 0; ) {
@@ -168,8 +168,8 @@ public class BlipBuffer {
                     if (out != s)
                         out = (short) (0x7FFF - (s >> 24));
 
-                    dest[outptr++] = (byte) out; // 低位
-                    dest[outptr++] = (byte) ((out & 0xFF00) >> 8); // 高位
+                    dest[outptr++] = (byte) out; // low bit
+                    dest[outptr++] = (byte) ((out & 0xFF00) >> 8); // high bit
 
                     outptr += 2;
                 }
@@ -184,7 +184,7 @@ public class BlipBuffer {
 // Additional optional features
 
     /**
-     * <p>采样率
+     * <p>Sample rate
      * <p>Current output sample rate, const function
      *
      * @return
@@ -198,7 +198,7 @@ public class BlipBuffer {
 	}*/
 
     /**
-     * <p>Buffer 的长度, 以毫秒为单位
+     * <p>The length of the buffer, in milliseconds
      * <p>Length of buffer, in milliseconds
      *
      * @return
@@ -208,7 +208,7 @@ public class BlipBuffer {
     }
 
     /**
-     * <p>获取每秒的时钟数
+     * <p>Get the number of clocks per second
      * <p>Number of source time units per second
      *
      * @return
@@ -218,7 +218,7 @@ public class BlipBuffer {
     }
 
     /**
-     * <p>设置频率高通滤波器频率，其中较高的值减少低音更多.
+     * <p>Set the frequency high-pass filter frequency, where higher values reduce the bass more.
      * <p>Set frequency high-pass filter frequency, where higher values reduce bass more
      *
      * @param freq
@@ -236,7 +236,7 @@ public class BlipBuffer {
     }
 
     /**
-     * <p>从合成到读出的样本延迟数
+     * <p>Number of sample delays from synthesis to readout
      * <p>Number of samples delay from synthesis to samples read out
      *
      * @return
@@ -246,12 +246,12 @@ public class BlipBuffer {
     }
 
     /**
-     * <p>清除所有采样数据, 清空缓冲区.<br>
-     * 如果 {@code entire = false}, 仅清除在等待中的采样数据, 而不是整个缓冲区.
+     * <p>Clear all sample data and clear the buffer.<br>
+     * If {@code entire = false}, only clear the sample data waiting, not the entire buffer.
      * <p>Remove all available samples and clear buffer to silence.<br>
      * If {@code entire} is false, just clears out any samples waiting rather than the entire buffer.
      *
-     * @param entire entire_buffer, 是否选择清除整个缓冲区的数据. 默认 true
+     * @param entire entire_buffer, whether to choose to clear the data of the entire buffer. Default true
      */
     public void clear(boolean entire) {
         offset_ = 0;
@@ -263,7 +263,7 @@ public class BlipBuffer {
     }
 
     /**
-     * <p>返回有多少采样数据能够被 {@link #readSamples(byte[], int, boolean, int)} 读取.
+     * <p>Returns how much sample data can be read by {@link #readSamples(byte[], int, int, boolean)}.
      * <p>Number of samples available for reading with read_samples()
      *
      * @return
@@ -365,23 +365,23 @@ public class BlipBuffer {
     }
 
     /**
-     * 据我猜测, 毫秒数 * factor_ = 采样数
+     * I guess, milliseconds * factor_ = number of samples
      */
     public int factor_;
     public int offset_;
 
     /**
-     * 这个是采样数据存储的位置, 为计算出来的采样数据
+     * This is the storage location of the sample data, which is the calculated sample data
      */
     long[] buffer_;
     int buffer_size_;
 
     /**
-     * 据我猜测, 每个计算出来的采样数据值, 和实际播放的采样数据值不同,
-     * 下一个采样点播放的数据实际和上一个采样点计算值和下一个采样点计算值共同决定.
-     * 因此需要存储上一个采样点计算值
+     * I guess that the value of each calculated sample data is different from the value of the actually played sample data,
+     * The data played at the next sampling point is actually determined by the calculated value of the previous sampling point and the calculated value of the next sampling point.
+     * Therefore, it is necessary to store the calculated value of the previous sampling point
      */
-    long reader_accum; // 确定为 long
+    long reader_accum; // determined to be long
     int bass_shift;
     int sample_rate_;
     int clock_rate_;

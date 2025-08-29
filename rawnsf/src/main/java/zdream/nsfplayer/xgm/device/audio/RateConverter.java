@@ -4,9 +4,9 @@ import zdream.nsfplayer.xgm.device.IRenderable0;
 
 
 /**
- * <p>抽样器 / 速率转换器
- * <p>它在进行采样时, 将接上的音频设备进行多个采样,
- * 得到的采样结果最后按照加权平均合并成一个采样交给上级.
+ * <p>Sampler / Rate Converter
+ * <p>When sampling, it will perform multiple samplings on the connected audio equipment,
+ * The obtained sampling results are finally merged into one sample according to the weighted average and handed over to the superior.
  *
  * @author Zdream
  */
@@ -14,18 +14,18 @@ public class RateConverter implements IRenderable0 {
 
     protected IRenderable0 target;
     protected double clock = 0, rate = 0;
-    protected int mult = 0; // 抽样倍率（奇数）
+    protected int mult = 0; // Sampling magnification (odd number)
 
     /**
      * <p>
-     * <p>原来是 [128][2]
+     * <p>Originally [128][2]
      */
     protected int[][] tap;
 
     /**
-     * 将多个分采样合并 1 个采样, 需要计算每个分采样的权重.
+     * To merge multiple sub-samples into one sample, you need to calculate the weight of each sub-sample.
      */
-    protected double[] hr; // H(z), 给每一个
+    protected double[] hr; // H(z), for each
     protected int clocks = 0; // clocks pending Tick execution
     protected SimpleFIR fir;
 
@@ -64,7 +64,7 @@ public class RateConverter implements IRenderable0 {
     }
 
     /**
-     * 倍率是奇数倍
+     * The magnification is an odd multiple
      *
      * @param clock
      */
@@ -87,7 +87,7 @@ public class RateConverter implements IRenderable0 {
     }
 
     /**
-     * 初始值全部都是无效的
+     * The initial values are all invalid
      *
      * @param bs
      * @return

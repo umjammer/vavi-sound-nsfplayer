@@ -7,7 +7,7 @@ import zdream.nsfplayer.xgm.device.TrackInfoBasic;
 
 
 /**
- * <p>模拟生成矩形波的声音芯片. 共有两个矩形波通道.</p>
+ * <p>A sound chip that simulates the generation of rectangular waves. There are two rectangular wave channels.</p>
  * Upper half of APU
  *
  * @author Zdream
@@ -26,7 +26,7 @@ public class NesAPU implements ISoundChip, IFrameSequencer, IDeviceValue {
             SQR1_MASK = 2;
 
     /**
-     * 各种选择
+     * Various options
      */
     protected final boolean[] option = new boolean[OPT_END];
     protected int mask;
@@ -47,35 +47,35 @@ public class NesAPU implements ISoundChip, IFrameSequencer, IDeviceValue {
      */
     protected final int[] scounter = new int[2];
     /**
-     * <p>相位计数器. 缓存矩形波渲染到一个周期的哪个位置.
-     * <p>该数值只有低 4 位有效.
+     * <p>Phase counter. Caches which position of a cycle the square wave is rendered to.
+     * <p>Only the lower 4 bits of this value are valid.
      * <p>phase counter
      * </p>
      */
     protected final int[] sphase = new int[2];
 
     /**
-     * <p>音色
+     * <p>Timbre
      */
     protected final int[] duty = new int[2];
     /**
-     * <p>音量
-     * <p>这个音量是指矩形轨道中每个音色的音量.
-     * 这个值类似于 FamiTracker 中对每个音符设置的音量大小,
-     * 与用户设置的轨道音量无关.
-     * <p>有效值在 0 到 15 之间.
+     * <p>Volume
+     * <p>This volume refers to the volume of each timbre in the rectangular track.
+     * This value is similar to the volume set for each note in FamiTracker,
+     * and has nothing to do with the track volume set by the user.
+     * <p>The valid value is between 0 and 15.
      * </p>
      */
     protected final int[] volume = new int[2];
     /**
-     * <p>频率
-     * <p>反映指定矩形波中音符音调的值.
+     * <p>Frequency
+     * <p>A value that reflects the pitch of a note in a specified square wave.
      * </p>
      */
     protected final int[] freq = new int[2];
     /**
-     * <p>扫描频率
-     * <p>暂时不知道作用. 大多数情况为 -1, 仅在歌曲切换时有大于零的有效值.
+     * <p>Scan frequency
+     * <p>The role is unknown for the time being. In most cases, it is -1, and only has a valid value greater than zero when switching songs.
      * </p>
      */
     protected final int[] sfreq = new int[2];
@@ -131,10 +131,10 @@ public class NesAPU implements ISoundChip, IFrameSequencer, IDeviceValue {
     }
 
     /**
-     * <p>计算目标扫描频率. 扫描频率将会放在成员变量 <code>sfreq</code> 中.</p>
+     * <p>Calculate the target scanning frequency. The scanning frequency will be placed in the member variable <code>sfreq</code>.</p>
      * calculates target sweep frequency
      *
-     * @param ch 计算第几个矩形通道. 有效值是 0 或者 1.
+     * @param ch Calculate which rectangular channel. The valid value is 0 or 1.
      */
     protected void sweepSqr(int ch) {
         int shifted = freq[ch] >> sweep_amount[ch];
@@ -216,7 +216,7 @@ public class NesAPU implements ISoundChip, IFrameSequencer, IDeviceValue {
     protected int calcSqr(int i, int clocks) {
         scounter[i] += clocks;
         while (scounter[i] > freq[i]) {
-            sphase[i] = (sphase[i] + 1) & 15; // 16 为一周期
+            sphase[i] = (sphase[i] + 1) & 15; // 16 is a cycle
             scounter[i] -= (freq[i] + 1);
         }
 
@@ -257,7 +257,7 @@ public class NesAPU implements ISoundChip, IFrameSequencer, IDeviceValue {
     int debug_reader_count = 0;
 
     /**
-     * 生成波形的振幅在 0 - 8191 之间
+     * The amplitude of the generated waveform is between 0 and 8191
      */
     @Override
     public int render(int[] bs) {
@@ -395,7 +395,7 @@ public class NesAPU implements ISoundChip, IFrameSequencer, IDeviceValue {
             // DEBUG_OUT("$%04X = %02X\n",adr,val);
 
             adr &= 0xf;
-            // ch 只有两个值, 0 或者 1
+            // ch only has two values, 0 or 1
             int ch = adr >> 2;
 
             // debug
@@ -410,7 +410,7 @@ public class NesAPU implements ISoundChip, IFrameSequencer, IDeviceValue {
                     volume[ch] = val & 15;
                     envelope_disable[ch] = ((val >> 4) & 1) != 0;
                     envelope_loop[ch] = ((val >> 5) & 1) != 0;
-                    // 这里, envelope_div_period[ch] = volume[ch]
+                    // Here, envelope_div_period[ch] = volume[ch]
                     envelope_div_period[ch] = (val & 15);
                     duty[ch] = (val >> 6) & 3;
                     if (option[OPT_DUTY_SWAP]) {

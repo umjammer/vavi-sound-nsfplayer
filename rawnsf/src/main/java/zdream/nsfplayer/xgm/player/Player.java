@@ -9,19 +9,19 @@ public abstract class Player implements ObserverI {
     protected PlayerConfig config;
 
     /**
-     * getLoopCount() 的返回值
+     * Return value of getLoopCount()
      */
     public static final int
             NEVER_LOOP = 0,
             INFINITE_LOOP = 1;
 
     /**
-     * PlayerConfig 附上一个对象
+     * Attach an object to PlayerConfig
      * <p>
-     * PlayerConfig 对象的观察者, 此对象将自动注册.
+     * Observer of PlayerConfig object, this object will be registered automatically.
      * </P>
      *
-     * @param pc 要附加的 PlayerConfig 对象
+     * @param pc The PlayerConfig object to attach
      */
     public void setConfig(PlayerConfig pc) {
         config = pc;
@@ -37,25 +37,25 @@ public abstract class Player implements ObserverI {
     }
 
     /**
-     * 加载演奏的歌曲数据
+     * Load song data to be played
      * <p>
-     * Player 对象不会在内部存储演奏数据的副本
-     *      * 因此，播放 Player 对象时不要让演奏数据消失
-     *      * 性能数据的生成和消失在 Player 对象之外进行管理
+     * The Player object does not store a copy of the performance data internally
+     * * Therefore, do not let the performance data disappear when playing the Player object
+     * * The generation and disappearance of performance data are managed outside the Player object
      * </P>
      *
-     * @param data 演奏的歌曲数据
-     * @return 成功时 true, 失败时 false
+     * @param data Song data to be played
+     * @return true on success, false on failure
      */
     public abstract boolean load(SoundData sdat);
 
     /**
-     * 初始化
+     * Initialization
      */
     public abstract void reset();
 
     /**
-     * 设置播放速度
+     * Set playback speed
      */
     public abstract void setPlayFreq(double rate);
 
@@ -65,48 +65,48 @@ public abstract class Player implements ObserverI {
     public abstract void setChannels(int channels);
 
     /**
-     * 渲染音频数据
+     * Render audio data
      * <p>
-     * 缓冲区大小需要 samples * sizeof(INT16) [C++], 这里依然使用 byte[]
+     * The buffer size needs samples * sizeof(INT16) [C++], here still use byte[]
      * </P>
      *
-     * @param buf    缓冲区用于存储渲染数据
-     * @param offset buf 数组应该从哪里开始读
-     * @param size   样品数量
-     *               即使给出了 0，也不应该挂起
-     * @return 实际产生的样本数
+     * @param buf    The buffer is used to store rendered data
+     * @param offset Where should the buf array start reading from
+     * @param size   Number of samples
+     *               Even if 0 is given, it should not hang
+     * @return Actual number of samples produced
      */
     public abstract int render(byte[] buf, int offset, int size);
 
     /**
-     * 淡出
+     * Fade out
      */
     public abstract void fadeOut(int fade_in_ms);
 
     /**
-     * 音频数据的渲染跳过多少数据
+     * How much data is skipped in the rendering of audio data
      *
-     * @param samples 要跳过的样本数
-     *                即使给出了 0，也不应该挂起
-     * @return 实际跳过的样本数
+     * @param samples Number of samples to skip
+     *                Even if 0 is given, it should not hang
+     * @return Actual number of samples skipped
      */
     public abstract int skip(int samples);
 
     /**
-     * 是否演奏已经停止
+     * Whether the performance has stopped
      *
-     * @return 如果停止演奏, 返回 true. 如果在演奏中, 返回 false.
+     * @return If the performance is stopped, return true. If it is playing, return false.
      */
     public abstract boolean isStopped();
 
     /**
-     * 返回循环的演奏次数
+     * Return the number of loop performances
      * <p>
-     * 将第一次演奏作为第一个循环.
+     * Take the first performance as the first loop.
      * </P>
      *
      * @return 演奏次数
-     * 在 NEVER_LOOP 的情况下, 它是不循环的数据, 在 INFINITE_LOOP 的情况下, 它是无限循环数据.
+     * In the case of NEVER_LOOP, it is non-looping data, and in the case of INFINITE_LOOP, it is infinitely looping data.
      */
     public int getLoopCount() {
         return NEVER_LOOP;
@@ -121,7 +121,7 @@ public abstract class Player implements ObserverI {
     }
 
     /**
-     * 在时间 id 获取设备信息，编号为 id time == -1 返回当前设备信息
+     * Get device information at time id, number is id time == -1 returns current device information
      */
     public ITrackInfo getInfo(int time_in_ms, int device_id) {
         return null;

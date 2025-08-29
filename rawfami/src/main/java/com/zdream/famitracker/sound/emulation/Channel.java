@@ -1,7 +1,7 @@
 package com.zdream.famitracker.sound.emulation;
 
 /**
- * <p>这个类用于派生音频通道
+ * <p>This class is used to derive audio channels
  * <p>This class is used to derive the audio channels
  *
  * @author Zdream
@@ -45,18 +45,18 @@ public abstract class Channel {
     protected int m_iLastValue;
 
     /**
-     * This channels unique ID, unsigned, 这个值在 {@link Types} 中
+     * This channels unique ID, unsigned, this value is in {@link Types}
      */
     protected final byte m_iChanId;
 
     /**
-     * Chip, unsigned, 这个值在 {@link Types} 中
+     * Chip, unsigned, this value is in {@link Types}
      */
     protected final byte m_iChip;
 
     // Variables used by channels
     /**
-     * unsigned 4015 的值
+     * unsigned 4015 value
      */
     protected byte m_iControlReg;
     /**

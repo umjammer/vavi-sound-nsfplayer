@@ -4,7 +4,7 @@ import com.zdream.famitracker.test.FamitrackerLogger;
 
 
 /**
- * <p>用于模拟 CPU 的内存, 这个只用在 DPCM 轨道上
+ * <p>Used to simulate CPU memory, this is only used on the DPCM track
  * <p>class for simulating CPU memory, used by the DPCM channel
  *
  * @author Zdream
@@ -34,7 +34,7 @@ public class SampleMem {
     private byte[] m_pMemory;
 
     public void setMem(int i, int j) {
-        FamitrackerLogger.instance.logToDo("调用了还没有完成的方法");
+        FamitrackerLogger.instance.logToDo("A method that has not been completed is called");
     }
 
 }

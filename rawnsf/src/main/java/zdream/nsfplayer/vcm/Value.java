@@ -1,14 +1,14 @@
 package zdream.nsfplayer.vcm;
 
 /**
- * 值. in vcm.h
+ * Value. in vcm.h
  *
  * @author Zdream
  */
 public class Value {
 
-    public String data; // 任何类型均可以保存
-    public boolean update; // 如果更新则为真
+    public String data; // Any type can be saved
+    public boolean update; // True if updated
 
     public Value(int i) {
         this.data = Integer.toString(i);
