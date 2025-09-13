@@ -13,5 +13,4 @@ public abstract class AbstractNsfAudio {
      * @since 0.2.8
      */
     public abstract int getTrackCount();
-
 }

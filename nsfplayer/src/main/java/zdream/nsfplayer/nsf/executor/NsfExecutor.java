@@ -218,7 +218,7 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
     /**
      * Adding a listener for N163 reconnections.
      *
-     * @param listener
+     * @param listener N163 listener
      */
     public void addN163ReattachListener(IN163ReattachListener listener) {
         runtime.n163Lsners.add(listener);
@@ -227,7 +227,7 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
     /**
      * Deleting the N163 reconnected listener.
      *
-     * @param listener
+     * @param listener N163 listener
      */
     public void removeReattachListener(IN163ReattachListener listener) {
         runtime.n163Lsners.remove(listener);

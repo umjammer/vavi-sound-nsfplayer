@@ -18,12 +18,6 @@ public class DocumentFile {
 
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        // TODO Auto-generated method stub
-        super.finalize();
-    }
-
     public final boolean finished() {
         return m_bFileDone;
     }

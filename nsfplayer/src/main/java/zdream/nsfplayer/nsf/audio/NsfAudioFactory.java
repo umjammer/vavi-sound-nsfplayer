@@ -9,8 +9,8 @@ import zdream.utils.common.FileUtils;
  * <p>Used to generate NSF audio structures (NSFe is not supported in principle)
  *
  * @author Zdream
- * @version v0.1
- * @date 2018-01-16
+ * @since  0.1
+ * @version 2018-01-16
  */
 public class NsfAudioFactory {
 
@@ -30,7 +30,7 @@ public class NsfAudioFactory {
      *
      * @param image  Mirror byte array
      * @param offset The mirror byte data starts from the array, default is 0
-     * @return
+     * @return nsf audio source
      * @throws NsfAudioFormatException Reading failed due to mismatched file formats
      */
     public NsfAudio create(byte[] image, int offset) throws NsfAudioFormatException {

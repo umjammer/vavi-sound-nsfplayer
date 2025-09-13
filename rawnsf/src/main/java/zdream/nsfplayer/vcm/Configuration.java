@@ -90,5 +90,4 @@ public class Configuration extends Observable {
             src.data.put(e.getKey(), e.getValue());
         }
     }
-
 }

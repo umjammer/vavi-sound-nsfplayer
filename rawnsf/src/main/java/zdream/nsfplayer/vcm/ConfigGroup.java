@@ -49,5 +49,4 @@ public class ConfigGroup {
     public void clear() {
         members.clear();
     }
-
 }
