@@ -8,7 +8,7 @@ package zdream.nsfplayer.core;
  * Related methods are independently extracted from the interface,
  * @since v0.2.4
  */
-public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio> extends AbstractRenderer<T>
+public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio<?>> extends AbstractRenderer<T>
         implements INsfRendererHandler<T> {
 
 }

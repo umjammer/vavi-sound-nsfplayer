@@ -2,9 +2,9 @@ package zdream.nsfplayer.nsf.device;
 
 import java.util.ArrayList;
 
+import zdream.nsfplayer.core.AbstractNsfAudio;
 import zdream.nsfplayer.core.ERegion;
 import zdream.nsfplayer.core.IResetable;
-import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.device.chip.NesAPU;
 import zdream.nsfplayer.nsf.device.chip.NesDMC;
 import zdream.nsfplayer.nsf.device.chip.NesFDS;
@@ -73,8 +73,8 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
     int song;
 
     public void setSong(int song) {
-        if (song >= runtime.audio.total_songs) {
-            this.song = runtime.audio.total_songs - 1;
+        if (song >= runtime.audio.getTrackCount()) {
+            this.song = runtime.audio.getTrackCount() - 1;
         } else if (song < 0) {
             this.song = 0;
         } else {
@@ -183,9 +183,9 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
         // The frame rate used by the NSF internal virtual CPU is double precision floating point.
         // Default, NTSC: 60.0988, PAL/DENDY: 50.0070
         double speed;
-        speed = 1000000.0 / ((region == NTSC) ? runtime.audio.speed_ntsc : runtime.audio.speed_pal);
+        speed = 1000000.0 / ((region == NTSC) ? runtime.audio.getSpeedNtsc() : runtime.audio.getSpeedPal());
 
-        runtime.cpu.start(runtime.audio.init_address, runtime.audio.play_address,
+        runtime.cpu.start(runtime.audio.getInitAddress(), runtime.audio.getPlayAddress(),
                 speed, this.song, (region == PAL) ? 1 : 0, 0);
     }
 
@@ -339,20 +339,20 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
      * @return Maximum value of bank-switch
      */
     private int reloadMemory() {
-        NsfAudio audio = runtime.audio;
+        AbstractNsfAudio<?> audio = runtime.audio;
 
         int i, bmax = 0;
 
         for (i = 0; i < 8; i++)
-            if (bmax < audio.bankswitch[i])
-                bmax = audio.bankswitch[i];
+            if (bmax < audio.getBankSwitch(i))
+                bmax = audio.getBankSwitch(i);
 
-        runtime.mem.setImage(audio.body, audio.load_address, audio.body.length);
+        runtime.mem.setImage(audio.getData(), audio.getLoadAddress(), audio.getLength());
 
         if (bmax != 0) {
-            runtime.bank.setImage(audio.body, audio.load_address, audio.body.length);
+            runtime.bank.setImage(audio.getData(), audio.getLoadAddress(), audio.getLength());
             for (i = 0; i < 8; i++)
-                runtime.bank.setBankDefault(i + 8, audio.bankswitch[i]);
+                runtime.bank.setBankDefault(i + 8, audio.getBankSwitch(i));
         }
 
         return bmax;

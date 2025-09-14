@@ -1,8 +1,13 @@
 package zdream.nsfplayer.nsf.device.memory;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.device.IDevice;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -12,6 +17,8 @@ import zdream.nsfplayer.nsf.device.cpu.IntHolder;
  * @author Zdream
  */
 public class NesMem implements IDevice {
+
+    private static final Logger logger = getLogger(NesMem.class.getName());
 
     protected final byte[] image;
 
@@ -39,6 +46,7 @@ public class NesMem implements IDevice {
      * @param offset That is {@link NsfAudio#load_address}
      */
     public final boolean setImage(byte[] data, int offset, int size) {
+logger.log(Level.DEBUG, "data: %d, offset: %d, size: %d".formatted(data.length, offset, size));
         if (offset + size < 0x10000) {
             System.arraycopy(data, 0, image, offset, size);
         } else {

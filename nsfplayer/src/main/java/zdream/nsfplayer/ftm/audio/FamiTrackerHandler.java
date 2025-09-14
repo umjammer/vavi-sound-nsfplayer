@@ -79,13 +79,13 @@ public class FamiTrackerHandler implements INsfChannelCode {
      * @param c
      */
     public void setChip(byte c) {
-        audio.useVrc6 = (c & 1) > 0;
-        audio.useVrc7 = (c & 2) > 0;
-        audio.useFds = (c & 4) > 0;
-        audio.useMmc5 = (c & 8) > 0;
-        audio.useN163 = (c & 16) > 0;
-        audio.useS5b = (c & 32) > 0;
-logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(audio.useVrc6 ? "6" : "_", audio.useVrc7 ? "7" : "_", audio.useFds ? "F" : "_", audio.useMmc5 ? "M" : "_", audio.useN163 ? "N" : "_", audio.useS5b ? "S" : "_"));
+        audio.setUseVrc6((c & 1) > 0);
+        audio.setUseVrc7((c & 2) > 0);
+        audio.setUseFds((c & 4) > 0);
+        audio.setUseMmc5((c & 8) > 0);
+        audio.setUseN163((c & 16) > 0);
+        audio.setUeS5b((c & 32) > 0);
+logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(audio.useVrc6() ? "6" : "_", audio.useVrc7() ? "7" : "_", audio.useFds() ? "F" : "_", audio.useMmc5() ? "M" : "_", audio.useN163() ? "N" : "_", audio.useS5b() ? "S" : "_"));
 //new Exception().printStackTrace();
         channelDirt = true;
     }
@@ -297,22 +297,22 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(audio.useVrc6 ? "6" : "_", audio
     private void reScanChannel() {
         // Calculate the total number of channels
         channelCount = 5; // 2A03 + 2A07
-        if (audio.useVrc6) {
+        if (audio.useVrc6()) {
             channelCount += 3;
         }
-        if (audio.useVrc7) {
+        if (audio.useVrc7()) {
             channelCount += 6;
         }
-        if (audio.useFds) {
+        if (audio.useFds()) {
             channelCount += 1;
         }
-        if (audio.useMmc5) {
+        if (audio.useMmc5()) {
             channelCount += 2;
         }
-        if (audio.useN163) {
+        if (audio.useN163()) {
             channelCount += audio.namcoChannels;
         }
-        if (audio.useS5b) {
+        if (audio.useS5b()) {
             channelCount += 3;
         }
 
@@ -325,16 +325,16 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(audio.useVrc6 ? "6" : "_", audio
         channelCode[codePtr++] = CHANNEL_2A03_NOISE;
         channelCode[codePtr++] = CHANNEL_2A03_DPCM;
 
-        if (audio.useVrc6) {
+        if (audio.useVrc6()) {
             channelCode[codePtr++] = CHANNEL_VRC6_PULSE1;
             channelCode[codePtr++] = CHANNEL_VRC6_PULSE2;
             channelCode[codePtr++] = CHANNEL_VRC6_SAWTOOTH;
         }
-        if (audio.useMmc5) {
+        if (audio.useMmc5()) {
             channelCode[codePtr++] = CHANNEL_MMC5_PULSE1;
             channelCode[codePtr++] = CHANNEL_MMC5_PULSE2;
         }
-        if (audio.useN163) {
+        if (audio.useN163()) {
             byte[] cs = new byte[] {
                     CHANNEL_N163_1,
                     CHANNEL_N163_2,
@@ -350,10 +350,10 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(audio.useVrc6 ? "6" : "_", audio
                 channelCode[codePtr++] = cs[i];
             }
         }
-        if (audio.useFds) {
+        if (audio.useFds()) {
             channelCode[codePtr++] = CHANNEL_FDS;
         }
-        if (audio.useVrc7) {
+        if (audio.useVrc7()) {
             channelCode[codePtr++] = CHANNEL_VRC7_FM1;
             channelCode[codePtr++] = CHANNEL_VRC7_FM2;
             channelCode[codePtr++] = CHANNEL_VRC7_FM3;
@@ -361,7 +361,7 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(audio.useVrc6 ? "6" : "_", audio
             channelCode[codePtr++] = CHANNEL_VRC7_FM5;
             channelCode[codePtr++] = CHANNEL_VRC7_FM6;
         }
-        if (audio.useS5b) {
+        if (audio.useS5b()) {
             channelCode[codePtr++] = CHANNEL_S5B_SQUARE1;
             channelCode[codePtr++] = CHANNEL_S5B_SQUARE2;
             channelCode[codePtr++] = CHANNEL_S5B_SQUARE3;
