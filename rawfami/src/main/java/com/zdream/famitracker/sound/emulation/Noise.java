@@ -63,7 +63,7 @@ public class Noise extends Channel {
     }
 
     /**
-     * APU.write4015() 调用
+     * APU.write4015() call
      */
     public void writeControl(int value) {
         m_iControlReg = (byte) (value & 1);
@@ -73,7 +73,7 @@ public class Noise extends Channel {
     }
 
     /**
-     * 暂无调用
+     * No call yet
      */
     public int readControl() {
         return ((m_iLengthCounter > 0) && (m_iEnabled == 1)) ? 1 : 0;
@@ -96,7 +96,7 @@ public class Noise extends Channel {
     }
 
     /**
-     * APU.clock_120Hz() 调用
+     * APU.clock_120Hz() call
      */
     public void lengthCounterUpdate() {
         if ((m_iLooping == 0) && (m_iLengthCounter > 0))
@@ -104,7 +104,7 @@ public class Noise extends Channel {
     }
 
     /**
-     * APU.clock_240Hz() 调用
+     * APU.clock_240Hz() call
      */
     public void envelopeUpdate() {
         if (--m_iEnvelopeCounter == 0) {

@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 
 /**
- * 缓冲区
+ * Buffer
  *
  * @author Zdream
  */

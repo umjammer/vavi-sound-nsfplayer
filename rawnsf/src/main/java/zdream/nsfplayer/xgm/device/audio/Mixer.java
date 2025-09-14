@@ -9,15 +9,15 @@ import zdream.nsfplayer.xgm.device.IRenderable0;
 public class Mixer implements IRenderable0 {
 
     /**
-     * 在 1 首歌播放即将结束后, 会进入渐出阶段. 这个参数将记录从开始渐出算起, 歌曲已经播放的采样数.<br>
-     * 如果该参数为 0, 则说明歌曲播放未进入渐出阶段.
+     * When a song is about to end, it will enter the fade-out stage. This parameter will record the number of samples the song has played since the beginning of the fade-out.<br>
+     * If this parameter is 0, it means that the song has not entered the fade-out stage.
      */
     int fadePos;
 
     /**
-     * 表示渐出需要的总时间 (采样数).<br>
-     * 歌曲播放未进入渐出阶段时, 这个参数为 1. 一般为无效值;
-     * 当歌曲播放进入渐出阶段, 这个数值将计算真正的有效值.
+     * Indicates the total time required for fade-out (number of samples).<br>
+     * When the song has not entered the fade-out stage, this parameter is 1. Generally an invalid value;
+     * When the song enters the fade-out stage, this value will calculate the real effective value.
      */
     int fadeEnd;
 

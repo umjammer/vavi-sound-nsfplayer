@@ -10,7 +10,7 @@ public class BlipEQ {
      * <p>Logarithmic rolloff to treble dB at half sampling rate.
      * Negative values reduce treble, small positive values (0 to 5.0) increase treble.
      *
-     * @param treble_db 默认值就是 0
+     * @param treble_db The default value is 0
      */
     public BlipEQ(double treble_db) {
         treble = treble_db;
@@ -23,7 +23,7 @@ public class BlipEQ {
      * @param treble
      * @param rolloff_freq
      * @param sample_rate
-     * @param cutoff_freq  默认值就是 0
+     * @param cutoff_freq  The default value is 0
      */
     public BlipEQ(double treble, int rolloff_freq, int sample_rate, int cutoff_freq) {
         this.treble = treble;

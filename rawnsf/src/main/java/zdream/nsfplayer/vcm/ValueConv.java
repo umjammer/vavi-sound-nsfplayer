@@ -3,7 +3,7 @@ package zdream.nsfplayer.vcm;
 public class ValueConv {
 
     /**
-     * 将内部值转换为公共值. 如果转换失败, 则返回 false
+     * Converts internal values to public values. Returns false if the conversion fails
      */
     public boolean getExportValue(ValueCtrl vt, Configuration cfg, String id, Value src_value, Value result) {
         result = src_value;
@@ -11,7 +11,7 @@ public class ValueConv {
     }
 
     /**
-     * 将公共值转换为内部值. 如果转换失败, 则返回 false
+     * Converts public values to internal values. Returns false if the conversion fails
      */
     public boolean getImportValue(ValueCtrl vt, Configuration cfg, String id, Value src_value, Value result) {
         result = src_value;

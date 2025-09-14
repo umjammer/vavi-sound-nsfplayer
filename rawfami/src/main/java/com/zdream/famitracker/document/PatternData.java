@@ -15,7 +15,7 @@ import static com.zdream.famitracker.FamitrackerTypes.NOTE_NONE;
 
 
 /**
- * <p>该类存放了整个模块的 Note.<br>
+ * <p>This class stores the Notes of the entire module.<br>
  * CPatternData holds all notes in the patterns.
  * <p>Famitracker: struct stChanNote, at PatternData.h
  *
@@ -254,7 +254,7 @@ public class PatternData {
      */
     private int m_iSongTempo;
 
-    // 其它选项
+    // Other options
     /**
      * Row highlight settings
      */

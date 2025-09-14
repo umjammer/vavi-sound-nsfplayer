@@ -10,7 +10,7 @@ import com.zdream.famitracker.FamiTrackerApp;
 public class DocumentFile {
 
     /*
-     * Java IO 部分
+     * Java IO part
      */
     File file;
 
@@ -59,10 +59,10 @@ public class DocumentFile {
     }
 
     //
-    // 读取文件部分
+    // Read file part
     //
 
-    byte[] bs; // 读取文件的全部数据在这里
+    byte[] bs; // All data read from the file is here
     int offset;
 
     private int read(byte[] bs, int offset, int len) {
@@ -80,13 +80,13 @@ public class DocumentFile {
     }
 
     /**
-     * C++ 数据是低位放在前面, 高位放在后面的数据结构
+     * C++ data is a data structure with the low bit in the front and the high bit in the back
      *
      * @return
      */
     private int readIntForCppData() {
         if (offset + 4 > bs.length) {
-            throw new ArrayIndexOutOfBoundsException("还剩余 " + (bs.length - offset) + " 数据, 无法读取 4 个值");
+            throw new ArrayIndexOutOfBoundsException("There are still " + (bs.length - offset) + " data, unable to read 4 values");
         }
         int value = (bs[offset] & 0xFF) | ((bs[offset + 1] & 0xFF) << 8)
                 | ((bs[offset + 2] & 0xFF) << 16) | ((bs[offset + 3] & 0xFF) << 24);
@@ -112,7 +112,7 @@ public class DocumentFile {
     // Read functions
     public boolean validateFile() {
 
-        // 检查头部 ID
+        // Check header ID
         int len = FILE_HEADER_ID.length();
         byte[] bs_head = new byte[len];
         int i = read(bs_head);
@@ -128,7 +128,7 @@ public class DocumentFile {
             }
         }
 
-        // 获得文件版本号
+        // Get file version number
         read(bs_head, 0, 4);
         m_iFileVersion = (bs_head[3] << 24) | (bs_head[2] << 16) | (bs_head[1] << 8) | bs_head[0];
 
@@ -143,7 +143,7 @@ public class DocumentFile {
     }
 
     /**
-     * 读取下一个 block
+     * Read the next block
      *
      * @return
      */
@@ -155,7 +155,7 @@ public class DocumentFile {
         int bytesRead = this.read(bs);
 
         if (bytesRead == 0) {
-            // 读取不到数据之后, 也认为读取完成
+            // After the data cannot be read, it is also considered that the reading is complete
             m_bFileDone = true;
             return false;
         }
@@ -170,7 +170,7 @@ public class DocumentFile {
         m_iBlockVersion = readIntForCppData();
         m_iBlockSize = readIntForCppData();
 
-        // 原程序判断 m_iBlockSize 的合法性, 这里跳过
+        // The original program judges the legitimacy of m_iBlockSize, which is skipped here
 
         m_pBlockData = new byte[m_iBlockSize];
         read(m_pBlockData);

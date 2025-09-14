@@ -3,7 +3,7 @@ package com.zdream.famitracker.sound.emulation.buffer;
 public class BufferContext {
 
     /**
-     * <p>输出的采样是带符号的 16 位浮点数, 范围在 [-32767, 32767]
+     * <p>The output samples are signed 16-bit floating-point numbers, ranging from [-32767, 32767]
      * <p>Output samples are 16-bit signed, with a range of -32767 to 32767
      */
     static final int blip_sample_max = 32767;

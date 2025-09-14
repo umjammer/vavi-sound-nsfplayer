@@ -40,7 +40,7 @@ public class InstrumentVRC7 extends Instrument {
 
     @Override
     public boolean loadFile() {
-        throw new RuntimeException("我不允许你调用");
+        throw new RuntimeException("I don't allow you to call");
     }
 
     @Override

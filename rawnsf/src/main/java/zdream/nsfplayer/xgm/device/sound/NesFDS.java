@@ -36,7 +36,7 @@ public class NesFDS implements ISoundChip, IDeviceValue {
     protected boolean master_io;
     /**
      * unsigned
-     * <br>$4089 总音量
+     * <br>$4089 Master Volume
      */
     protected int master_vol;
     /** for trackinfo. unsigned */
@@ -46,66 +46,66 @@ public class NesFDS implements ISoundChip, IDeviceValue {
 
     // two wavetables
     /**
-     * [0] $4040 - $407F 波形表
+     * [0] $4040 - $407F Waveform Table
      * <br>
-     * [1] $4088 MOD 表
+     * [1] $4088 MOD Table
      */
     protected final int[][] wave = new int[2][64];
     /**
      * unsigned
-     * <br>$4082/$4083 波形波长值, $4086/$4087 MOD 波长值
+     * <br>$4082/$4083 Waveform wavelength value, $4086/$4087 MOD wavelength value
      */
     protected final int[] freq = new int[2];
     /** unsigned */
     protected final int[] phase = new int[2];
     /**
-     * $4089 波形写入标识
+     * $4089 Waveform write flag
      */
     protected boolean wav_write;
     /**
-     * $4083 波形禁用标识, 为 false 时表示启用播放
+     * $4083 Waveform disable flag, false means enable playback
      */
     protected boolean wav_halt;
     /**
-     * $4083 包络禁用标识, 为 false 时表示启用播放
+     * $4083 Envelope disable flag, false means enable playback
      */
     protected boolean env_halt;
     /**
-     * $4087 MOD 禁用标识, 为 false 时表示启用 MOD 列表
+     * $4087 MOD disable flag, false means enable MOD list
      */
     protected boolean mod_halt;
     /**
      * unsigned
-     * <br>$4085 MOD 相位值
+     * <br>$4085 MOD phase value
      */
     protected int mod_pos;
     /**
      * unsigned
-     * 专门为 OPT_4085_RESET 选项设置的值. 如果该选项未开启, 该值没有作用
+     * A value specially set for the OPT_4085_RESET option. If this option is not enabled, this value has no effect
      */
     protected int mod_write_pos;
 
     // two ramp envelopes
     /**
-     * $4080 音量包络模式标志, $4084 MOD 包络模式标志
+     * $4080 Volume envelope mode flag, $4084 MOD envelope mode flag
      */
     protected final boolean[] env_mode = new boolean[2];
     /**
-     * $4080 音量包络禁用标志, $4084 MOD 包络禁用标志, 为 false 时表示启用
+     * $4080 Volume envelope disable flag, $4084 MOD envelope disable flag, false means enable
      */
     protected final boolean[] env_disable = new boolean[2];
     /** unsigned */
     protected final int[] env_timer = new int[2];
     /**
      * unsigned
-     * <br>$4080 音量包络播放速度, $4084 MOD 包络播放速度
+     * <br>$4080 Volume envelope playback speed, $4084 MOD envelope playback speed
      */
     protected final int[] env_speed = new int[2];
     /** unsigned */
     protected final int[] env_out = new int[2];
     /**
      * unsigned
-     * <br>$408A 包络速度
+     * <br>$408A Envelope speed
      */
     protected int master_env_speed;
 

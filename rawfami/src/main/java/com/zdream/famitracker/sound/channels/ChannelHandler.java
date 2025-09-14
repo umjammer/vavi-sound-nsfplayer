@@ -28,7 +28,7 @@ import static com.zdream.famitracker.FamitrackerTypes.VIBRATO_NEW;
 
 
 /**
- * <p>轨道音乐渲染的基础类 / 父类
+ * <p>Base class / parent class for track music rendering
  * <p>Base class for channel renderers
  *
  * @author Zdream
@@ -47,7 +47,7 @@ public abstract class ChannelHandler extends SequenceHandler {
         note = Math.max(note, 0);
 
         // Trigger a note, return note period
-        registerKeyState(note); // 空方法
+        registerKeyState(note); // empty method
 
         if (m_pNoteLookupTable == null)
             return note;
@@ -83,7 +83,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 
     @Override
     protected void setDutyPeriod(int period) {
-        assert (period < 128); // 否则转成负数
+        assert (period < 128); // otherwise it will be converted to a negative number
         m_iDutyPeriod = (byte) period;
     }
 
@@ -98,7 +98,7 @@ public abstract class ChannelHandler extends SequenceHandler {
     }
 
     /**
-     * <p>播放音符, 并且会调用派生类
+     * <p>Play a note, and call the derived class
      * <p>Plays a note, calls the derived classes
      * <p>Handle common things before letting the channels play the notes
      *
@@ -120,7 +120,7 @@ public abstract class ChannelHandler extends SequenceHandler {
     }
 
     /**
-     * <p>初始化
+     * <p>Initialize
      * <p>Called from main thread
      *
      * @param pAPU
@@ -248,8 +248,8 @@ public abstract class ChannelHandler extends SequenceHandler {
     protected abstract void clearRegisters();                        // Clear channel registers
 
     /**
-     * 立即执行 note 里面的操作.
-     * 如果有 Gxx 延迟效果, 则延迟结束的那一帧执行该函数.
+     * Immediately execute the operations in the note.
+     * If there is a Gxx delay effect, this function is executed at the end of the delay.
      *
      * @param pNoteData
      * @param effColumns
@@ -296,7 +296,7 @@ public abstract class ChannelHandler extends SequenceHandler {
                 return;
         }
 
-        // 不知道为什么这个有两次, 暂且当成程序错误
+        // I don't know why this is twice, for the time being as a program error
 		/*if (newInstrument || trigger) {
 			if (!handleInstrument(m_iInstrument, trigger, newInstrument))
 				return;
@@ -340,7 +340,7 @@ public abstract class ChannelHandler extends SequenceHandler {
     protected void setupSlide(int type, int effParam) {
         m_iPortaSpeed = ((effParam & 0xF0) >> 3) + 1;
 
-        assert (type < 128); // 由于后面要进行强制转换
+        assert (type < 128); // because of the forced conversion later
         m_iEffect = (byte) type;
 
         if (type == EF_SLIDE_UP)
@@ -352,8 +352,8 @@ public abstract class ChannelHandler extends SequenceHandler {
     }
 
     /**
-     * 计算当前的音高. 实际计算的是波长.
-     * <br>const 方法
+     * Calculate the current pitch. The actual calculation is the wavelength.
+     * <br>const method
      *
      * @return
      */
@@ -369,7 +369,7 @@ public abstract class ChannelHandler extends SequenceHandler {
         volume = Math.max(volume, 0);
         volume = Math.min(volume, m_iMaxVolume);
 
-        // 实际有声音的轨道（即总音量大于零, seq 音量大于零）, 至少保留 1 点音量
+        // The actual sounding track (that is, the total volume is greater than zero, and the seq volume is greater than zero), at least 1 point of volume is reserved
         if (m_iSeqVolume > 0 && m_iVolume > 0 && volume == 0)
             volume = 1;
 
@@ -387,7 +387,7 @@ public abstract class ChannelHandler extends SequenceHandler {
      * <p>Cut currently playing note
      * <p>Called on note cut commands
      *
-     * <p>立刻结束现在播放的 note.
+     * <p>Immediately end the currently playing note.
      */
     protected void cutNote() {
         registerKeyState(-1);
@@ -408,10 +408,10 @@ public abstract class ChannelHandler extends SequenceHandler {
     }
 
     /**
-     * 限定波长的范围, 让波长最终落到 [0, {@link #m_iMaxPeriod}] 之间的数值中
+     * Limit the range of the wavelength so that the wavelength finally falls within the value between [0, {@link #m_iMaxPeriod}]
      *
-     * @param period 原始波长
-     * @return 修改后的波长. 在范围内的波长不做变动, 而在范围外的波长调整到 0 或 {@link #m_iMaxPeriod}
+     * @param period original wavelength
+     * @return The modified wavelength. The wavelength within the range is not changed, and the wavelength outside the range is adjusted to 0 or {@link #m_iMaxPeriod}
      */
     protected final int limitPeriod(int period) {
         period = Math.min(period, m_iMaxPeriod);
@@ -420,10 +420,10 @@ public abstract class ChannelHandler extends SequenceHandler {
     }
 
     /**
-     * 限定音量的范围, 让波长最终落到 [0, {@link #m_iMaxVolume}] 之间的数值中
+     * Limit the range of the volume so that the wavelength finally falls within the value between [0, {@link #m_iMaxVolume}]
      *
-     * @param period 原始音量（粗值）
-     * @return 修改后的音量（粗值）. 在范围内的音量不做变动, 而在范围外的音量调整到 0 或 15
+     * @param period original volume (coarse value)
+     * @return The modified volume (coarse value). The volume within the range is not changed, and the volume outside the range is adjusted to 0 or 15
      */
     protected final int limitVolume(int volume) {
         volume = Math.min(volume, m_iMaxVolume);
@@ -432,14 +432,14 @@ public abstract class ChannelHandler extends SequenceHandler {
     }
 
     /**
-     * <p>可能为向外报告该 note 播放状态的改变.
-     * <p>注: 该方法现阶段没有实际功能
+     * <p>It may be to report the change of the playback status of the note to the outside.
+     * <p>Note: This method has no actual function at this stage
      * </p>
      *
      * @param note
      */
     protected void registerKeyState(int note) {
-        m_pSoundGen.registerKeyState(m_iChannelID, note); // 这个是个空方法
+        m_pSoundGen.registerKeyState(m_iChannelID, note); // This is an empty method
     }
 
     /**
@@ -466,7 +466,7 @@ public abstract class ChannelHandler extends SequenceHandler {
     }
 
     protected final int getPitch() {
-        // 这个判断里面的内容, 在只有 2A03 和 VRC6 的情况下, 确定不会调用.
+        // The content in this judgment will definitely not be called when there are only 2A03 and VRC6.
         if (m_iPitch != 0 && m_iNote != 0 && m_pNoteLookupTable != null) {
             // Interpolate pitch
             int lowNote = Math.max(m_iNote - PITCH_WHEEL_RANGE, 0);
@@ -545,8 +545,8 @@ public abstract class ChannelHandler extends SequenceHandler {
      * @return
      */
     private boolean handleDelay(StChanNote pNoteData, int effColumns) {
-        // 如果 m_bDelayEnabled = true 说明上一个有效的键 (note) 有延迟效果,
-        // 但是还没等延迟触发, 新的键已经到来了, 这时, 上一个延迟触发的数据将立即执行
+        // If m_bDelayEnabled = true, it means that the last valid key (note) has a delay effect,
+        // but before the delay is triggered, a new key has arrived. At this time, the data of the last delay trigger will be executed immediately.
         if (m_bDelayEnabled) {
             m_bDelayEnabled = false;
             handleNoteData(m_cnDelayed, m_iDelayEffColumns);
@@ -588,7 +588,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 
     /**
      * Vibrato offset (4xx)
-     * 颤音, 影响音高
+     * Vibrato, affecting pitch
      *
      * @return
      */
@@ -617,7 +617,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 
     /**
      * Tremolo offset (7xx)
-     * 颤音, 影响音量
+     * Vibrato, affecting volume
      *
      * @return
      */
@@ -635,7 +635,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 
     /**
      * Fine pitch setting (Pxx)
-     * 设置音高 (Pxx)
+     * Set pitch (Pxx)
      *
      * @return
      */
@@ -644,7 +644,7 @@ public abstract class ChannelHandler extends SequenceHandler {
     }
 
     /**
-     * 用于让 APU 添加更多周期. 现没有被调用.
+     * Used to let the APU add more cycles. Not currently called.
      *
      * @param count
      */
@@ -688,12 +688,12 @@ public abstract class ChannelHandler extends SequenceHandler {
 
     protected void writeRegister(int reg, byte value) {
         m_pAPU.write(reg, value);
-        // m_pSoundGen.writeRegister(reg, value); 里面是 empty
+        // m_pSoundGen.writeRegister(reg, value); is empty inside
     }
 
     protected void writeExternalRegister(int reg, byte value) {
         m_pAPU.externalWrite(reg, value);
-        // m_pSoundGen.writeExternalRegister(reg, value); 里面是 empty
+        // m_pSoundGen.writeExternalRegister(reg, value); is empty inside
     }
 
     // CSequenceHandler virtual methods
@@ -856,8 +856,8 @@ public abstract class ChannelHandler extends SequenceHandler {
     protected int m_iSeqVolume;
 
     /**
-     * Volume, 音量（细值）
-     * <br>据判断, 该值是粗值的 8 倍, 值域为 [0, 127]
+     * Volume, volume (fine value)
+     * <br>According to judgment, this value is 8 times the coarse value, and the value range is [0, 127]
      */
     protected int m_iVolume;
 
@@ -865,13 +865,13 @@ public abstract class ChannelHandler extends SequenceHandler {
 
     /**
      * <p>Used by linear slides
-     * <p>该值在 m_bLinearPitch 启用时有效.
-     * 它用于记录波长值的更小粒度单位数值, 即波长值的小数点位.
-     * 值域为 [0, 31], 逢 32 进 1, 进位表现在 m_iPeriod 波长值上.
-     * 也就是说, m_iPeriodPart 每计算达到 32, 则 m_iPeriod 加一.
-     * <p>在 m_bLinearPitch 启用时, 在原波长变化时, 并不是直接添加的,
-     * 而是利用方法 {@link #linearAdd(int)} 和 {@link #linearRemove(int)} 方法
-     * 更新 m_iPeriodPart 和 m_iPeriod.
+     * <p>This value is valid when m_bLinearPitch is enabled.
+     * It is used to record the value of a smaller granularity unit of the wavelength value, that is, the decimal point of the wavelength value.
+     * The value range is [0, 31], and every 32 enters 1, and the carry is expressed on the m_iPeriod wavelength value.
+     * That is to say, every time m_iPeriodPart reaches 32, m_iPeriod is increased by one.
+     * <p>When m_bLinearPitch is enabled, the original wavelength is not directly added when it changes,
+     * but the {@link #linearAdd(int)} and {@link #linearRemove(int)} methods are used to
+     * update m_iPeriodPart and m_iPeriod.
      * </p>
      */
     protected int m_iPeriodPart;
@@ -879,8 +879,8 @@ public abstract class ChannelHandler extends SequenceHandler {
     protected boolean m_bNewVibratoMode;
 
     /**
-     * <p>是否采用线性波长计算方式. 一般为 false.
-     * <p>当 m_bLinearPitch = true 时, m_iPeriodPart 将被启用.
+     * <p>Whether to use the linear wavelength calculation method. Generally false.
+     * <p>When m_bLinearPitch = true, m_iPeriodPart will be enabled.
      * </p>
      *
      * @see #m_iPeriodPart
@@ -899,20 +899,20 @@ public abstract class ChannelHandler extends SequenceHandler {
 
     // Delay effect variables
     /**
-     * Gxx 延迟的效果是否正在触发
+     * Whether the effect of Gxx delay is being triggered
      */
     protected boolean m_bDelayEnabled;
     /**
-     * Gxx 延迟的计数器.
-     * 检测到 Gxx 存在后, 记录延迟的时间, 然后每一帧减一
+     * The counter for the Gxx delay.
+     * After detecting the existence of Gxx, record the delay time, and then decrement it frame by frame
      */
     protected byte m_cDelayCounter;
     /**
-     * Gxx 延迟键的有效的效果列数
+     * The number of effective effect columns for the Gxx delay key
      */
     protected int m_iDelayEffColumns;
     /**
-     * Gxx 延迟的键
+     * Gxx delay key
      */
     protected final StChanNote m_cnDelayed = new StChanNote();
 
@@ -920,14 +920,14 @@ public abstract class ChannelHandler extends SequenceHandler {
     protected int m_iVibratoDepth;
     protected int m_iVibratoSpeed;
     /**
-     * 音高颤音的相位
+     * Phase of pitch vibrato
      */
     protected int m_iVibratoPhase;
 
     protected int m_iTremoloDepth;
     protected int m_iTremoloSpeed;
     /**
-     * 音量颤音的相位
+     * Phase of volume vibrato
      */
     protected int m_iTremoloPhase;
 
@@ -965,9 +965,9 @@ public abstract class ChannelHandler extends SequenceHandler {
     protected SoundGen m_pSoundGen;
 
     /**
-     * Note->period table, 原先是个指针
-     * <br>这里记录的数组是, 每个音符（含音阶）, 在波形图中的波长（可能是相对值）.
-     * <br>它在 {@link SoundGen#loadMachineSettings()} 中创建.
+     * Note->period table, originally a pointer
+     * <br>The array recorded here is the wavelength (possibly a relative value) of each note (including the scale) in the waveform diagram.
+     * <br>It is created in {@link SoundGen#loadMachineSettings()}.
      */
     protected int[] m_pNoteLookupTable;
 

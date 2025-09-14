@@ -15,7 +15,7 @@ public class BlipSynth {
 
     /**
      * @param quality
-     * @param range   范围指定振幅的最大预期变化
+     * @param range   specifies the maximum expected change in amplitude
      */
     public BlipSynth(int quality, int range) {
         this.quality = quality;
@@ -25,7 +25,7 @@ public class BlipSynth {
     }
 
     /**
-     * <p>设置波形总音量
+     * <p>Set the total volume of the waveform
      * <p>Set overall volume of waveform
      *
      * @param v
@@ -35,7 +35,7 @@ public class BlipSynth {
     }
 
     /**
-     * <p>设置低通过滤器
+     * <p>Set low-pass filter
      * <p>Configure low-pass filter
      */
     public void trebleEq(BlipEQ eq) {
@@ -43,7 +43,7 @@ public class BlipSynth {
     }
 
     /**
-     * <p>获取 BlipBuffer
+     * <p>Get BlipBuffer
      * <p>Get BlipBuffer used for output
      *
      * @return
@@ -53,7 +53,7 @@ public class BlipSynth {
     }
 
     /**
-     * <p>设置 BlipBuffer
+     * <p>Set BlipBuffer
      * <p>Set BlipBuffer used for output
      *
      * @param b
@@ -64,8 +64,8 @@ public class BlipSynth {
     }
 
     /**
-     * <p>在指定的时间范围内更新波形幅度.<br>
-     * 使用这种需要每个波形有一个单独的 BlipSynth.
+     * <p>Update the waveform amplitude within the specified time range.<br>
+     * Using this requires a separate BlipSynth for each waveform.
      * <p>Update amplitude of waveform at given time.<br>
      * Using this requires a separate BlipSynth for each waveform.
      *
@@ -81,14 +81,14 @@ public class BlipSynth {
 // Low-level interface
 
     /**
-     * <p>一个时间点的采样值加一个增量.
+     * <p>Add an increment to the sample value at a certain point in time.
      * <p>Add an amplitude transition of specified delta,
      * optionally into specified buffer rather than the one set with output().<br>
      * Delta can be positive or negative.
      * The actual change in amplitude is delta * (volume / range)
      *
-     * @param time  时间点
-     * @param delta 该帧与上一帧的变化量, 可正可负
+     * @param time  time point
+     * @param delta The amount of change between this frame and the previous frame, which can be positive or negative
      * @param buf
      */
     public final void offset(int time, int delta, BlipBuffer buf) {
@@ -102,14 +102,14 @@ public class BlipSynth {
     /*
      * public final void offset_inline( int t, int delta, BlipBuffer buf )
      * public final void offset_inline( int t, int delta )
-     * 仅仅为了用 inline 的写法来提高运行效率. 实际上并没有使用
+     * Just to use the inline writing method to improve operating efficiency. In fact, it is not used
      */
 
     /**
-     * <p>直接使用分数输出样本。
+     * <p>Directly use fractions to output samples.
      * <p>Works directly in terms of fractional output samples.
      *
-     * @param time  时钟
+     * @param time  clock
      * @param delta
      * @param buf
      */
@@ -120,8 +120,8 @@ public class BlipSynth {
 
         delta *= impl.delta_factor;
         int phase = time >> (16 - 6) & (blip_res - 1);
-        int impptr = (short) (blip_res - phase); // 指向 impulses
-        int bufptr = time >> 16; // 指向 buf.buffer_
+        int impptr = (short) (blip_res - phase); // points to impulses
+        int bufptr = time >> 16; // points to buf.buffer_
         long i0 = impulses[impptr];
 
         int fwd = (blip_widest_impulse_ - quality) / 2;

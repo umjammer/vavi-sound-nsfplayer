@@ -4,7 +4,7 @@ import com.zdream.famitracker.document.Sequence;
 
 
 /**
- * <p>这个类保存着 Famitracker 的常量和常用方法.
+ * <p>This class saves the constants and common methods of Famitracker.
  * <p>Here are the constants that defines the limits in the tracker
  *
  * @author Zdream
@@ -34,26 +34,26 @@ public class FamitrackerTypes {
     public static final int MAX_SEQUENCES = 128;
 
     /**
-     * <p>每个 {@link Sequence} 中可以含有的 Item 最大的数量
+     * <p>The maximum number of Items that can be contained in each {@link Sequence}
      * <p>Maximum number of items in each sequence
      * <p>TODO: need to check if this exports correctly
      */
     public static final int MAX_SEQUENCE_ITEMS = /*128*/ 253;
 
     /**
-     * <p>每条轨道最大的 Pattern 数
+     * <p>Maximum number of Patterns per track
      * <p>Maximum number of patterns per channel
      */
     public static final int MAX_PATTERN = 128;
 
     /**
-     * <p>Frame 的最大值
+     * <p>Maximum value of Frame
      * <p>Maximum number of frames
      */
     public static final int MAX_FRAMES = 128;
 
     /**
-     * <p>每个模块的最大行数. 这个值在 NSF 中也有明确定义
+     * <p>The maximum number of rows for each module. This value is also clearly defined in NSF
      * <p>Maximum length of patterns (in rows). 256 is max in NSF
      */
     public static final int MAX_PATTERN_LENGTH = 256;
@@ -65,7 +65,7 @@ public class FamitrackerTypes {
 
     /**
      * <p>Sample space available (from $C000-$FFFF), may now switch banks
-     * <p>等于 256kB
+     * <p>Equal to 256kB
      */
     public static final int MAX_SAMPLE_SPACE = 0x40000;
 
@@ -111,14 +111,14 @@ public class FamitrackerTypes {
     public static final int INVALID_INSTRUMENT = -1;
 
     /**
-     * <p>当一个 note 的音量达到 MAX_VOLUME 时, 说明那个 note 实际上没有注明 note.
-     * <p>实际 note 音量的范围为 0 到 15
+     * <p>When the volume of a note reaches MAX_VOLUME, it means that the note is not actually marked with a note.
+     * <p>The actual note volume range is 0 to 15
      */
     public static final int MAX_VOLUME = 0x10;
 
     /**
      * <p>Sequence types (shared with VRC6)
-     * <p>在 C++ 原来的文件中是记录在 sequence_t 这个枚举中
+     * <p>In the original C++ file, it is recorded in the sequence_t enumeration
      * <p>SEQ_HIPITCH = 3 TODO: remove this eventually
      */
     public static final int
@@ -130,11 +130,11 @@ public class FamitrackerTypes {
             SEQ_COUNT = 5;
 
     /**
-     * <p>轨道中的音乐效果
+     * <p>Music effects in the track
      * <p>Channel effects
-     * <p>在 C++ 原来的文件中是记录在 effect_t 这个枚举中
-     * <p>EF_PORTAOFF (= 7) 是没有用的!<br>
-     * EF_DELAYED_VOLUME (= 25) 标记为 Unimplemented
+     * <p>In the original C++ file, it is recorded in the effect_t enumeration
+     * <p>EF_PORTAOFF (= 7) is useless!<br>
+     * EF_DELAYED_VOLUME (= 25) is marked as Unimplemented
      */
     public static final int
             EF_NONE = 0,
@@ -215,7 +215,7 @@ public class FamitrackerTypes {
     };
 
     /**
-     * Note 类型. NOTE_HALT 为停止符, NOTE_RELEASE 为休止符
+     * Note type. NOTE_HALT is a stop symbol, NOTE_RELEASE is a rest symbol
      */
     public static final int NOTE_NONE = 0,
             NOTE_C = 1,
@@ -234,14 +234,14 @@ public class FamitrackerTypes {
             NOTE_HALT = 14;
 
     /**
-     * 原来在 machine_t 枚举中
+     * Originally in the machine_t enumeration
      */
     public static final byte
             NTSC = 0,
             PAL = 1;
 
     /**
-     * 原来在 vibrato_t 枚举中
+     * Originally in the vibrato_t enumeration
      */
     public static final int
             VIBRATO_OLD = 0,

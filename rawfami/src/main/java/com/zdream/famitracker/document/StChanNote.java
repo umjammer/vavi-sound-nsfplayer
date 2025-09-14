@@ -10,7 +10,7 @@ import static com.zdream.famitracker.FamitrackerTypes.NOTE_HALT;
 
 
 /**
- * <p>轨道 Note 的类, 存放了每行的数据<br>
+ * <p>The class of the track Note, which stores the data of each row<br>
  * Channel note struct / class, holds the data for each row in patterns.
  * <p>Famitracker: struct stChanNote, at PatternData.h
  *
@@ -19,12 +19,12 @@ import static com.zdream.famitracker.FamitrackerTypes.NOTE_HALT;
 public class StChanNote {
 
     /**
-     * 该参数在 {@link FamitrackerTypes} 中定义, 数据是 {@link FamitrackerTypes#NOTE_NONE} 这类
+     * This parameter is defined in {@link FamitrackerTypes}, and the data is of the {@link FamitrackerTypes#NOTE_NONE} type.
      */
     public int note;
 
     /**
-     * 八度音阶
+     * Octave
      */
     public int octave;
 

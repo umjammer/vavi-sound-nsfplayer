@@ -95,7 +95,7 @@ public class Square extends Channel {
 
             // test
             if (!m_iEnvelopeFix) {
-                FamitrackerLogger.instance.logValue("启用 EnvelopeFix");
+                FamitrackerLogger.instance.logValue("Enable EnvelopeFix");
             }
             // test end
 
@@ -116,7 +116,7 @@ public class Square extends Channel {
     }
 
     /**
-     * APU.clock_120Hz() 调用
+     * APU.clock_120Hz() call
      */
     public void lengthCounterUpdate() {
         if (!m_iLooping && (m_iLengthCounter > 0))
@@ -124,7 +124,7 @@ public class Square extends Channel {
     }
 
     /**
-     * APU.clock_120Hz() 调用
+     * APU.clock_120Hz() call
      */
     public void sweepUpdate(int diff) {
         m_iSweepResult = (m_iPeriod >> m_iSweepShift);
@@ -147,7 +147,7 @@ public class Square extends Channel {
     }
 
     /**
-     * APU.clock_240Hz() 调用
+     * APU.clock_240Hz() call
      */
     public void envelopeUpdate() {
         if (--m_iEnvelopeCounter == 0) {
@@ -163,30 +163,30 @@ public class Square extends Channel {
 
 
     /**
-     * <p>0 号位: xx000000
-     * <p>unsigned, 值域 [0, 3]. 指示音色的值, 指向 DUTY_TABLE 的一级索引
+     * <p>Position 0: xx000000
+     * <p>unsigned, value range [0, 3]. Indicates the value of the timbre, pointing to the first-level index of DUTY_TABLE
      */
     int m_iDutyLength;
 
     /**
-     * 值域 [0, 15], 指向 DUTY_TABLE 的二级索引
+     * Value range [0, 15], pointing to the second-level index of DUTY_TABLE
      */
     int m_iDutyCycle;
 
     /**
-     * <p>0 号位: 00x00000
-     * <p>不为 0 时为 true, 为 0 时为 false
+     * <p>Position 0: 00x00000
+     * <p>True when not 0, false when 0
      *
-     * <p>根据系统判断, FamiTracker 运行过程中, 该值始终为 true
+     * <p>According to the system judgment, this value is always true during the operation of FamiTracker
      * </p>
      */
     boolean m_iLooping;
 
     /**
-     * <p>0 号位: 000x0000
-     * <p>不为 0 时为 true, 为 0 时为 false
+     * <p>Position 0: 000x0000
+     * <p>True when not 0, false when 0
      *
-     * <p>根据系统判断, FamiTracker 运行过程中, 该值始终为 true
+     * <p>According to the system judgment, this value is always true during the operation of FamiTracker
      * </p>
      */
     boolean m_iEnvelopeFix;
@@ -198,34 +198,34 @@ public class Square extends Channel {
     int m_iEnvelopeVolume;
 
     /**
-     * <p>0 号位: 0000xxxx
-     * <p>unsigned, 值域 [0, 15]
+     * <p>Position 0: 0000xxxx
+     * <p>unsigned, value range [0, 15]
      */
     int m_iFixedVolume;
     int m_iEnvelopeCounter;
 
 
     /**
-     * <p>1 号位: x0000000
-     * <p>不为 0 时为 true, 为 0 时为 false
+     * <p>Position 1: x0000000
+     * <p>True when not 0, false when 0
      */
     boolean m_iSweepEnabled;
 
     /**
-     * <p>1 号位: 0xxx0000, 取得数值之后加 1
-     * <p>unsigned, 值域 [1, 8]
+     * <p>Position 1: 0xxx0000, add 1 after getting the value
+     * <p>unsigned, value range [1, 8]
      */
     int m_iSweepPeriod;
 
     /**
-     * <p>1 号位: 0000x000
-     * <p>不为 0 时为 true, 为 0 时为 false
+     * <p>Position 1: 0000x000
+     * <p>True when not 0, false when 0
      */
     boolean m_iSweepMode;
 
     /**
-     * <p>1 号位: 00000xxx
-     * <p>unsigned, 值域 [0, 7]
+     * <p>Position 1: 00000xxx
+     * <p>unsigned, value range [0, 7]
      */
     int m_iSweepShift;
 
@@ -233,12 +233,12 @@ public class Square extends Channel {
     boolean m_bSweepWritten;
 
     /*
-     * 另外:
+     * In addition:
      * m_iPeriod
-     * 2 号位: xxxxxxxx (低八位), 3 号位: 00000xxx (高三位) 共 11 位
-     * 为波长值;
+     * Position 2: xxxxxxxx (lower eight bits), Position 3: 00000xxx (upper three bits), a total of 11 bits
+     * is the wavelength value;
      *
-     * m_iLengthCounter 查找索引
-     * 3 号位: xxxxx000
+     * m_iLengthCounter lookup index
+     * Position 3: xxxxx000
      */
 }

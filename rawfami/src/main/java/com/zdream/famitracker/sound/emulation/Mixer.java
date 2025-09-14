@@ -116,7 +116,7 @@ public class Mixer {
      */
     public void updateSettings(int lowCut, int highCut, int highDamp, float overallVol) {
         float volume = overallVol/* * getAttenuation()*/;
-        System.out.println("推荐音量: " + getAttenuation());
+        System.out.println("Recommended volume: " + getAttenuation());
 
         // Blip-buffer filtering
         blipBuffer.bassFreq(lowCut);
@@ -139,7 +139,7 @@ public class Mixer {
         if (n163_rolloff > highCut)
             n163_rolloff = highCut;
 
-        // TODO N163 暂时不做
+        // TODO N163 temporarily not implemented
 //		BlipEQ eq_n163(-n163_treble, n163_rolloff, m_iSampleRate);
 //		SynthN163.treble_eq(eq_n163);
 
@@ -233,7 +233,7 @@ public class Mixer {
     }
 
     /**
-     * 注：现在没有方法使用该方法
+     * Note: There is currently no method to use this method
      */
     public final int getChanOutput(byte chan) {
         return (int) m_fChannelLevels[chan];
@@ -263,24 +263,24 @@ public class Mixer {
     }
 
     /**
-     * 注：现在没有方法使用该方法
+     * Note: There is currently no method to use this method
      */
     public final int resampleDuration(int time) {
         return blipBuffer.resampledDuration(time);
     }
 
     /**
-     * 注：现在没有方法使用该方法
+     * Note: There is currently no method to use this method
      */
     public void setNamcoVolume(float fVol) {
-        // TODO N163 暂时不做
+        // TODO N163 temporarily not implemented
         // float fVolume = fVol * m_fOverallVol * getAttenuation();
         // synthN163.volume(fVolume * 1.1f * m_fLevelN163);
     }
 
     private double calcPin1(double val1, double val2) {
         // Mix the output of APU audio pin 1: square
-        // 一般而言, val1 和 val2 都不会小于 0
+        // Generally, both val1 and val2 will not be less than 0
 
         double sum = val1 + val2;
 
@@ -292,7 +292,7 @@ public class Mixer {
 
     private double calcPin2(double val1, double val2, double val3) {
         // Mix the output of APU audio pin 2: triangle, noise and DPCM
-        // 一般而言, val* 都不会小于 0
+        // Generally, val* will not be less than 0
 
         if ((val1 + val2 + val3) > 0)
             return 159.79 / ((1.0 / ((val1 / 8227.0) + (val2 / 12241.0) + (val3 / 22638.0))) + 100.0);
@@ -376,8 +376,8 @@ public class Mixer {
 	}*/
 
     /**
-     * <p>轨道变多之后, 总音量会降低, 但是各轨道音量比值不会发生变化.
-     * <p>TODO 暂时不做 VCR6, MMC5 以外的部分
+     * <p>After the number of tracks increases, the total volume will decrease, but the volume ratio of each track will not change.
+     * <p>TODO Temporarily do not do parts other than VCR6, MMC5
      */
     private float getAttenuation() {
         final float ATTENUATION_VRC6 = 0.80f;

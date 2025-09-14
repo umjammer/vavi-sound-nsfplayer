@@ -3,38 +3,38 @@ package zdream.nsfplayer.xgm.device;
 public interface ITrackInfo extends Cloneable {
 
     /**
-     * @return 把现在的输出值
+     * @return The current output value
      */
     int getOutput();
 
     /**
-     * @return 以 Hz 为单位的频率数
+     * @return Frequency in Hz
      */
     double getFreqHz();
 
     /**
-     * @return 频率
-     * [周波数をデバイス依存値で返す]
+     * @return Frequency
+     * [Return frequency as a device-dependent value]
      */
     int getFreq();
 
     /**
-     * @return 音量
+     * @return Volume
      */
     int getVolume();
 
     /**
-     * @return 最大音量
+     * @return Maximum volume
      */
     int getMaxVolumn();
 
     /**
-     * @return 如果设备被关闭了, 返回 true
+     * @return Returns true if the device is off
      */
     boolean getKeyStatus();
 
     /**
-     * @return 播放的曲目号
+     * @return The track number being played
      */
     int getTone();
 

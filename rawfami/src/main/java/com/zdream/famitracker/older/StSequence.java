@@ -4,7 +4,7 @@ import com.zdream.famitracker.FamitrackerTypes;
 
 
 /**
- * <p>老版本的 Sequence
+ * <p>Old version of Sequence
  * <p>Old sequence list, kept for compability
  *
  * @author Zdream

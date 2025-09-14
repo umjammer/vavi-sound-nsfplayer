@@ -182,7 +182,7 @@ public class FamiTrackerDoc {
 //		ASSERT_VALID(pFrame);
 //
 //		return static_cast<CFamiTrackerDoc*>(pFrame->GetActiveDocument());
-		throw new RuntimeException("该方法和 MFC 直接相关, 所以直接报错");
+		throw new RuntimeException("This method is directly related to MFC, so an error is reported directly");
 	}*/
 
     //
@@ -278,7 +278,7 @@ public class FamiTrackerDoc {
     }
 
     /**
-     * @param track 曲目号
+     * @param track track number
      * @return {@link PatternData#getFrameCount()}
      */
     public final int getFrameCount(int track) {
@@ -322,7 +322,7 @@ public class FamiTrackerDoc {
     }
 
     /**
-     * 原方法 public final void getNoteData(int track, int frame, int channel, int row, StChanNote pData);
+     * Original method: public final void getNoteData(int track, int frame, int channel, int row, StChanNote pData);
      *
      * @return
      */
@@ -344,7 +344,7 @@ public class FamiTrackerDoc {
     }
 
     /**
-     * 原方法 public final void getDataAtPattern(int track, int pattern, int channel, int row, StChanNote pData);
+     * Original method: public final void getDataAtPattern(int track, int pattern, int channel, int row, StChanNote pData);
      */
     public final StChanNote getDataAtPattern(int track, int pattern, int channel, int row) {
         // TODO
@@ -436,7 +436,7 @@ public class FamiTrackerDoc {
     public void setMachine(byte machine) {
         assert (machine == PAL || machine == NTSC);
         m_iMachine = machine;
-        // setModifiedFlag(); MFC 相关, 不调用
+        // setModifiedFlag(); MFC related, not called
     }
 
     public final byte getMachine() {
@@ -517,7 +517,7 @@ public class FamiTrackerDoc {
     }
 
     /**
-     * @param comment     原来的 C++ 文件中, 这个是引用, 因此可能被修改
+     * @param comment     In the original C++ file, this is a reference, so it may be modified
      * @param bShowOnLoad
      * @return
      */
@@ -594,7 +594,7 @@ public class FamiTrackerDoc {
 
     /**
      * @param track
-     * @param title 原来的 C++ 文件中, 这个是引用, 因此可能被修改
+     * @param title In the original C++ file, this is a reference, so it may be modified
      */
     public void setTrackTitle(int track, String title) {
         // TODO
@@ -693,7 +693,7 @@ public class FamiTrackerDoc {
     /**
      * Creates a new instrument of InstType
      *
-     * @param instType 这个参数在 Instrument 中定义
+     * @param instType This parameter is defined in Instrument
      * @return
      */
     public final Instrument createInstrument(byte instType) {
@@ -718,7 +718,7 @@ public class FamiTrackerDoc {
 
     /**
      * @param index
-     * @return 这个参数在 Instrument 中定义
+     * @return This parameter is defined in Instrument
      */
     public int getInstrumentType(int index) {
         // TODO
@@ -1023,7 +1023,7 @@ public class FamiTrackerDoc {
     // Things below are for compability with older files
     ArrayList<StSequence> m_vTmpSequences;
     /**
-     * 每个元素是 StSequence[FamitrackerTypes.SEQ_COUNT]
+     * Each element is StSequence[FamitrackerTypes.SEQ_COUNT]
      */
     ArrayList<StSequence[]> m_vSequences;
 
@@ -1088,7 +1088,7 @@ public class FamiTrackerDoc {
             openFile.open(lpszPathName);
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("无法打开文件: " + lpszPathName);
+            System.err.println("Cannot open file: " + lpszPathName);
             return false;
         }
 
@@ -1101,7 +1101,7 @@ public class FamiTrackerDoc {
 
         // Read header ID and version
         if (!openFile.validateFile()) {
-            System.err.println("文件格式不正确, 无法确定该文件的头部 ID: " + lpszPathName);
+            System.err.println("Incorrect file format, cannot determine the header ID of this file: " + lpszPathName);
             return false;
         }
 
@@ -1110,7 +1110,7 @@ public class FamiTrackerDoc {
         if (iVersion < 0x0200) {
             // Older file version
             if (iVersion < DocumentFile.COMPATIBLE_VER) {
-                System.err.println("文件版本太低, 无法打开该文件: " + lpszPathName);
+                System.err.println("The file version is too low to open this file: " + lpszPathName);
                 return false;
             }
 
@@ -1143,9 +1143,9 @@ public class FamiTrackerDoc {
     }
 
     /**
-     * <p>原来的 C++ 工程没有这个方法
+     * <p>The original C++ project did not have this method
      * <p>
-     * 轨道号码序列见 {@link SoundGen#createChannels()}
+     * For the track number sequence, see {@link SoundGen#createChannels()}
      */
     private void handleFinish() {
         // m_iChannelTypes
@@ -1174,17 +1174,17 @@ public class FamiTrackerDoc {
 
             int len = getNamcoChannels();
             for (int j = 0; j < len; j++) {
-                m_iChannelTypes[i++] = n163s[j]; // FDS 轨道号是哪个数我已经不清楚了
+                m_iChannelTypes[i++] = n163s[j]; // I'm not sure which number the FDS track is
             }
         }
 
         if ((m_iExpansionChip & SNDCHIP_FDS) != 0) {
-            m_iChannelTypes[i++] = CHANID_FDS; // FDS 轨道号是哪个数我已经不清楚了
+            m_iChannelTypes[i++] = CHANID_FDS; // I'm not sure which number the FDS track is
         }
 
-        // TODO VRC7, 6 个轨道
+        // TODO VRC7, 6 tracks
 
-        // TODO 其它芯片
+        // TODO other chips
     }
 
     private boolean openDocumentOld(DocumentFile pOpenFile) {
@@ -1208,14 +1208,14 @@ public class FamiTrackerDoc {
 
         // From version 2.0, all files should be compatible (though individual blocks may not)
         if (m_iFileVersion < 0x0200) {
-            System.err.println("版本太低, 该文件无法加载: " + m_iFileVersion);
+            System.err.println("The version is too low, this file cannot be loaded: " + m_iFileVersion);
             documentFile.close();
             return false;
         }
 
         // File version is too new
         if (m_iFileVersion > DocumentFile.FILE_VER) {
-            System.err.println("版本太高, 该文件无法加载: " + m_iFileVersion);
+            System.err.println("The version is too high, this file cannot be loaded: " + m_iFileVersion);
             documentFile.close();
             return false;
         }
@@ -1292,7 +1292,7 @@ public class FamiTrackerDoc {
                 }
                 break;
 
-                // FILE_BLOCK_SEQUENCES_N106 是出于向后兼容的目的
+                // FILE_BLOCK_SEQUENCES_N106 is for backward compatibility
                 case FILE_BLOCK_SEQUENCES_N163:
                 case FILE_BLOCK_SEQUENCES_N106: {
                     errorFlag = readBlock_SequencesN163(documentFile);
@@ -1310,7 +1310,7 @@ public class FamiTrackerDoc {
                 break;
 
                 default:
-                    System.err.println("出现了未知的 blockID: " + blockID);
+                    System.err.println("Unknown blockID appeared: " + blockID);
                     errorFlag = true;
                     break;
             }
@@ -1319,7 +1319,7 @@ public class FamiTrackerDoc {
         documentFile.close();
 
         if (errorFlag) {
-            System.err.println("文件读取出现了异常.");
+            System.err.println("An exception occurred while reading the file.");
             deleteContents();
             return false;
         }
@@ -1351,7 +1351,7 @@ public class FamiTrackerDoc {
         int version = pDocFile.getBlockVersion();
 
         // Get first track for module versions that require that
-        PatternData pTrack = getTrack0(0); // 调用非 const
+        PatternData pTrack = getTrack0(0); // call non-const
 
         if (version == 1) {
             pTrack.setSongSpeed(pDocFile.getBlockInt());
@@ -2121,7 +2121,7 @@ public class FamiTrackerDoc {
         m_iExpansionChip = chip;
 
         // Register the channels
-        System.err.println(Thread.currentThread().getStackTrace()[1] + ": 我认为文件读取和播放应该独立, 因此不这样写");
+        System.err.println(Thread.currentThread().getStackTrace()[1] + ": I think file reading and playback should be independent, so I don't write it like this");
         // FamiTrackerApp.getInstance().getSoundGenerator().registerChannels(chip, this);
         // m_iChannelsAvailable = getChannelCount();
 
@@ -2129,7 +2129,7 @@ public class FamiTrackerDoc {
 		/*if ((chip & SNDCHIP_N163) != 0) {
 			m_iChannelsAvailable -= (8 - m_iNamcoChannels);
 		}*/
-        System.err.println(Thread.currentThread().getStackTrace()[1] + ": 修改完毕");
+        System.err.println(Thread.currentThread().getStackTrace()[1] + ": Modification complete");
 
         // Must call ApplyExpansionChip after this
     }
@@ -2152,7 +2152,7 @@ public class FamiTrackerDoc {
     private int m_iFileVersion;
 
     /*
-     * m_bBackupDone: 是否进行了备份
+     * m_bBackupDone: Whether a backup was made
      */
 //	private boolean m_bForceBackup;
 //	private boolean m_bBackupDone;
@@ -2175,7 +2175,7 @@ public class FamiTrackerDoc {
     private int m_iTrackCount;
 
     /**
-     * Number of channels added, 原参数名 m_iChannelsAvailable. 它将 m_iRegisteredChannels 参数值合并了.
+     * Number of channels added, original parameter name m_iChannelsAvailable. It merges the m_iRegisteredChannels parameter value.
      */
     private int m_iChannelsCount;
 
@@ -2256,13 +2256,13 @@ public class FamiTrackerDoc {
     //
 
     /*
-     * 原来 CCriticalSection 和 CMutex 是做线程同步的
+     * Originally, CCriticalSection and CMutex were for thread synchronization
      * private mutable CCriticalSection m_csInstrument;
      * private mutable CMutex m_csDocumentLock;
      */
 
     /**
-     * 这个原本是由 GUI 调用, 因此进行了简化
+     * This was originally called by the GUI, so it has been simplified
      *
      * @return
      */
@@ -2279,7 +2279,7 @@ public class FamiTrackerDoc {
     }
 
     /**
-     * 现在无法写, 因此全部隐去 TODO
+     * It cannot be written now, so it is all hidden TODO
      *
      * @param lpszPathName
      * @return
@@ -2334,13 +2334,13 @@ public class FamiTrackerDoc {
     }
 
     /**
-     * MFC 相关, TODO
+     * MFC related, TODO
      */
     public void onCloseDocument() {
     }
 
     /**
-     * MFC 相关, TODO
+     * MFC related, TODO
      */
     public void deleteContents() {
     }

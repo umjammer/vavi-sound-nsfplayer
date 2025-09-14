@@ -33,7 +33,7 @@ public class Emu2413Context {
 
         /* for Phase Generator (PG) */
         /**
-         * Wavetable, 这个原来是 unsigned 的
+         * Wavetable, this was originally unsigned
          */
         short[] sintbl;
 
@@ -140,10 +140,10 @@ public class Emu2413Context {
     int[] AR_ADJUST_TABLE = new int[128];
 
     /* Empty voice data */
-    OPLL_PATCH null_patch = new OPLL_PATCH(); // 其中的参数全为 0
+    OPLL_PATCH null_patch = new OPLL_PATCH(); // All parameters are 0
 
     /* Basic voice Data */
-    OPLL_PATCH[][] default_patch = new OPLL_PATCH[1][38]; // TODO 这里后面没有动
+    OPLL_PATCH[][] default_patch = new OPLL_PATCH[1][38]; // TODO This has not been moved later
 
 	/* Definition of envelope mode 
 	enum OPLL_EG_STATE 

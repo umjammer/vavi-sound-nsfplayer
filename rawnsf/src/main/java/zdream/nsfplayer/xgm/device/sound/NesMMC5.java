@@ -45,8 +45,8 @@ public class NesMMC5 implements ISoundChip, IDeviceValue {
     protected final int[] out = new int[3];
     protected final boolean[] enable = new boolean[2];
 
-    protected final boolean[] envelope_disable = new boolean[2]; // 包络启用标志
-    protected final boolean[] envelope_loop = new boolean[2]; // 包络循环标志
+    protected final boolean[] envelope_disable = new boolean[2]; // Envelope enable flag
+    protected final boolean[] envelope_loop = new boolean[2]; // Envelope loop flag
     protected final boolean[] envelope_write = new boolean[2];
     protected final int[] envelope_div_period = new int[2];
     protected final int[] envelope_div = new int[2];

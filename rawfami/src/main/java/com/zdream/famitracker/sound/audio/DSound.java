@@ -1,7 +1,7 @@
 package com.zdream.famitracker.sound.audio;
 
 /**
- * 原工程用的是 Direct Sound, 这里需要改成用 javax
+ * The original project uses Direct Sound, which needs to be changed to javax here
  *
  * @author Zdream
  */
@@ -21,7 +21,7 @@ public class DSound {
     int m_iDevices;
 
     /**
-     * return false 的话, 请抛异常
+     * If it returns false, please throw an exception
      *
      * @param iDevice
      */
@@ -48,7 +48,7 @@ public class DSound {
     }
 
     public void closeChannel(DSoundChannel m_pDSoundChannel) {
-        System.out.println("调用了还没有完成的方法: ");
+        System.out.println("A method that has not been completed is called: ");
         System.out.println(Thread.currentThread().getStackTrace()[1]);
     }
 
@@ -57,7 +57,7 @@ public class DSound {
     }
 
     public DSoundChannel openChannel(int sampleRate, int sampleSize, int i, int bufferLen, int iBlocks) {
-        System.out.println("调用了还没有完成的方法: ");
+        System.out.println("A method that has not been completed is called: ");
         System.out.println(Thread.currentThread().getStackTrace()[1]);
         return null;
     }

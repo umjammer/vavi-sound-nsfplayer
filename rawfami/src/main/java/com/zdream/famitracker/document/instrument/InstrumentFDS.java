@@ -171,14 +171,14 @@ public class InstrumentFDS extends Instrument {
     }
 
     /**
-     * 没有实例调用
+     * No instances called
      */
     public final boolean getModulationEnable() {
         return m_bModulationEnable;
     }
 
     /**
-     * 没有实例调用
+     * No instances called
      */
     public void setModulationEnable(boolean enable) {
         m_bModulationEnable = enable;
@@ -186,21 +186,21 @@ public class InstrumentFDS extends Instrument {
     }
 
     /**
-     * const 方法
+     * const method
      */
     public Sequence getVolumeSeq() {
         return m_pVolume;
     }
 
     /**
-     * const 方法
+     * const method
      */
     public Sequence getArpSeq() {
         return m_pArpeggio;
     }
 
     /**
-     * const 方法
+     * const method
      */
     public Sequence getPitchSeq() {
         return m_pPitch;
@@ -209,13 +209,13 @@ public class InstrumentFDS extends Instrument {
 //	private void storeSequence(DocumentFile pDocFile, Sequence pSeq);
 
     private boolean loadSequence(DocumentFile pDocFile, Sequence pSeq) {
-        // 原工程里面下面四个值均为 unsigned
-        // 但是我认为 loopPoint 和 releasePoint 非法值是 -1
-        // 所以这里这两个值不强制转为 unsigned
+        // In the original project, the following four values are all unsigned
+        // But I think the illegal values of loopPoint and releasePoint are -1
+        // So these two values are not forced to be unsigned here
         int seqCount;
         int loopPoint;
         int releasePoint;
-        int settings; // 仅 Arpeggio 序列使用
+        int settings; // Only for Arpeggio sequence
 
         seqCount = pDocFile.getBlockChar() & 0xFF;
         loopPoint = pDocFile.getBlockInt();

@@ -42,7 +42,7 @@ public abstract class Instrument implements Cloneable {
      * Saves the instrument to the module
      */
     public void store(DocumentFile pDocFile) {
-        throw new RuntimeException("我不允许你调用");
+        throw new RuntimeException("I don't allow you to call");
     }
 
     /**
@@ -56,7 +56,7 @@ public abstract class Instrument implements Cloneable {
      * Saves to an FTI file
      */
     public void saveFile(/*InstrumentFile pFile, FamiTrackerDoc pDoc*/) {
-        throw new RuntimeException("我不允许你调用");
+        throw new RuntimeException("I don't allow you to call");
     }
 
     /**
@@ -72,13 +72,13 @@ public abstract class Instrument implements Cloneable {
      * @return
      */
     public int compile(/*FamiTrackerDoc pDoc, Chunk pChunk, int index*/) {
-        throw new RuntimeException("我不允许你调用");
+        throw new RuntimeException("I don't allow you to call");
     }
 
     public abstract boolean canRelease();
 
     /**
-     * 该方法调用了 MFC
+     * This method calls MFC
      */
     protected void InstrumentChanged() {
         // Set modified flag

@@ -10,53 +10,53 @@ import zdream.utils.common.FileUtils;
 
 
 /**
- * NSF 文件内的数据
+ * Data in NSF file
  *
  * @author Zdream
  */
 public class NsfAudio extends SoundDataMSP {
 
     /*
-     * NSF 文件里
-     * 地址 0x000000 至 0x00007F 为帧头数据
+     * In the NSF file
+     * Address 0x000000 to 0x00007F is the frame header data
      *
-     * 注意数据低位在前, 高位在后
+     * Note that the low bit of the data is in the front and the high bit is in the back
      */
-    public final byte[] magic = new byte[4]; // cpp 文件是 5 因为最后一位是 \0
+    public final byte[] magic = new byte[4]; // The cpp file is 5 because the last bit is \0
 
     /**
-     * 当前 NSF 文件的版本号<br>
-     * 地址 0x000005, 单字节
+     * The version number of the current NSF file<br>
+     * Address 0x000005, single byte
      */
     public int version;
     /**
-     * NSF 中乐曲数<br>
-     * 地址 0x000006, 单字节
+     * Number of songs in NSF<br>
+     * Address 0x000006, single byte
      */
     public int songs;
     public int total_songs;
     /**
-     * 起始乐曲播放的号码<br>
-     * 地址 0x000007, 单字节
+     * The number of the starting song to play<br>
+     * Address 0x000007, single byte
      */
     public int start;
 
     /**
-     * 数据载入的内存地址, range ($8000-$FFFF)<br>
-     * 地址 0x000008-0x000009, 双字节<br><br>
+     * The memory address where the data is loaded, range ($8000-$FFFF)<br>
+     * Address 0x000008-0x000009, double byte<br><br>
      * <p>
-     * 这里说明了在游戏机 RAM 中的地址. 如果游戏放到内存中运行, 则 NSF 将放到内存中.
-     * 除去文件头 (地址 0x000000 至 0x00007F), 其它数据将放到 lenA 对应的地址中
+     * This explains the address in the game console's RAM. If the game is run in memory, the NSF will be placed in memory.
+     * Except for the file header (address 0x000000 to 0x00007F), other data will be placed at the address corresponding to lenA
      */
     public int load_address;
     /**
-     * 初始化数据开始的地址, 范围($8000-$FFFF)<br>
-     * 地址 0x00000A-0x00000B, 双字节
+     * The starting address of the initialization data, range ($8000-$FFFF)<br>
+     * Address 0x00000A-0x00000B, double byte
      */
     public int init_address;
     /**
-     * 乐曲播放地址, 范围($8000-$FFFF)<br>
-     * 地址 0x00000C-0x00000D, 双字节
+     * Song playback address, range ($8000-$FFFF)<br>
+     * Address 0x00000C-0x00000D, double byte
      */
     public int play_address;
 
@@ -80,46 +80,46 @@ public class NsfAudio extends SoundDataMSP {
     public String text;
 
     /*
-     * 游戏或乐曲的标题、曲作者或艺术家名称、版权部分,附加说明等略过
+     * The title of the game or music, the name of the composer or artist, the copyright part, additional instructions, etc. are omitted
      */
     /**
-     * NTSC 制式下乐曲循环播放速度, 常为 [16666]
+     * The loop playback speed of the music in NTSC format is often [16666]
      */
     public int speed_ntsc;
     /**
-     * Bank 切换, 初始 8 bit 值<br>
+     * Bank switch, initial 8-bit value<br>
      * <p>
-     * 6502 汇编的寻址空间为 64K, 但是 NES 却只用 $8000-$FFFF, 共 32K, 对于像超级玛莉 1 这样的小游戏, 不用
-     * 考虑存储体 (Bank) 切换, 但是对于像魂斗罗 1, 2 代这样的游戏, 超过 32K, 就要进行存储体 (Bank) 切换,
-     * 大小可能不太一样, 有的是 16K, 有的是 32K, 有的是 8K 等等.
-     * 地址也不一样, $8000, $A000, $C000 都有可能.
-     * NSF 也会遇到空间不够的情况, 这时就要用到存储体 (Bank) 切换. NSF 存储体 (Bank) 切换大小为4K.
+     * The addressing space of 6502 assembly is 64K, but NES only uses $8000-$FFFF, a total of 32K. For small games like Super Mario 1, there is no need
+     * to consider bank switching, but for games like Contra 1 and 2, which exceed 32K, bank switching is required.
+     * The size may be different, some are 16K, some are 32K, some are 8K, etc.
+     * The address is also different, $8000, $A000, $C000 are all possible.
+     * NSF will also encounter the situation of insufficient space. At this time, it is necessary to use bank switching. The NSF bank switching size is 4K.
      */
     public final int[] bankswitch = new int[8];
     /**
-     * NTSC 制式下乐曲循环播放速度
+     * Loop playback speed of music in NTSC format
      */
     public int speed_pal;
     /**
-     * PAL/NTSC 制式选择<br>
+     * PAL/NTSC format selection<br>
      * <p>
-     * 位开关, 数据从左（高）到右（低），前 6 位强制为 0
-     * 第 7 位如果为 1, NTSC/PAL, 此时第 8 位必须为 0; (= 2)
-     * 否则第 7 位为 0, 第 8 位为0, 为 NTSC 制式; 为1, 为 PAL 制式
+     * Bit switch, data from left (high) to right (low), the first 6 bits are forced to 0
+     * If the 7th bit is 1, NTSC/PAL, the 8th bit must be 0; (= 2)
+     * Otherwise, the 7th bit is 0, the 8th bit is 0, which is NTSC format; if it is 1, it is PAL format
      */
     public int pal_ntsc;
     /**
-     * <b>特殊声音芯片</b><br>
+     * <b>Special sound chip</b><br>
      * <p>
-     * 位开关, 数据从左（高）到右（低），前 2 位强制为 0<br>
-     * 第 3 位如果为 1, 使用 Sunsoft (FME7) 芯片;<br>
-     * 第 4 位如果为 1, 使用 Namcot (106) 芯片;<br>
-     * 第 5 位如果为 1, 使用 Nintendo (MMC5) 芯片;<br>
-     * 第 6 位如果为 1, 使用 Nintendo (FDS) 芯片;<br>
-     * 第 7 位如果为 1, 使用 Konami (VRC7) 芯片;<br>
-     * 第 8 位如果为 1, 使用 Konami (VRC6) 芯片;<br>
+     * Bit switch, data from left (high) to right (low), the first 2 bits are forced to 0<br>
+     * If the 3rd bit is 1, use Sunsoft (FME7) chip;<br>
+     * If the 4th bit is 1, use Namcot (106) chip;<br>
+     * If the 5th bit is 1, use Nintendo (MMC5) chip;<br>
+     * If the 6th bit is 1, use Nintendo (FDS) chip;<br>
+     * If the 7th bit is 1, use Konami (VRC7) chip;<br>
+     * If the 8th bit is 1, use Konami (VRC6) chip;<br>
      * <p>
-     * 如果 f2 == 0, 什么芯片也不用
+     * If f2 == 0, no chip is used
      */
     public int soundchip;
     /**
@@ -140,36 +140,36 @@ public class NsfAudio extends SoundDataMSP {
     }
 
     /*
-     * 下面是播放相关数据
+     * The following is playback related data
      */
 
-    /** 现在正在选择的歌曲号，从 0 开始 */
+    /** The currently selected song number, starting from 0 */
     public int song;
-    /** 从游戏名单看的数据 true */
+    /** Data from the game list is true */
     public boolean playlist_mode;
-    /** 演唱的时间 | 秒 */
+    /** Singing time | seconds */
     public int time_in_ms;
-    /** 默认的播放时间 */
+    /** Default playback time */
     public int default_playtime;
-    /** 循环时间 */
+    /** Loop time */
     public int loop_in_ms;
-    /** 渐出时间 */
+    /** Fade-out time */
     public int fade_in_ms, default_fadetime;
-    /** 循环次数 */
+    /** Number of loops */
     public int loop_num, default_loopnum;
-    /** 演奏时间不明的时候启用（默认的演奏时间） */
+    /** Enable when the performance time is unknown (default performance time) */
     public boolean playtime_unknown;
     public boolean title_unknown;
 
     public String print_title;
 
     /**
-     * 这个在原来的 C++ 文件中是没有的. 它缓存了上次打开的 PLSItem.<br>
-     * 因为原来 C++ 文件在运行过程中即使用同一个文件, 进行上下曲切歌, 仍然需要重新读一遍文件.
-     * 这样的 IO 操作实际上是无意义的. 因此增加了这个缓存变量.<br>
-     * 如果想利用它的话, 请使用 <code>reload()</code> 方法.<br>
-     * 当然, 如果打开了另一个不同的文件, 这个自然就无效了.
-     * 系统仍然会去进行 IO 操作读文件.
+     * This is not in the original C++ file. It caches the last opened PLSItem.<br>
+     * Because the original C++ file still needs to re-read the file even if it uses the same file to switch songs up and down during operation.
+     * Such IO operations are actually meaningless. Therefore, this cache variable is added.<br>
+     * If you want to use it, please use the <code>reload()</code> method.<br>
+     * Of course, if you open another different file, this will naturally become invalid.
+     * The system will still perform IO operations to read the file.
      */
     PLSItem last_item;
 
@@ -207,7 +207,7 @@ public class NsfAudio extends SoundDataMSP {
     }
 
     /**
-     * NSF 文件读取, 这里需要调用者先将其转化为 byte 数组.
+     * To read an NSF file, the caller needs to convert it into a byte array first.
      * loads file (playlist or NSF or NSFe)
      */
     public boolean loadBytes(String str, byte[] bs) throws IOException {
@@ -249,7 +249,7 @@ A:
             else
                 playtime_unknown = false;
 
-            // 这步用于缓存文件
+            // This step is used to cache files
             this.last_item = pls;
 
             return true;
@@ -339,10 +339,10 @@ A:
     }
 
     /**
-     * 从二进制的镜像中读取
+     * Read from binary image
      *
-     * @param image 二进制镜像数据组成的 byte 数组
-     * @return 成功时 true 失败时 false
+     * @param image byte array composed of binary image data
+     * @return true on success, false on failure
      */
     public boolean load(byte[] image) {
         if (image.length < 4) // no FourCC
@@ -428,7 +428,7 @@ A:
         extra = new byte[4];
         System.arraycopy(image, 0x7c, extra, 0, 4);
 
-        // 这里的 body 就是除去头 128 字节的数据
+        // The body here is the data excluding the first 128 bytes of the header
         body = new byte[image.length - 0x80];
         System.arraycopy(image, 0x80, body, 0, body.length);
 
@@ -544,7 +544,7 @@ A:
                 for (int i = 0; i < 8 && i < chunk_size; ++i) {
                     bankswitch[i] = image[chunkp + i];
                 }
-            } else if (cid[0] == 'a' && cid[1] == 'u' && cid[2] == 't' && cid[3] == 'h') // auth 小写
+            } else if (cid[0] == 'a' && cid[1] == 'u' && cid[2] == 't' && cid[3] == 'h') // auth lowercase
             {
                 /*
                  * #define NSFE_STRING(p) \ if (n >= chunk_size) break; \ p =
@@ -604,11 +604,11 @@ A:
 
                     break;
                 }
-            } else if (cid[0] == 'p' && cid[1] == 'l' && cid[2] == 's' && cid[3] == 't') // plst 小写
+            } else if (cid[0] == 'p' && cid[1] == 'l' && cid[2] == 's' && cid[3] == 't') // plst lowercase
             {
                 nsfe_plst = new byte[chunk_size];
                 System.arraycopy(image, chunkp, nsfe_plst, 0, chunk_size);
-            } else if (cid[0] == 't' && cid[1] == 'i' && cid[2] == 'm' && cid[3] == 'e') // time 小写
+            } else if (cid[0] == 't' && cid[1] == 'i' && cid[2] == 'm' && cid[3] == 'e') // time lowercase
             {
                 int i = 0;
                 int n = 0;
@@ -619,7 +619,7 @@ A:
                     ++i;
                     n += 4;
                 }
-            } else if (cid[0] == 'f' && cid[1] == 'a' && cid[2] == 'd' && cid[3] == 'e') // fade 小写
+            } else if (cid[0] == 'f' && cid[1] == 'a' && cid[2] == 'd' && cid[3] == 'e') // fade lowercase
             {
                 int i = 0;
                 int n = 0;
@@ -630,7 +630,7 @@ A:
                     ++i;
                     n += 4;
                 }
-            } else if (cid[0] == 't' && cid[1] == 'l' && cid[2] == 'b' && cid[3] == 'l') // tlbl 小写
+            } else if (cid[0] == 't' && cid[1] == 'l' && cid[2] == 'b' && cid[3] == 'l') // tlbl lowercase
             {
                 int n = 0;
                 for (int i = 0; i < 256; ++i) {
@@ -645,7 +645,7 @@ A:
                     if (image[chunkp + n] == 0)
                         ++n;
                 }
-            } else if (cid[0] == 't' && cid[1] == 'e' && cid[2] == 'x' && cid[3] == 't') // text 小写
+            } else if (cid[0] == 't' && cid[1] == 'e' && cid[2] == 'x' && cid[3] == 't') // text lowercase
             {
                 text = new String(image, chunkp, chunk_size);
             } else { // unknown chunk
@@ -739,10 +739,10 @@ A:
 
         if (format == null)
             format = "%L (%n/%e) %T - %A";
-        int ptr = 0; // ptr 是指向 format 的索引指针
+        int ptr = 0; // ptr is the index pointer to format
         int len = format.length();
 
-        StringBuilder b = new StringBuilder(len * 4 + 32); // 生成 print_title
+        StringBuilder b = new StringBuilder(len * 4 + 32); // Generate print_title
 
         while (ptr < len) {
             char ch = format.charAt(ptr);
