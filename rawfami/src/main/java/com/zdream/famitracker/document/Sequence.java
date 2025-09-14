@@ -6,7 +6,7 @@ import static com.zdream.famitracker.FamitrackerTypes.MAX_SEQUENCE_ITEMS;
 
 
 /**
- * <p>该类用于存放乐器序列
+ * <p>This class is used to store instrument sequences
  * <p>This class is used to store instrument sequences
  *
  * @author Zdream
@@ -14,7 +14,7 @@ import static com.zdream.famitracker.FamitrackerTypes.MAX_SEQUENCE_ITEMS;
 public class Sequence implements ISequence {
 
     /**
-     * 设置项
+     * Settings
      */
     public static final int
             ARP_SETTING_ABSOLUTE = 0,

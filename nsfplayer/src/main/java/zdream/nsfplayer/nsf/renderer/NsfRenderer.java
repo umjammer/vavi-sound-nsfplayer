@@ -2,6 +2,7 @@ package zdream.nsfplayer.nsf.renderer;
 
 import java.util.Set;
 
+import zdream.nsfplayer.core.AbstractNsfAudio;
 import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.core.CycleCounter;
 import zdream.nsfplayer.core.FloatCycleCounter;
@@ -31,9 +32,9 @@ import zdream.nsfplayer.sound.AbstractNsfSound;
  * @author Zdream
  * @since v0.1
  */
-public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
+public class NsfRenderer<T> extends AbstractNsfRenderer<AbstractNsfAudio<T>> {
 
-    private final NsfExecutor executor = new NsfExecutor();
+    private final NsfExecutor<T> executor = new NsfExecutor<>();
 
     /**
      * Calculate how many clocks per frame, counting the speed impact.
@@ -123,8 +124,8 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
      * @throws NullPointerException When audio is null
      */
     @Override
-    public void ready(NsfAudio audio) {
-        ready0(audio, audio.start);
+    public void ready(AbstractNsfAudio<T> audio) {
+        ready0(audio, audio.getStart());
     }
 
     /**
@@ -136,7 +137,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
      * @throws IllegalArgumentException When the track number track is outside the range [0, audio.total_songs).
      */
     @Override
-    public void ready(NsfAudio audio, int track) {
+    public void ready(AbstractNsfAudio<T> audio, int track) {
         this.ready0(audio, track);
     }
 
@@ -155,7 +156,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
         executor.ready(track);
     }
 
-    private void ready0(NsfAudio audio, int track) {
+    private void ready0(AbstractNsfAudio<T> audio, int track) {
         n163ChannelCount = -1;
         channelInit = true;
         executor.ready(audio, track);

@@ -4,7 +4,7 @@ import zdream.nsfplayer.xgm.device.IRenderable0;
 
 
 /**
- * 放大器
+ * Amplifier
  *
  * @author Zdream
  */
@@ -44,7 +44,7 @@ public class Amplifier implements IRenderable0 {
     }
 
     /**
-     * @param bs 左频道和右频道的声音数据, 需要是 int[2]
+     * @param bs Sound data for left and right channels, must be int[2]
      * @return
      */
     @Override

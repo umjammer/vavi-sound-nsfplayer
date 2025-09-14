@@ -11,7 +11,7 @@ public class Configuration extends Observable {
     protected final Map<String, Value> data = new HashMap<>();
 
     /**
-     * 读取值 如果没有, 返回 null.
+     * Read value. If not, return null.
      *
      * @param id
      * @return
@@ -21,10 +21,10 @@ public class Configuration extends Observable {
     }
 
     /**
-     * 创建值. 如果 id 已经存在则失败, 不做任何操作.
+     * Create value. If id already exists, the call fails and nothing is done.
      *
-     * @param id 键
-     * @return 如果 id 已经存在, 返回 false
+     * @param id key
+     * @return If id already exists, return false
      */
     public synchronized boolean createValue(String id, Value value) {
         if (data.containsKey(id)) {
@@ -36,41 +36,41 @@ public class Configuration extends Observable {
     }
 
     /**
-     * 创建值. 如果 id 已经存在则失败, 不做任何操作.
+     * Create value. If id already exists, the call fails and nothing is done.
      *
-     * @param id 键
-     * @return 如果 id 已经存在, 返回 false
+     * @param id key
+     * @return If id already exists, return false
      */
     public boolean createValue(String id, int value) {
         return createValue(id, new Value(value));
     }
 
     /**
-     * 创建值. 如果 id 已经存在则失败, 不做任何操作.
+     * Create value. If id already exists, the call fails and nothing is done.
      *
-     * @param id 键
-     * @return 如果 id 已经存在, 返回 false
+     * @param id key
+     * @return If id already exists, return false
      */
     public boolean createValue(String id, String value) {
         return createValue(id, new Value(value));
     }
 
     /**
-     * 设置值
+     * set value
      */
     public synchronized void setValue(String id, Value value) {
         data.put(id, value);
     }
 
     /**
-     * 获取值
+     * get value
      */
     public synchronized int getIntValue(String id) {
         return data.get(id).toInt();
     }
 
     /**
-     * 清空值
+     * clear value
      */
     public synchronized void clear() {
         data.clear();
@@ -90,5 +90,4 @@ public class Configuration extends Observable {
             src.data.put(e.getKey(), e.getValue());
         }
     }
-
 }

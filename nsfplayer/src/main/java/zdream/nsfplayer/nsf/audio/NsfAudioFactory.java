@@ -9,8 +9,8 @@ import zdream.utils.common.FileUtils;
  * <p>Used to generate NSF audio structures (NSFe is not supported in principle)
  *
  * @author Zdream
- * @version v0.1
- * @date 2018-01-16
+ * @since  0.1
+ * @version 2018-01-16
  */
 public class NsfAudioFactory {
 
@@ -30,7 +30,7 @@ public class NsfAudioFactory {
      *
      * @param image  Mirror byte array
      * @param offset The mirror byte data starts from the array, default is 0
-     * @return
+     * @return nsf audio source
      * @throws NsfAudioFormatException Reading failed due to mismatched file formats
      */
     public NsfAudio create(byte[] image, int offset) throws NsfAudioFormatException {
@@ -52,15 +52,15 @@ public class NsfAudioFactory {
         }
         ptr++; // Byte 5 is ignored
 
-        audio.version = (short) (image[ptr++] & 0xFF);
-        audio.total_songs = (short) (image[ptr++] & 0xFF);
-        audio.start = (short) ((image[ptr++] & 0xFF) - 1);
+        audio.setVersion((short) (image[ptr++] & 0xFF));
+        audio.setTrackCount((short) (image[ptr++] & 0xFF));
+        audio.setStart((short) ((image[ptr++] & 0xFF) - 1));
 
-        audio.load_address = (image[ptr] & 0xFF) | ((image[ptr + 1] & 0xFF) << 8);
+        audio.setLoadAddress((image[ptr] & 0xFF) | ((image[ptr + 1] & 0xFF) << 8));
         ptr += 2;
-        audio.init_address = (image[ptr] & 0xFF) | ((image[ptr + 1] & 0xFF) << 8);
+        audio.setInitAddress((image[ptr] & 0xFF) | ((image[ptr + 1] & 0xFF) << 8));
         ptr += 2;
-        audio.play_address = (image[ptr] & 0xFF) | ((image[ptr + 1] & 0xFF) << 8);
+        audio.setPlayAddress((image[ptr] & 0xFF) | ((image[ptr + 1] & 0xFF) << 8));
         ptr += 2;
 
         int end;
@@ -71,7 +71,7 @@ public class NsfAudioFactory {
             if (image[end] == 0)
                 break;
         }
-        audio.title = new String(image, ptr, end - ptr);
+        audio.setTitle(new String(image, ptr, end - ptr));
 
         // Artist Section
         ptr = nextPtr;
@@ -80,7 +80,7 @@ public class NsfAudioFactory {
             if (image[end] == 0)
                 break;
         }
-        audio.artist = new String(image, ptr, end - ptr);
+        audio.setAuthor(new String(image, ptr, end - ptr));
 
         // Copyright Statement Section
         ptr = nextPtr;
@@ -89,33 +89,33 @@ public class NsfAudioFactory {
             if (image[end] == 0)
                 break;
         }
-        audio.copyright = new String(image, ptr, end - ptr);
+        audio.setCopyright(new String(image, ptr, end - ptr));
 
         ptr = nextPtr;
-        audio.speed_ntsc = (image[ptr] & 0xff) | ((image[ptr + 1] & 0xff) << 8);
+        audio.setSpeedNtsc((image[ptr] & 0xff) | ((image[ptr + 1] & 0xff) << 8));
         ptr += 2;
 
         // 0x70
         for (int i = 0; i < 8; i++) {
-            audio.bankswitch[i] = (short) (image[ptr++] & 0xff);
+            audio.setBankSwitch(i, (short) (image[ptr++] & 0xff));
         }
 
-        audio.speed_pal = (image[ptr] & 0xff) | ((image[ptr + 1] & 0xff) << 8);
+        audio.setSpeedPal((image[ptr] & 0xff) | ((image[ptr + 1] & 0xff) << 8));
         ptr += 2;
-        audio.pal_ntsc = (byte) (image[ptr++] & 0xff);
+        audio.setPalNtsc((byte) (image[ptr++] & 0xff));
 
-        if (audio.speed_pal == 0)
-            audio.speed_pal = 19997;
-        if (audio.speed_ntsc == 0)
-            audio.speed_ntsc = 16639;
-        audio.soundChip = (byte) (image[ptr++] & 0xff); // 0x7b
+        if (audio.getSpeedPal() == 0)
+            audio.setSpeedPal(19997);
+        if (audio.getSpeedNtsc() == 0)
+            audio.setSpeedNtsc(16639);
+        audio.setSoundChip((byte) (image[ptr++] & 0xff)); // 0x7b
 
         // Extra occupies 4 bytes
         ptr += 4;
 
         byte[] body = new byte[image.length - ptr]; // ptr == 0x80
         System.arraycopy(image, 0x80, body, 0, body.length);
-        audio.body = body;
+        audio.setBody(body);
 
         return audio;
     }

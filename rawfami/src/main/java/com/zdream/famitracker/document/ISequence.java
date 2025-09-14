@@ -1,7 +1,7 @@
 package com.zdream.famitracker.document;
 
 /**
- * <p>这个接口用来为自定义的数据输出来提供方法的.
+ * <p>This interface is used to provide methods for custom data output.
  * <p>This class is a pure virtual interface to Sequence, which can be used by custom exporters
  *
  * @author Zdream

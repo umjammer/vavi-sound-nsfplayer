@@ -1,7 +1,7 @@
 package zdream.nsfplayer.xgm.player;
 
 /**
- * <p>能够播放含有多首歌的音乐文件的播放器
+ * <p>A player that can play music files containing multiple songs
  *
  * @author Zdream
  * @date 2017-12-06
@@ -9,39 +9,39 @@ package zdream.nsfplayer.xgm.player;
 public abstract class MultiSongPlayer extends Player {
 
     /**
-     * 演奏下一首歌
+     * Play the next song
      *
-     * @param step 跳到后面几首歌
-     * @return 成功时 true, 失败时 false
+     * @param step Skip to the next few songs
+     * @return true on success, false on failure
      */
     public boolean nextSong(int s) {
         return false;
     }
 
     /**
-     * 演奏前面的歌曲
+     * Play the previous song
      *
-     * @param step 跳到前面几首歌
-     * @return 成功时 true, 失败时 false
+     * @param step Skip to the previous few songs
+     * @return true on success, false on failure
      */
     public boolean prevSong(int s) {
         return false;
     }
 
     /**
-     * 设置演奏第几首歌
+     * Set which song to play
      *
-     * @param song 曲编号
-     * @return 成功时 true, 失败时 false
+     * @param song Track number
+     * @return true on success, false on failure
      */
     public boolean setSong(int song) {
         return false;
     }
 
     /**
-     * 得到现在演奏第几首歌
+     * Get which song is playing now
      *
-     * @return 曲编号
+     * @return Track number
      */
     public int getSong() {
         return -1;

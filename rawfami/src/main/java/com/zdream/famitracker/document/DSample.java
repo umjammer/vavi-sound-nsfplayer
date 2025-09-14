@@ -50,8 +50,8 @@ public class DSample implements Cloneable {
     }
 
     /**
-     * <p>从原先 C++ 文件中复制构造函数中翻译过来的
-     * <p>将自己作为模板, 将数据复制到 sample 中
+     * <p>Translated from the copy constructor in the original C++ file
+     * <p>Use itself as a template to copy data to the sample
      */
     protected void clone(DSample sample) {
         sample.m_pSampleData = new byte[this.m_pSampleData.length];
@@ -76,7 +76,7 @@ public class DSample implements Cloneable {
     /**
      * Allocate memory, optionally copy data
      *
-     * @param pData 不能为空
+     * @param pData cannot be null
      */
     public void allocate(byte[] pData) {
         m_pSampleData = new byte[pData.length];
@@ -87,7 +87,7 @@ public class DSample implements Cloneable {
     }
 
     /**
-     * Allocate memory, 相当于重新分配 sample 数组的空间
+     * Allocate memory, which is equivalent to reallocating the space of the sample array
      *
      * @param pData default null
      */
@@ -105,7 +105,7 @@ public class DSample implements Cloneable {
     /**
      * Set sample data and size, the object will own the memory area assigned
      *
-     * @param pData 数据源. 因为不会做拷贝, 只是将引用赋值给该类
+     * @param pData data source. Because it will not be copied, just assign the reference to this class
      */
     public void setData(byte[] pData) {
         assert (pData != null);
@@ -145,7 +145,7 @@ public class DSample implements Cloneable {
     }
 
     /**
-     * 数据存储在这里
+     * Data is stored here
      */
     private byte[] m_pSampleData;
 

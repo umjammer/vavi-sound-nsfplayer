@@ -1,7 +1,7 @@
 package zdream.nsfplayer.xgm.player.nsf;
 
 /**
- * relative_path 方法跳过;
+ * relative_path method skipped;
  *
  * @author Zdream
  */
@@ -255,7 +255,7 @@ A:
 
     public StringBuilder print(StringBuilder buf, char[] plsfile) {
         int i = 0, length;
-        // int p = 0 ; // 指向 buf 的索引指针
+        // int p = 0 ; // index pointer to buf
         StringBuilder file_path = new StringBuilder(), pls_path = new StringBuilder(), file_name = new StringBuilder(),
                 pls_name = new StringBuilder(), rel_path = new StringBuilder();
 

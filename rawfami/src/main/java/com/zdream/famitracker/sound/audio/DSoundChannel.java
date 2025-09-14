@@ -13,7 +13,7 @@ public class DSoundChannel {
     }
 
     public final boolean stop() {
-        System.out.println("调用了还没有完成的方法: ");
+        System.out.println("A method that has not been completed is called: ");
         System.out.println(Thread.currentThread().getStackTrace()[1]);
         return false;
     }

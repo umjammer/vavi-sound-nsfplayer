@@ -23,7 +23,7 @@ import static com.zdream.famitracker.sound.emulation.Types.SNDCHIP_NONE;
 
 
 /**
- * MMC5 轨道父类
+ * MMC5 track parent class
  *
  * @author Zdream
  */
@@ -75,7 +75,7 @@ public abstract class ChannelHandlerMMC5 extends ChannelHandler {
     protected boolean handleInstrument(int instrument, boolean trigger, boolean newInstrument) {
         FamiTrackerDoc pDocument = m_pSoundGen.getDocument();
 
-        // 这里修改后, 取消了 InstrumentContainer 类
+        // After modification here, the InstrumentContainer class is cancelled
         Instrument inst = pDocument.getInstrument(instrument);
         if (inst == null || !(inst instanceof Instrument2A03 pInstrument)) {
             return false;
@@ -135,22 +135,22 @@ public abstract class ChannelHandlerMMC5 extends ChannelHandler {
     protected static final int[] SEQ_TYPES = {SEQ_VOLUME, SEQ_ARPEGGIO, SEQ_PITCH, SEQ_HIPITCH, SEQ_DUTYCYCLE};
 
     /**
-     * TODO 未知含义
+     * TODO Unknown meaning
      */
     protected int m_iPostEffect;
 
     /**
-     * TODO 未知含义
+     * TODO Unknown meaning
      */
     protected int m_iPostEffectParam;
 
     /**
-     * TODO 未知含义
+     * TODO Unknown meaning
      */
     protected int m_iInitVolume;
 
     /**
-     * TODO 未知含义
+     * TODO Unknown meaning
      */
     protected boolean m_bManualVolume;
 

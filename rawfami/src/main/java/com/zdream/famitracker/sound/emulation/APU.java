@@ -59,11 +59,11 @@ public class APU {
 
         m_pFDS = new FDS(m_pMixer);
 
-        // TODO 其它的芯片, 自己后面加, 什么 VCR7 啊, FDS 啊...
+        // TODO Other chips, add them later, such as VRC7, FDS...
     }
 
     /**
-     * ChannelHandler 调用
+     * ChannelHandler call
      *
      * @param reg
      * @param value
@@ -117,7 +117,7 @@ public class APU {
 
     /**
      * <p>The $4017 Control port
-     * <p>这里可以看出 4017 只有一个位的数据有意义. 0x000000
+     * <p>Here you can see that only one bit of data in 4017 is meaningful. 0x000000
      * </p>
      *
      * @param value
@@ -176,7 +176,7 @@ public class APU {
     /**
      * <p>Data was written to an external sound chip
      * <p>(this doesn't really belong in the APU but are here for convenience)
-     * <p>ChannelHandler 调用
+     * <p>ChannelHandler call
      *
      * @param reg
      * @param value
@@ -230,7 +230,7 @@ public class APU {
 //	CS5B		*m_pS5B;
 
     /**
-     * <p>外接音源, 它是一个位开关.
+     * <p>External sound source, it is a bit switch.
      * <p>External sound chip, if used
      */
     byte m_iExternalSoundChip;
@@ -238,12 +238,12 @@ public class APU {
     /*uint32		m_iFramePeriod;						// Cycles per frame */
 
     /**
-     * <p>从每一个 Frame 的开始, 一共模拟了多少周期
+     * <p>How many cycles have been simulated from the beginning of each Frame
      * <p>Cycles emulated from start of frame
      */
     int m_iFrameCycles;
     /**
-     * <p>Frame 序列使用的时钟（周期） 不知道有没有翻译正确
+     * <p>The clock (period) used by the Frame sequence. I don't know if the translation is correct.
      * <p>Clock for frame sequencer
      */
     int m_iSequencerClock;
@@ -257,7 +257,7 @@ public class APU {
     int m_iFrameMode;
 
     /**
-     * 仍然不清楚它的作用
+     * It is still not clear what its role is
      */
     int m_iFrameCycleCount;
     /**
@@ -266,8 +266,8 @@ public class APU {
     int m_iFrameClock;
 
     /**
-     * <p>记录 APU 在调用 {@link #process()} 这个方法时, 要运行的时钟周期数.<br>
-     * 现阶段由 {@link #addTime(int)} 修改
+     * <p>Record the number of clock cycles that the APU will run when calling the {@link #process()} method.<br>
+     * At this stage, it is modified by {@link #addTime(int)}
      * <p>Number of cycles to process
      */
     int m_iCyclesToRun;
@@ -462,9 +462,9 @@ public class APU {
     }
 
     /**
-     * 就让你这个 APU 跑这么多时间. TODO 没完成
+     * Just let this APU run for so long. TODO not finished
      *
-     * @param cycles 周期数
+     * @param cycles number of cycles
      */
     public void addTime(int cycles) {
         if (cycles < 0)
@@ -488,7 +488,7 @@ public class APU {
 
         m_pMixer.setClockRate(BaseFreq);
 
-        m_pSoundBuffer = new byte[m_iSoundBufferSize << 2]; // 双声道, 16 位 (每个音频的采样占 2 byte)
+        m_pSoundBuffer = new byte[m_iSoundBufferSize << 2]; // two-channel, 16-bit (each audio sample occupies 2 bytes)
 
         changeMachine(machine);
 
@@ -538,7 +538,7 @@ public class APU {
     }
 
     public boolean DPCMPlaying() {
-        System.out.println("调用了还没有完成的方法: ");
+        System.out.println("A method that has not been completed is called: ");
         System.out.println(Thread.currentThread().getStackTrace()[1]);
         return false;
     }
@@ -551,7 +551,7 @@ public class APU {
 
         if ((chip & SNDCHIP_VRC6) != 0)
             exChips.add(m_pVRC6);
-        // TODO 忽略除 VRC6 以外的其它音源芯片
+        // TODO Ignore other sound source chips other than VRC6
 //		if ((chip & SNDCHIP_VRC7) != 0)
 //			exChips.add(m_pVRC7);
         if ((chip & SNDCHIP_FDS) != 0)

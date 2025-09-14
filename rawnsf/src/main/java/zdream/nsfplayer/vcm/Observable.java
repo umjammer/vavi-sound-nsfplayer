@@ -38,5 +38,4 @@ public class Observable {
             o.notify(id);
         }
     }
-
 }

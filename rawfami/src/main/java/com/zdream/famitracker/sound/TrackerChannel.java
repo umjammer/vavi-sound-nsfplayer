@@ -78,7 +78,7 @@ public class TrackerChannel {
     }
 
     /**
-     * 暂时确定, 在 2A03 和 VRC6 情况下, 没有调用该方法的地方.
+     * It is temporarily determined that there is no place to call this method in the case of 2A03 and VRC6.
      *
      * @param pitch
      */

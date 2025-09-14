@@ -23,7 +23,7 @@ public class TestNsf {
     }
 
     @Property(name = "nsf")
-    String in = "src/test/resources/assets/test/mm10nsf.nsf";
+    String in = "src/test/resources/assets/mm10nsf.nsf";
 
     @Property(name = "track")
     int track = 0;
@@ -49,7 +49,7 @@ Debug.println(in);
         NsfAudioFactory factory = new NsfAudioFactory();
         NsfAudio nsf = factory.createFromFile(in);
 
-        NsfRenderer renderer = new NsfRenderer();
+        NsfRenderer<byte[]> renderer = new NsfRenderer<>();
         renderer.ready(nsf, track);
 
         BytesPlayer player = new BytesPlayer();

@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 
 /**
- * 只在 VRC7 中使用
+ * Used only in VRC7
  *
  * @author Zdream
  */
@@ -192,7 +192,7 @@ public class OPLL_env {
     }
 
     /**
-     * 原本存放的值都是 unsigned byte 的
+     * The originally stored values are all unsigned bytes
      */
     public static final short[][] default_inst = {
             { // patch set
@@ -1126,7 +1126,7 @@ public class OPLL_env {
 
     /**
      * Reset patch datas by system default.
-     * 初始化时调用
+     * Called during initialization
      */
     public void reset_patch(OPLL opll, int type) {
         int i;
@@ -1180,7 +1180,7 @@ public class OPLL_env {
 
     /**
      * Force Refresh (When external program changes some parameters).
-     * (未调用)
+     * (not called)
      */
     public void forceRefresh(OPLL opll) {
         int i;
@@ -1348,7 +1348,7 @@ public class OPLL_env {
     }
 
     /**
-     * CARRIOR
+     * CARRIER
      */
     private int calc_slot_car(OPLLSlot slot, int fm) {
         if (slot.egout >= (DB_MUTE - 1)) {
@@ -1515,7 +1515,7 @@ public class OPLL_env {
     }
 
     /**
-     * NesVRC7.tick(int clocks) 调用
+     * Called by NesVRC7.tick(int clocks)
      *
      * @param opll
      * @return
@@ -1553,7 +1553,7 @@ public class OPLL_env {
     }
 
     /**
-     * (未调用)
+     * (not called)
      *
      * @param mask unsigned
      * @return unsigned
@@ -1894,7 +1894,7 @@ public class OPLL_env {
 
     /**
      * STEREO MODE (OPT)
-     * (未调用)
+     * (not called)
      *
      * @param ch  unsigned
      * @param pan unsigned
@@ -1905,7 +1905,7 @@ public class OPLL_env {
 
     /**
      * static calc_stereo
-     * (未调用)
+     * (not called)
      *
      * @param out len : 2
      */
@@ -1960,7 +1960,7 @@ public class OPLL_env {
 
     /**
      * OPLL_calc_stereo
-     * (未调用)
+     * (not called)
      *
      * @param out len : 2
      */

@@ -86,7 +86,7 @@ public class BasicDetector implements ILoopDetector {
         if (m_wspeed != 0)
             m_wspeed = (m_wspeed + m_bidx - m_blast) / 2;
         else
-            m_wspeed = m_bidx - m_blast; // 第一次
+            m_wspeed = m_bidx - m_blast; // first time
         m_blast = m_bidx;
 
         match_size = m_wspeed * matchSecond / matchInterval;

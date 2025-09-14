@@ -173,17 +173,17 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 
             // Song information
             case "TITLE": {
-                doc.audio.title = strs[1];
+                doc.audio.setTitle(strs[1]);
             }
             break;
 
             case "AUTHOR": {
-                doc.audio.author = strs[1];
+                doc.audio.setAuthor(strs[1]);
             }
             break;
 
             case "COPYRIGHT": {
-                doc.audio.copyright = strs[1];
+                doc.audio.setCopyright(strs[1]);
             }
             break;
 

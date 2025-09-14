@@ -28,7 +28,7 @@ public class DCFilter implements IRenderable0 {
     }
 
     public final void setRate(double r) {
-        // 截止频率 2 pi * r * c
+        // Cutoff frequency 2 pi * r * c
         this.rate = r;
         updateFactor();
     }
@@ -52,10 +52,10 @@ public class DCFilter implements IRenderable0 {
         updateFactor();
     }
 
-    int render_count = 0; // TODO 测试变量
+    int render_count = 0; // TODO test variable
 
     /**
-     * 不是虚拟的渲染
+     * Not a virtual render
      *
      * @param buf
      */

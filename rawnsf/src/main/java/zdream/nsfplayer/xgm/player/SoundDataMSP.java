@@ -1,7 +1,7 @@
 package zdream.nsfplayer.xgm.player;
 
 /**
- * 具有多首歌曲的演出数据
+ * Performance data with multiple songs
  *
  * @author Zdream
  */
@@ -10,14 +10,14 @@ public abstract class SoundDataMSP extends SoundData {
     public boolean enable_multi_tracks = false;
 
     /**
-     * @return 正在播放的曲号
+     * @return The track number being played
      */
     public abstract int getSong();
 
     public abstract void setSong(int song);
 
     /**
-     * @return 总曲数
+     * @return Total number of songs
      */
     public abstract int getSongNum();
 

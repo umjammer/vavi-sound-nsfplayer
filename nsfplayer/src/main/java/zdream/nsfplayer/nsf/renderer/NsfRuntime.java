@@ -3,9 +3,9 @@ package zdream.nsfplayer.nsf.renderer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import zdream.nsfplayer.core.AbstractNsfAudio;
 import zdream.nsfplayer.core.CycleCounter;
 import zdream.nsfplayer.core.IResetable;
-import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.device.DeviceManager;
 import zdream.nsfplayer.nsf.device.cpu.NesCPU;
@@ -26,7 +26,7 @@ public class NsfRuntime implements IResetable {
     // members
     //
 
-    public NsfAudio audio;
+    public AbstractNsfAudio<?> audio;
     public final NsfParameter param = new NsfParameter();
     public final DeviceManager manager;
     public final CycleCounter cpuCounter = new CycleCounter();

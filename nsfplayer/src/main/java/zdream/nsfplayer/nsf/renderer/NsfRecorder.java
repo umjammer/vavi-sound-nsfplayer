@@ -109,7 +109,7 @@ public class NsfRecorder implements INsfRendererHandler<NsfAudio> {
      * @throws NullPointerException When audio is null
      */
     public void ready(NsfAudio audio) {
-        ready0(audio, audio.start);
+        ready0(audio, audio.getStart());
     }
 
     /**

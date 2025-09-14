@@ -74,10 +74,10 @@ public class SCC {
     }
 
     /**
-     * 更新 mask 值, 并将原有的 mask 值返回
+     * Update the mask value and return the old mask value
      *
      * @param m unsigned
-     * @return 替换下的 mask 值
+     * @return The replaced mask value
      */
     public int setMask(int mask) {
         int ret = 0;
@@ -87,10 +87,10 @@ public class SCC {
     }
 
     /**
-     * 更新 mask 值(mask = mask ^ m), 并将原有的 mask 值返回
+     * Update the mask value (mask = mask ^ m) and return the old mask value
      *
      * @param m unsigned
-     * @return 原来的 mask 值
+     * @return The original mask value
      */
     public int toggleMask(int m) {
         int ret = 0;

@@ -408,9 +408,9 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
      * @param block
      */
     private void readBlockInfo(FamiTrackerHandler doc, Block block) {
-        doc.audio.title = block.readAsString(32);
-        doc.audio.author = block.readAsString(32);
-        doc.audio.copyright = block.readAsString(32);
+        doc.audio.setTitle(block.readAsString(32));
+        doc.audio.setAuthor(block.readAsString(32));
+        doc.audio.setCopyright(block.readAsString(32));
     }
 
     /**

@@ -52,7 +52,7 @@ public class Triangle extends Channel {
     }
 
     /**
-     * APU.write4015() 调用
+     * APU.write4015() call
      */
     public void writeControl(int value) {
         m_iControlReg = (byte) (value & 1);
@@ -62,7 +62,7 @@ public class Triangle extends Channel {
     }
 
     /**
-     * 没有使用
+     * Not used
      */
     public int readControl() {
         return ((m_iLengthCounter > 0) && (m_iEnabled == 1)) ? 1 : 0;
@@ -81,7 +81,7 @@ public class Triangle extends Channel {
         } else if (m_iPeriod <= 1) {
             // Frequency is too high to be audible
             m_iTime += time;
-            // m_iStepGen = 7; 原程序有, 我把它注释了
+            // m_iStepGen = 7; The original program has it, I commented it out
             mix(TRIANGLE_WAVE[m_iStepGen]);
             return;
         }
@@ -100,7 +100,7 @@ public class Triangle extends Channel {
     }
 
     /**
-     * APU.clock_120Hz() 调用
+     * APU.clock_120Hz() call
      */
     public void lengthCounterUpdate() {
         if ((m_iLoop == 0) && (m_iLengthCounter > 0))
@@ -112,7 +112,7 @@ public class Triangle extends Channel {
      * otherwise if the linear counter is non-zero, it is decremented.
      * 2.  If the control flag is clear, the halt flag is cleared.
      * <p>
-     * APU.clock_240Hz() 调用
+     * APU.clock_240Hz() call
      */
     public void linearCounterUpdate() {
         if (m_iHalt == 1)

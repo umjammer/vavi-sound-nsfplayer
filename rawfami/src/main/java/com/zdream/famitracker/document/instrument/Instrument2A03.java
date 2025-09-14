@@ -121,7 +121,7 @@ public class Instrument2A03 extends Instrument {
 
     @Override
     public boolean loadFile() {
-        throw new RuntimeException("我不允许你调用");
+        throw new RuntimeException("I don't allow you to call");
     }
 
     @Override
@@ -244,7 +244,7 @@ public class Instrument2A03 extends Instrument {
 
     /**
      * Delta setting
-     * 推荐音量
+     * Recommended volume
      */
     private final byte[][] m_cSampleDelta = new byte[OCTAVE_RANGE][12];
 

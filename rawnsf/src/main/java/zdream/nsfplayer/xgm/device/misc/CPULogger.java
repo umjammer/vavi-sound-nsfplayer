@@ -23,7 +23,7 @@ public class CPULogger implements IDevice {
 
     protected int log_level;
     protected int soundchip; // unsigned
-    // protected File file; // FILE* 这个是输出日志的文件
+    // protected File file; // FILE* This is the file that outputs the log
     protected String filename;
     protected int frame_count; // unsigned
     protected NesCPU cpu;

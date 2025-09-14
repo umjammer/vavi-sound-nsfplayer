@@ -25,7 +25,7 @@ import static zdream.nsfplayer.core.NsfStatic.FRAME_RATE_PAL;
  * @author Zdream
  * @since v0.1
  */
-public class FtmAudio extends AbstractNsfAudio {
+public class FtmAudio extends AbstractNsfAudio<Void> {
 
     public final FamiTrackerHandler handler;
 
@@ -36,17 +36,17 @@ public class FtmAudio extends AbstractNsfAudio {
     /**
      * TITLE
      */
-    public String title;
+    private String title;
 
     /**
      * AUTHOR
      */
-    public String author;
+    private String author;
 
     /**
      * COPYRIGHT
      */
-    public String copyright;
+    private String copyright;
 
     /**
      * Format.
@@ -63,7 +63,7 @@ public class FtmAudio extends AbstractNsfAudio {
     /**
      * Use of various chips
      */
-    boolean useVrc6, useVrc7, useFds, useMmc5, useN163, useS5b;
+    private boolean useVrc6, useVrc7, useFds, useMmc5, useN163, useS5b;
 
     /**
      * <p>mode
@@ -97,8 +97,142 @@ public class FtmAudio extends AbstractNsfAudio {
      *
      * @return The format of the track
      */
+    @Override
     public ERegion getRegion() {
         return region;
+    }
+
+    @Override
+    public boolean useVrc6() {
+        return useVrc6;
+    }
+
+    @Override
+    public boolean useMmc5() {
+        return useMmc5;
+    }
+
+    @Override
+    public boolean useFds() {
+        return useFds;
+    }
+
+    @Override
+    public boolean useN163() {
+        return useN163;
+    }
+
+    @Override
+    public boolean useVrc7() {
+        return useVrc7;
+    }
+
+    @Override
+    public boolean useS5b() {
+        return useS5b;
+    }
+
+    @Override
+    public int getBankSwitch(int index) {
+        return 0;
+    }
+
+    @Override
+    public byte[] getData() {
+        return null;
+    }
+
+    @Override
+    public int getLoadAddress() {
+        return 0;
+    }
+
+    @Override
+    public int getStart() {
+        return 0;
+    }
+
+    @Override
+    public void setTitle(String str) {
+        title = str;
+    }
+
+    @Override
+    public void setAuthor(String str) {
+        author = str;
+    }
+
+    @Override
+    public void setCopyright(String str) {
+        copyright = str;
+    }
+
+    @Override
+    public void setVersion(short i) {
+    }
+
+    @Override
+    public void setTrackCount(short i) {
+    }
+
+    @Override
+    public void setStart(short i) {
+    }
+
+    @Override
+    public void setLoadAddress(int i) {
+    }
+
+    @Override
+    public void setInitAddress(int i) {
+    }
+
+    @Override
+    public void setPlayAddress(int i) {
+    }
+
+    @Override
+    public void setSpeedNtsc(int i) {
+    }
+
+    @Override
+    public void setBankSwitch(int index, short value) {
+    }
+
+    @Override
+    public void setSpeedPal(int i) {
+    }
+
+    @Override
+    public void setPalNtsc(byte b) {
+    }
+
+    @Override
+    public void setSoundChip(byte b) {
+    }
+
+    @Override
+    public void setBody(Void body) {
+    }
+
+    @Override
+    public int getLength() {
+        return 0;
+    }
+
+    @Override
+    public String getTitle() {
+        return title;
+    }
+
+    @Override
+    public String getAuthor() {
+        return author;
+    }
+
+    @Override
+    public String getCopyright() {
+        return copyright;
     }
 
     /**
@@ -172,6 +306,50 @@ public class FtmAudio extends AbstractNsfAudio {
     @Override
     public int getTrackCount() {
         return tracks.size();
+    }
+
+    @Override
+    public double getSpeedNtsc() {
+        return 0;
+    }
+
+    @Override
+    public double getSpeedPal() {
+        return 0;
+    }
+
+    @Override
+    public int getInitAddress() {
+        return 0;
+    }
+
+    @Override
+    public int getPlayAddress() {
+        return 0;
+    }
+
+    public void setUseVrc6(boolean b) {
+        useVrc6 = b;
+    }
+
+    public void setUseVrc7(boolean b) {
+        useVrc7 = b;
+    }
+
+    public void setUseFds(boolean b) {
+        useFds = b;
+    }
+
+    public void setUseMmc5(boolean b) {
+        useMmc5 = b;
+    }
+
+    public void setUseN163(boolean b) {
+        useN163 = b;
+    }
+
+    public void setUeS5b(boolean b) {
+        useS5b = b;
     }
 
     /**

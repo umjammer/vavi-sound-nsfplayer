@@ -13,9 +13,18 @@
 
 ## Usage
 
+```java
+AudioInputStream ais = AudioSystem.getAudioInputStream(Paths.get(nsf).toFile());
+Clip clip = AudioSystem.getClip();
+clip.open(AudioSystem.getAudioInputStream(new AudioFormat(44100, 16, 2, true, false), ais));
+clip.loop(Clip.LOOP_CONTINUOUSLY);
+```
+
 ## References
 
 ## TODO
+
+ * spi
 
 ---
 

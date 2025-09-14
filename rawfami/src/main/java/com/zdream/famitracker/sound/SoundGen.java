@@ -101,16 +101,16 @@ public class SoundGen implements IAudioCallback {
             MODE_PLAY_FRAME = 4;
 
     /**
-     * 音频文档
+     * Audio document
      */
     FamiTrackerDoc m_pDocument;
     /**
-     * 各个轨道
+     * Individual tracks
      */
     final ChannelHandler[] m_pChannels = new ChannelHandler[CHANNELS];
     final TrackerChannel[] m_pTrackerChannels = new TrackerChannel[CHANNELS];
     /**
-     * 其它部分
+     * Other parts
      */
 //	DSound m_pDSound;
 //	DSoundChannel m_pDSoundChannel;
@@ -341,12 +341,12 @@ public class SoundGen implements IAudioCallback {
 
         m_iQueuedFrame = -1;
 
-        // TODO 这里将所有的轨道全部创建, 而实际上只需要建立需要的轨道就可以了
+        // TODO Here all the tracks are created, but in fact only the required tracks need to be created
         createChannels();
     }
 
     /**
-     * 这个方法只会在初始化时调用一次
+     * This method will only be called once during initialization
      */
     void createChannels() {
 
@@ -396,7 +396,7 @@ public class SoundGen implements IAudioCallback {
 //		AssignChannel(new CTrackerChannel(_T("Square 2"), SNDCHIP_S5B, CHANID_S5B_CH2), new CS5BChannel2());
 //		AssignChannel(new CTrackerChannel(_T("Square 3"), SNDCHIP_S5B, CHANID_S5B_CH3), new CS5BChannel3());
 
-        // TODO 其它芯片的暂时不管
+        // TODO Other chips are temporarily ignored
 
     }
 
@@ -425,11 +425,11 @@ public class SoundGen implements IAudioCallback {
         m_iSpeed = DEFAULT_SPEED;
         m_iTempo = DEFAULT_TEMPO_NTSC;
 
-        // 这个参数用来线程同步的, 因此这里并不需要
+        // This parameter is used for thread synchronization, so it is not needed here
 //		m_iDelayedStart = 0;
         m_iFrameCounter = 0;
 
-        // 下面的方法在原来是不在这里执行的, 不过我把它们移过来了
+        // The following methods were not executed here originally, but I moved them here
         resetState();
         resetTempo();
 
@@ -563,8 +563,8 @@ public class SoundGen implements IAudioCallback {
     }
 
     /**
-     * <p>分配音乐文档.
-     * <p>这个方法只会在初始化的时候调用一次, 后面不会再调用.
+     * <p>Allocate music documents.
+     * <p>This method will only be called once during initialization, and will not be called again later.
      *
      * @param doc
      */
@@ -690,8 +690,8 @@ public class SoundGen implements IAudioCallback {
     }
 
     /**
-     * 检查所有跳帧 (效果 Bxx, Dxx), 以及 Pattern 播放完这类需要切换 Pattern,<br>
-     * 或者更通常的, 当播放器检查一行播放完后, 移到下一行进行播放的情形.
+     * Check all frame skips (effects Bxx, Dxx), and situations where the Pattern needs to be switched after playback is complete,<br>
+     * or more generally, when the player checks that a line has been played and moves to the next line to play.
      */
     void checkControl() {
         // This function takes care of jumping and skipping
@@ -724,7 +724,7 @@ public class SoundGen implements IAudioCallback {
             m_iSkipToRow = -1;
         }
 
-        // 下面 MFC 相关, 移除
+        // The following MFC related, remove
 		/*if (m_bDirty) {
 			m_bDirty = false;
 			if (!m_bRendering)
@@ -806,9 +806,9 @@ public class SoundGen implements IAudioCallback {
     }
 
     /**
-     * <p>该方法是在判断一行播放完毕的情况下才会调用的.<br>
-     * 上一行播放完, 开始播放下一行.
-     * <p>如果检测到这是该 frame 的最后一行, 需要从下一个 frame 的第一行开始播放 (调用 {@link #playerStepFrame()}).
+     * <p>This method is only called when it is determined that a line has been played.<br>
+     * After the previous line is played, the next line starts to play.
+     * <p>If it is detected that this is the last line of the frame, you need to start playing from the first line of the next frame (call {@link #playerStepFrame()}).
      */
     void playerStepRow() {
         int PatternLen = m_pDocument.getPatternLength(m_iPlayTrack);
@@ -823,9 +823,9 @@ public class SoundGen implements IAudioCallback {
     }
 
     /**
-     * <p>该方法是在判断一个 frame 播放完毕的情况下才会调用的.<br>
-     * 上一个 frame 播放完, 开始播放下一个 frame.
-     * <p>如果检测到这是整首曲子最后一个 frame, 需要从曲子开头循环播放.
+     * <p>This method is only called when it is determined that a frame has been played.<br>
+     * After the previous frame is played, the next frame starts to play.
+     * <p>If it is detected that this is the last frame of the whole song, you need to loop from the beginning of the song.
      */
     void playerStepFrame() {
         int frames = m_pDocument.getFrameCount(m_iPlayTrack);
@@ -851,9 +851,9 @@ public class SoundGen implements IAudioCallback {
     @Override
     public void flushBuffer(byte[] buffer, int offset, int length) {
 //		System.out.println("length: " + (length));
-        player.writeSamples(buffer, offset, length * 2); // 单声道, 16 位
+        player.writeSamples(buffer, offset, length * 2); // mono, 16-bit
 
-        FamitrackerLogger.instance.logToDo("调用了还没有完成的方法");
+        FamitrackerLogger.instance.logToDo("A method that has not been completed is called");
     }
 
     public void ready(FamiTrackerDoc doc) {
@@ -863,7 +863,7 @@ public class SoundGen implements IAudioCallback {
     public void ready(FamiTrackerDoc doc, int track, int selectFrame) {
         this.m_pDocument = doc;
 
-        // 原来这个方法要在新的线程的开始调用的, 但现在并不这样.
+        // Originally, this method was called at the beginning of a new thread, but now it is not.
         init();
 
         beginPlayer(MODE_PLAY_START, track, selectFrame);
@@ -895,7 +895,7 @@ public class SoundGen implements IAudioCallback {
                 m_iPlayRow = 0;
                 break;
             // From cursor
-            // 下面那个视为无效
+            // The one below is considered invalid
 			/*case MODE_PLAY_CURSOR:
 				m_bPlayLooping = false;
 				m_iPlayFrame = selectFrame;
@@ -974,7 +974,7 @@ public class SoundGen implements IAudioCallback {
         if (m_iDelayedStart > 0) {
             --m_iDelayedStart;
             if (m_iDelayedStart == 0) {
-                log.log(Level.INFO, "开始渲染");
+                log.log(Level.INFO, "Start rendering");
             }
         }
 
@@ -983,7 +983,7 @@ public class SoundGen implements IAudioCallback {
             m_pPreviewSample = null;
         }
 
-        FamitrackerLogger.instance.logToDo("后面要写这些");
+        FamitrackerLogger.instance.logToDo("Write these later");
     }
 
     private void runFrame() {
@@ -1020,7 +1020,7 @@ public class SoundGen implements IAudioCallback {
             }
         }
 
-        // TODO 测试使用
+        // TODO test use
         if (m_iPlayRow == 7) {
             m_iPlayRow += 0;
         }
@@ -1129,7 +1129,7 @@ public class SoundGen implements IAudioCallback {
     }
 
     /**
-     * 这个方法原本在 CFamiTrackerView 类中.
+     * This method was originally in the CFamiTrackerView class.
      *
      * @param track
      * @param frame
@@ -1171,7 +1171,7 @@ public class SoundGen implements IAudioCallback {
     }
 
     /**
-     * @param channel 轨道号, 而非轨道序号
+     * @param channel track number, not track serial number
      * @param note
      * @param prior
      */
@@ -1185,7 +1185,7 @@ public class SoundGen implements IAudioCallback {
     }
 
     /**
-     * Cxx 效果的实现, 就是不让唱下去了, 立刻停止
+     * The implementation of the Cxx effect is to stop singing immediately and stop immediately.
      */
     void haltPlayer() {
         // Move player to non-playing state
@@ -1223,7 +1223,7 @@ public class SoundGen implements IAudioCallback {
     void resetBuffer() {
         m_iBufferPtr = 0;
 
-        FamitrackerLogger.instance.logToDo("这里不幸地和 DSoundChannel 产生了关系: ");
+        FamitrackerLogger.instance.logToDo("Unfortunately, this has something to do with DSoundChannel: ");
 
 //		if (m_pDSoundChannel)
 //			m_pDSoundChannel->ClearBuffer();
@@ -1347,7 +1347,7 @@ public class SoundGen implements IAudioCallback {
         m_pChannels[CHANID_FDS].setNoteTable(m_iNoteLookupTableFDS);
 
 
-//		省略 FDS N163
+//		Omit FDS N163
 
     }
 

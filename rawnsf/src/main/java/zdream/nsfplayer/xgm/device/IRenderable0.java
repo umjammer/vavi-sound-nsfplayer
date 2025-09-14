@@ -1,26 +1,26 @@
 package zdream.nsfplayer.xgm.device;
 
 /**
- * 可渲染的数据接口
+ * Renderable data interface
  *
  * @author Zdream
  */
 public interface IRenderable0 {
 
     /**
-     * 声音的渲染
+     * Sound rendering
      *
-     * @param bs 左频道和右频道的声音数据, 需要是 int[2]
-     * @return 合成了的数据的尺寸.
-     * 1:单声道
-     * 2:立体声
-     * 0:合成失败
+     * @param bs Sound data for left and right channels, must be int[2]
+     * @return The size of the synthesized data.
+     * 1: Monaural
+     * 2: Stereo
+     * 0: Synthesis failed
      */
     int render(int[] bs);
 
     /**
-     * 芯片更新/操作现在绑定到 CPU 渲染(使用方法<code>render()</code>)
-     * 简单地混合并输出声音<br>
+     * Chip update/operation is now bound to CPU rendering (using the method <code>render()</code>)
+     * Simply mix and output sound<br>
      * chip update/operation is now bound to CPU clocks
      * Render() now simply mixes and outputs sound
      */

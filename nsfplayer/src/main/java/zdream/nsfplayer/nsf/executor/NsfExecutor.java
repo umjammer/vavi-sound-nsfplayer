@@ -3,6 +3,7 @@ package zdream.nsfplayer.nsf.executor;
 import java.util.HashSet;
 import java.util.Set;
 
+import zdream.nsfplayer.core.AbstractNsfAudio;
 import zdream.nsfplayer.core.AbstractNsfExecutor;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
@@ -23,7 +24,7 @@ import static java.util.Objects.requireNonNull;
  * @author Zdream
  * @since v0.3.0
  */
-public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
+public class NsfExecutor<T> extends AbstractNsfExecutor<AbstractNsfAudio<T>> {
 
     private final NsfRuntime runtime;
 
@@ -89,13 +90,13 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
     /**
      * Reads Nsf audio and prepares it with default tracks
      *
-     * @param audio
+     * @param audio audio source
      * @throws NullPointerException When audio is null
      */
     @Override
-    public void ready(NsfAudio audio) throws NullPointerException {
+    public void ready(AbstractNsfAudio<T> audio) throws NullPointerException {
         requireNonNull(audio, "NSF Tracks audio = null");
-        ready0(audio, audio.start);
+        ready0(audio, audio.getStart());
     }
 
     /**
@@ -106,11 +107,11 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
      * @throws NullPointerException     When audio is null
      * @throws IllegalArgumentException When the track number track is outside the range [0, audio.total_songs).
      */
-    public void ready(NsfAudio audio, int track) throws NullPointerException, IllegalArgumentException {
+    public void ready(AbstractNsfAudio<T> audio, int track) throws NullPointerException, IllegalArgumentException {
         requireNonNull(audio, "NSF Tracks audio = null");
-        if (track < 0 || track >= audio.total_songs) {
+        if (track < 0 || track >= audio.getTrackCount()) {
             throw new IllegalArgumentException(
-                    "Track number track needs to be in range [0, " + audio.total_songs + "), " + track + " is illegal");
+                    "Track number track needs to be in range [0, " + audio.getTrackCount() + "), " + track + " is illegal");
         }
 
         this.ready0(audio, track);
@@ -127,20 +128,20 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
      * @throws IllegalArgumentException When the track number track is outside the range [0, audio.total_songs).
      */
     public void ready(int track) throws NullPointerException {
-        NsfAudio audio = runtime.audio;
+        AbstractNsfAudio<?> audio = runtime.audio;
         requireNonNull(audio, "NSF Tracks audio = null");
 
-        if (track < 0 || track >= audio.total_songs) {
+        if (track < 0 || track >= audio.getTrackCount()) {
             throw new IllegalArgumentException(
-                    "Track number track needs to be in range [0, " + audio.total_songs + ")");
+                    "Track number track needs to be in range [0, " + audio.getTrackCount() + ")");
         }
 
         runtime.manager.setSong(track);
         runtime.reset();
     }
 
-    private void ready0(NsfAudio audio, int track) {
-        if (track < 0 || track >= audio.total_songs) {
+    private void ready0(AbstractNsfAudio<T> audio, int track) {
+        if (track < 0 || track >= audio.getTrackCount()) {
             track = 0;
         }
 
@@ -218,7 +219,7 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
     /**
      * Adding a listener for N163 reconnections.
      *
-     * @param listener
+     * @param listener N163 listener
      */
     public void addN163ReattachListener(IN163ReattachListener listener) {
         runtime.n163Lsners.add(listener);
@@ -227,7 +228,7 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
     /**
      * Deleting the N163 reconnected listener.
      *
-     * @param listener
+     * @param listener N163 listener
      */
     public void removeReattachListener(IN163ReattachListener listener) {
         runtime.n163Lsners.remove(listener);

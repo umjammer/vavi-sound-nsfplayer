@@ -25,7 +25,7 @@ public class ValueCtrl {
     public final List<ValueConv> vcs = new ArrayList<>();
 
     /**
-     * @param ct 在类中的 CT_* 的常数中选择
+     * @param ct Select from the constants of CT_* in the class
      */
     public ValueCtrl(String l, String d, int ct) {
         ctrlType = ct;

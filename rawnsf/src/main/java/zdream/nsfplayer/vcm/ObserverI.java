@@ -8,5 +8,4 @@ package zdream.nsfplayer.vcm;
 public interface ObserverI {
 
     void notify(int v);
-
 }

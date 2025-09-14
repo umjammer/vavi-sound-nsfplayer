@@ -1,13 +1,13 @@
 package zdream.nsfplayer.xgm.player.nsf;
 
 /**
- * <p>该类用于存放 {@link NsfPlayer} 的播放状态数据以及相关参数.</p>
+ * <p>This class is used to store the playback status data and related parameters of {@link NsfPlayer}.</p>
  *
- * <p>原本这其中的数据都是在 {@link NsfAudio} 中存放的, 现在拆分成两个类.
- * NsfPlayerStatus 就是其中之一.</p>
+ * <p>Originally, the data in it was stored in {@link NsfAudio}, but now it is split into two classes.
+ * NsfPlayerStatus is one of them.</p>
  *
- * <p>这里面使用的时间单位没有说明都是一个采样段.
- * 如果使用 48000 Hz 的采样率进行播放, 那么一个单位为 1 / 48000 秒.</p>
+ * <p>The time unit used here is a sampling section without explanation.
+ * If you play at a sampling rate of 48000 Hz, then one unit is 1/48000 second.</p>
  *
  * @author Zdream
  * @date 2017-09-21
@@ -15,55 +15,55 @@ package zdream.nsfplayer.xgm.player.nsf;
 public class NsfPlayerStatus {
 
     /**
-     * 现在正在选择的歌曲号，从 0 开始
+     * The currently selected song number, starting from 0
      */
     public int song;
 
     /**
-     * 采样率
+     * Sample rate
      */
     public double rate;
 
     /**
-     * 已经演唱的时间 | 秒<br>
-     * 该数据会在将来删除.
+     * Time sung | seconds<br>
+     * This data will be deleted in the future.
      *
      * @see NsfPlayerStatus#time
      */
     public int time_in_ms;
 
     /**
-     * 已经演唱的采样数
+     * Number of samples sung
      */
     public int time;
 
 
-    /** 默认的播放时间 */
+    /** Default playback time */
     public int default_playtime;
-    /** 循环时间 */
+    /** Loop time */
     public int loop_in_ms;
-    /** 渐出时间 */
+    /** Fade-out time */
     public int fade_in_ms, default_fadetime;
-    /** 循环次数 */
+    /** Number of loops */
     public int loop_num, default_loopnum;
-    /** 演奏时间不明的时候启用（默认的演奏时间） */
+    /** Enable when the performance time is unknown (default performance time) */
     public boolean playtime_unknown;
 
     final NsfPlayer player;
 
     /**
-     * <p>是否<b>需要暂停</b></p>
-     * 这里写的是需要暂停, 因为播放操作实质上是一个部分一个部分渲染的.
-     * 在渲染进行到中途时是不应该被打断的.<br>
-     * 所有只有在渲染的那一部分结束之后, 开始下一部分的渲染时, 会来查看这个参数的属性.<br>
-     * 如果需要暂停就停止渲染.<br>
-     * <p>这个参数一般由 task 控制</p>
+     * <p>Whether to <b>pause</b></p>
+     * It is written here that it needs to be paused, because the playback operation is actually rendered part by part.
+     * It should not be interrupted when the rendering is in the middle.<br>
+     * All only after the rendering of that part is over, when the rendering of the next part starts, will come to check the properties of this parameter.<br>
+     * If you need to pause, stop rendering.<br>
+     * <p>This parameter is generally controlled by the task</p>
      */
     public boolean pause;
 
     /**
-     * <p>是否<b>需要进行切歌操作</b></p>
-     * <p>这个参数一般由 task 控制</p>
+     * <p>Whether to <b>perform song switching operation</b></p>
+     * <p>This parameter is generally controlled by the task</p>
      */
     public boolean replace;
 

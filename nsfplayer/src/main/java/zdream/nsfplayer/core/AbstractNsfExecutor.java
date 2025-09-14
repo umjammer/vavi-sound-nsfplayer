@@ -28,5 +28,4 @@ public abstract class AbstractNsfExecutor<T extends AbstractNsfAudio> implements
     public final void setEnable(boolean enable) {
         this.enable = enable;
     }
-
 }

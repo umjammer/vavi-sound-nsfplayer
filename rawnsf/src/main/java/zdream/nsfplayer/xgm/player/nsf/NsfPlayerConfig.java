@@ -12,7 +12,7 @@ public class NsfPlayerConfig extends PlayerConfig {
 
     public static final int NES_CHANNEL_MAX = 29;
 
-    /** 设备名称前缀 */
+    /** Device name prefix */
     public static final String[] dname = {
             "APU1", "APU2", "5B", "MMC5", "N163", "VRC6", "VRC7", "FDS"
     };
@@ -197,20 +197,20 @@ public class NsfPlayerConfig extends PlayerConfig {
      */
     @Override
     public boolean load(String file, String sect, String name) {
-        // TODO 这里原本是读取配置文件的数据的, 现在直接设值
+        // TODO This was originally to read the data of the configuration file, but now it is set directly
         data.put(name, new Value(255));
         return true;
     }
 
     @Override
     public boolean save(String file, String sect) {
-        // TODO 这里原本是写配置文件的, 这里什么都没做
+        // TODO This was originally to write the configuration file, but nothing is done here
         return true;
     }
 
     @Override
     public boolean save(String file, String sect, String name) {
-        // TODO 这里原本是写配置文件的, 这里什么都没做
+        // TODO This was originally to write the configuration file, but nothing is done here
         return true;
     }
 

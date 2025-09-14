@@ -2,7 +2,7 @@ package zdream.nsfplayer.xgm.device;
 
 /**
  * @author Zdream
- * 本程序是按怎样运行效率高而编写, 因此不考虑 Java 封装规则等
+ * This program is written for high efficiency, so Java encapsulation rules are not considered.
  */
 public class TrackInfoBasic implements ITrackInfo {
 
